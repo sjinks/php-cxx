@@ -42,7 +42,7 @@ phpcxx::PhpExceptionPrivate::PhpExceptionPrivate(zend_object* obj)
 
 phpcxx::PhpExceptionPrivate::~PhpExceptionPrivate()
 {
-    if (this->m_handled) {
+    if (this->m_handled && !this->m_class.empty()) {
         zend_clear_exception();
     }
 }
