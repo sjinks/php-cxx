@@ -40,8 +40,19 @@ public:
         }
         zend_end_try();
 
-        while (EG(exception)) {
+        if (EG(current_execute_data) && EG(current_execute_data)->opline) {
             zend_clear_exception();
+        }
+        else {
+            if (EG(prev_exception)) {
+                OBJ_RELEASE(EG(prev_exception));
+                EG(prev_exception) = nullptr;
+            }
+
+            if (EG(exception)) {
+                OBJ_RELEASE(EG(exception));
+                EG(exception) = nullptr;
+            }
         }
 
         php_request_shutdown(nullptr);
@@ -68,19 +79,19 @@ public:
 
     static int sapi_deactivate()
     {
-        std::cout << std::flush;
+        flush(nullptr);
         return SUCCESS;
     }
 
     static size_t ub_write(const char* str, size_t str_length)
     {
-        std::cout.write(str, str_length);
+        std::cout.write(str, str_length).flush();
         return str_length;
     }
 
     static void flush(void*)
     {
-        std::cout << std::flush;
+        std::cout.flush();
     }
 
     static void send_header(sapi_header_struct*, void*)

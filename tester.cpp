@@ -15,25 +15,22 @@
 static phpcxx::Extension ext("wow", "1.0");
 static MySAPI sapi;
 
-static phpcxx::Value myFunction(phpcxx::Parameters& p)
+static phpcxx::Value myFunction(phpcxx::Parameters&)
 {
-    std::cout << "HELLO!" << std::endl;
-    return p[0] + " - " + p[1] + "\n";
+    return 0;
+}
+
+static void runPhpCode(const phpcxx::string& code)
+{
+    char* desc = zend_make_compiled_string_description("eval'd code");
+    zend_eval_stringl_ex(const_cast<char*>(code.c_str()), code.size(), nullptr, desc, 1);
+    efree(desc);
 }
 
 void doWork()
 {
-    try {
-        phpcxx::Value v = phpcxx::Value("myFunction")(4, 5);
-        std::cout << v.toString() << std::endl;
-    }
-    catch (const phpcxx::PhpException& e) {
-        std::cerr << e.getClass() << std::endl;
-        std::cerr << e.message() << std::endl;
-        std::cerr << e.file() << std::endl;
-        std::cerr << e.line() << std::endl;
-        phpcxx::Value("print_r")(e.trace());
-    }
+    runPhpCode("throw new Exception('111');");
+    std::cout << "Done" << std::endl;
 }
 
 int main(int argc, char** argv)
@@ -51,5 +48,6 @@ int main(int argc, char** argv)
     ext.registerExtension(ext);
 
     sapi.run(doWork);
+
     return 0;
 }
