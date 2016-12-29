@@ -6,7 +6,7 @@
 #include "value.h"
 
 phpcxx::Parameters::Parameters(std::initializer_list<phpcxx::Value> v)
-    : d_ptr(emcreate<ParametersPrivate>(v))
+    : d_ptr(emcreate<ParametersPrivate>(v), emdeleter())
 {
 }
 
@@ -17,7 +17,7 @@ phpcxx::Parameters::Parameters(ParametersPrivate* dd)
 }
 
 phpcxx::Parameters::Parameters(int argc)
-    : d_ptr(new ParametersPrivate(argc))
+    : d_ptr(emcreate<ParametersPrivate>(argc), emdeleter())
 {
 }
 

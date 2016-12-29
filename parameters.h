@@ -5,6 +5,7 @@
 
 #include <initializer_list>
 #include <memory>
+#include "emallocallocator.h"
 
 namespace phpcxx {
 
@@ -22,7 +23,7 @@ public:
     const Value& operator[](std::size_t idx) const;
 
 private:
-    std::unique_ptr<ParametersPrivate> d_ptr;
+    std::unique_ptr<ParametersPrivate, emdeleter> d_ptr;
 
     Parameters(int);
     friend class FunctionHandler;
