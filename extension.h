@@ -27,7 +27,7 @@ public:
 
 	static void registerExtension(Extension& other);
 
-	void addFunction(Function f);
+	void addFunction(const Function& f);
 
 protected:
 	virtual void onModuleStartup()   {}

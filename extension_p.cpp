@@ -11,13 +11,14 @@
 
 ZEND_DECLARE_MODULE_GLOBALS(phpcxx);
 
-class maps_t {
+class ExtensionMap {
 private:
 #ifdef ZTS
-    std::mutex                                          g_mutex;
+    std::mutex                                          g_mutex;        ///< Mutex to synchronize access to the maps
 #endif
-    std::unordered_map<std::string, phpcxx::Extension*> g_name2ext;
-    std::unordered_map<int, phpcxx::Extension*>         g_id2ext;
+    std::unordered_map<std::string, phpcxx::Extension*> g_name2ext;     ///< Maps extension name to Extension
+    std::unordered_map<int, phpcxx::Extension*>         g_id2ext;       ///< Maps extension number to Extension
+
 public:
     phpcxx::Extension* extByModNumber(int module)
     {
@@ -31,6 +32,14 @@ public:
         }
 
         return nullptr;
+    }
+
+    bool extensionExists(const char* name)
+    {
+#ifdef ZTS
+        std::unique_lock<std::mutex> locker(this->g_mutex);
+#endif
+        return this->g_name2ext.count(std::string(name)) != 0;
     }
 
     void addExtension(const char* name, phpcxx::Extension* ext)
@@ -51,7 +60,7 @@ public:
         if (EXPECTED(n2e_it != this->g_name2ext.end())) {
             phpcxx::Extension* e = n2e_it->second;
             this->g_id2ext.emplace(number, e);
-            this->g_name2ext.erase(n2e_it);
+            // this->g_name2ext.erase(n2e_it);
             return e;
         }
 
@@ -59,10 +68,28 @@ public:
     }
 };
 
-static maps_t& maps()
+/**
+ * Ensures that ExtensionMap is initialized when we call this function.
+ * If we declare ExtensionMap as a global static, we will depend on the
+ * initialization order of static globals, which, in turn, depends on
+ * the order of object files during the link time. With static
+ * ExtensionMap we encountered strange floating point exceptions
+ * happening inside std::unordered_map - possibly because emplace()
+ * happened before the map was really initialized.
+ */
+static ExtensionMap& maps()
 {
-    static maps_t result;
+    static ExtensionMap result;
     return result;
+}
+
+static void complainExtensionNotFound(int number)
+{
+    zend_error(
+        E_WARNING,
+        "Unable to find the module by number %d. Probably phpcxx::Extension instance has been destroyed too early",
+        number
+    );
 }
 
 phpcxx::ExtensionPrivate::ExtensionPrivate(phpcxx::Extension* const q, const char* name, const char* version)
@@ -70,6 +97,10 @@ phpcxx::ExtensionPrivate::ExtensionPrivate(phpcxx::Extension* const q, const cha
 {
     if (!name) {
         throw std::logic_error("Extension name not specified");
+    }
+
+    if (maps().extensionExists(name)) {
+        throw std::logic_error("This extension has already been registered - " + std::string(name));
     }
 
     this->entry.name    = name;
@@ -99,7 +130,7 @@ int phpcxx::ExtensionPrivate::moduleStartup(INIT_FUNC_ARGS)
         }
     }
 
-    zend_error(E_WARNING, "Unable to find the module by number %d. Probably phpcxx::Extension instance has been destroyed too early", module_number);
+    complainExtensionNotFound(module_number);
     return SUCCESS;
 }
 
@@ -119,7 +150,7 @@ int phpcxx::ExtensionPrivate::moduleShutdown(SHUTDOWN_FUNC_ARGS)
         }
     }
 
-    zend_error(E_WARNING, "Unable to find the module by number %d. Probably phpcxx::Extension instance has been destroyed too early", module_number);
+    complainExtensionNotFound(module_number);
     return SUCCESS;
 }
 
@@ -137,7 +168,7 @@ int phpcxx::ExtensionPrivate::requestStartup(INIT_FUNC_ARGS)
         }
     }
 
-    zend_error(E_WARNING, "Unable to find the module by number %d. Probably phpcxx::Extension instance has been destroyed too early", module_number);
+    complainExtensionNotFound(module_number);
     return SUCCESS;
 }
 
@@ -155,7 +186,7 @@ int phpcxx::ExtensionPrivate::requestShutdown(SHUTDOWN_FUNC_ARGS)
         }
     }
 
-    zend_error(E_WARNING, "Unable to find the module by number %d. Probably phpcxx::Extension instance has been destroyed too early", module_number);
+    complainExtensionNotFound(module_number);
     return SUCCESS;
 }
 
@@ -166,7 +197,7 @@ void phpcxx::ExtensionPrivate::moduleInfo(ZEND_MODULE_INFO_FUNC_ARGS)
         e->onModuleInfo();
     }
     else {
-        zend_error(E_WARNING, "Unable to find the module by number %d. Probably phpcxx::Extension instance has been destroyed too early", zend_module->module_number);
+        complainExtensionNotFound(zend_module->module_number);
     }
 }
 
@@ -176,4 +207,15 @@ void phpcxx::ExtensionPrivate::globalsInit(void* g)
 
 void phpcxx::ExtensionPrivate::globalsShutdown(void* g)
 {
+}
+
+void phpcxx::ExtensionPrivate::doRegisterFunction(const Function& f)
+{
+    std::unique_ptr<ExtensionPrivate::LateFunction> late(new ExtensionPrivate::LateFunction);
+
+    late->fe = f.getFE();
+    late->ai = f.getArgInfo();
+
+    zend_register_functions(nullptr, &late->fe, nullptr, MODULE_PERSISTENT);
+    this->m_late_functions.push_back(std::move(late));
 }

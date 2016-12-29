@@ -44,7 +44,7 @@ void phpcxx::Extension::onModuleInfo()
     display_ini_entries(&this->d_ptr->entry);
 }
 
-void phpcxx::Extension::addFunction(Function f)
+void phpcxx::Extension::addFunction(const Function& f)
 {
     this->d_ptr->addFunction(f);
 }

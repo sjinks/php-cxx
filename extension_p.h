@@ -50,15 +50,27 @@ public:
         STANDARD_MODULE_PROPERTIES_EX
     };
 
-    void addFunction(Function f)
+    void addFunction(const Function& f)
     {
-        this->m_funcs.push_back(std::move(f));
+        if (!this->entry.module_started) {
+            this->m_funcs.push_back(f);
+        }
+        else {
+            this->doRegisterFunction(f);
+        }
     }
+
+private:
+    struct LateFunction {
+        zend_function_entry fe;
+        std::vector<zend_internal_arg_info> ai;
+    };
 
 private:
     Extension* const q_ptr;
     std::vector<Function> m_funcs;
     std::vector<zend_function_entry> m_fe;
+    std::vector<std::unique_ptr<LateFunction> > m_late_functions;
 
     static int moduleStartup(INIT_FUNC_ARGS);
     static int moduleShutdown(SHUTDOWN_FUNC_ARGS);
@@ -67,6 +79,8 @@ private:
     static void moduleInfo(ZEND_MODULE_INFO_FUNC_ARGS);
     static void globalsInit(void* g);
     static void globalsShutdown(void* g);
+
+    void doRegisterFunction(const Function& f);
 };
 
 }
