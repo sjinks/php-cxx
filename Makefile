@@ -10,6 +10,8 @@ TESTER         = .lib/php-cxx-test
 
 TESTER_LDLIBS  = -lphp7
 
+TARGET         = $(SHARED_LIBRARY) $(STATIC_LIBRARY) $(TESTER)
+
 LIBRARY_CXX_SOURCES = \
 	argument.cpp \
 	extension.cpp \
@@ -29,7 +31,7 @@ DEPS        = $(patsubst %.o,%.d,$(OBJS))
 COV_GCDA    = $(patsubst %.o,%.gcda,$(OBJS))
 COV_GCNO    = $(patsubst %.o,%.gcno,$(OBJS))
 
-all: $(SHARED_LIBRARY) $(STATIC_LIBRARY) $(TESTER)
+all: $(TARGET)
 
 build_directory: .build
 .build:
@@ -65,6 +67,3 @@ clean:
 	-rm -f $(COV_GCDA) $(COV_GCNO)
 
 .PHONY: build_directory output_directory clean 
-
-%.out:
-%.build:
