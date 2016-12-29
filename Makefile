@@ -21,7 +21,7 @@ LIBRARY_CXX_SOURCES = \
 	phpexception.cpp \
 	value.cpp
 
-TESTER_CXX_SOURCES = tester.cpp
+TESTER_CXX_SOURCES = tester.cpp testsapi.cpp
 TESTER_CXX_OBJS    = $(patsubst %.cpp,.build/%.o,$(TESTER_CXX_SOURCES))
 LIBRARY_CXX_OBJS   = $(patsubst %.cpp,.build/%.o,$(LIBRARY_CXX_SOURCES))
 

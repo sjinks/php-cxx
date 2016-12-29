@@ -10,10 +10,10 @@
 #include "value.h"
 #include "vector.h"
 
-#include "sapi.h"
+#include "testsapi.h"
 
 static phpcxx::Extension ext("wow", "1.0");
-static MySAPI sapi;
+static TestSAPI sapi(std::cout, std::cerr);
 
 static phpcxx::Value myFunction(phpcxx::Parameters&)
 {
