@@ -58,3 +58,8 @@ const struct _zend_function_entry& phpcxx::Function::getFE() const
 {
     return this->d_ptr->m_fe;
 }
+
+const std::vector<struct _zend_internal_arg_info>& phpcxx::Function::getArgInfo() const
+{
+    return this->d_ptr->m_arginfo;
+}

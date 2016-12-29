@@ -4,11 +4,13 @@
 #include "phpcxx.h"
 
 #include <memory>
+#include <vector>
 #include "argument.h"
 #include "functionhandler.h"
 #include "types.h"
 
 struct _zend_function_entry;
+struct _zend_internal_arg_info;
 
 namespace phpcxx {
 
@@ -26,6 +28,7 @@ public:
     Function& setTypeHint(const char* className);
 
     const struct _zend_function_entry& getFE() const;
+    const std::vector<struct _zend_internal_arg_info>& getArgInfo() const;
 
 private:
     friend class FunctionPrivate;
