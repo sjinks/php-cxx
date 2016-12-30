@@ -6,6 +6,7 @@
 #include <initializer_list>
 #include <memory>
 #include <ostream>
+#include "emallocallocator.h"
 #include "types.h"
 
 struct _zend_internal_arg_info;
@@ -15,15 +16,18 @@ namespace phpcxx {
 class ArgumentPrivate;
 class PHPCXX_EXPORT Argument {
 public:
+    Argument(const char* argName);
     Argument(const char* argName, phpcxx::ArgumentType type, bool allowNull = false, bool byRef = false, bool isVariadic = false);
     Argument(const char* argName, const char* className, bool allowNull = false, bool byRef = false, bool isVariadic = false);
     Argument(const struct _zend_internal_arg_info& other);
+    Argument(Argument&&) noexcept;
+    ~Argument();
 
-    Argument(const Argument&) = default;
-    Argument(Argument&&) = default;
-    ~Argument() = default;
-    Argument& operator=(const Argument&) = default;
-    Argument& operator=(Argument&&) = default;
+    Argument&& setType(phpcxx::ArgumentType type);
+    Argument&& setClass(const char* name);
+    Argument&& setNullable(bool v);
+    Argument&& setByRef(bool v);
+    Argument&& setVariadic(bool v);
 
     const char* name() const;
     const char* className() const;
@@ -34,7 +38,7 @@ public:
     const struct _zend_internal_arg_info& get() const;
 
 private:
-    std::shared_ptr<ArgumentPrivate> d_ptr;
+    std::unique_ptr<ArgumentPrivate> d_ptr;
 };
 
 std::ostream& operator<<(std::ostream& os, const Argument& obj);
