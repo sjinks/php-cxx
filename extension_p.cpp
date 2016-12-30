@@ -19,6 +19,10 @@ private:
     std::unordered_map<std::string, phpcxx::Extension*> g_name2ext;     ///< Maps extension name to Extension
     std::unordered_map<int, phpcxx::Extension*>         g_id2ext;       ///< Maps extension number to Extension
 
+    ExtensionMap() {}
+    ExtensionMap(const ExtensionMap&) = delete;
+    ExtensionMap& operator=(const ExtensionMap&) = delete;
+
 public:
     phpcxx::Extension* extByModNumber(int module)
     {
@@ -66,22 +70,22 @@ public:
 
         return nullptr;
     }
-};
 
-/**
- * Ensures that ExtensionMap is initialized when we call this function.
- * If we declare ExtensionMap as a global static, we will depend on the
- * initialization order of static globals, which, in turn, depends on
- * the order of object files during the link time. With static
- * ExtensionMap we encountered strange floating point exceptions
- * happening inside std::unordered_map - possibly because emplace()
- * happened before the map was really initialized.
- */
-static ExtensionMap& maps()
-{
-    static ExtensionMap result;
-    return result;
-}
+    /**
+     * Ensures that ExtensionMap is initialized when we call this function.
+     * If we declare ExtensionMap as a global static, we will depend on the
+     * initialization order of static globals, which, in turn, depends on
+     * the order of object files during the link time. With static
+     * ExtensionMap we encountered strange floating point exceptions
+     * happening inside std::unordered_map - possibly because emplace()
+     * happened before the map was really initialized.
+     */
+    static ExtensionMap& instance()
+    {
+        static ExtensionMap self;
+        return self;
+    }
+};
 
 static void complainExtensionNotFound(int number)
 {
@@ -99,14 +103,14 @@ phpcxx::ExtensionPrivate::ExtensionPrivate(phpcxx::Extension* const q, const cha
         throw std::logic_error("Extension name not specified");
     }
 
-    if (maps().extensionExists(name)) {
+    if (ExtensionMap::instance().extensionExists(name)) {
         throw std::logic_error("This extension has already been registered - " + std::string(name));
     }
 
     this->entry.name    = name;
     this->entry.version = version;
 
-    maps().addExtension(name, q);
+    ExtensionMap::instance().addExtension(name, q);
 }
 
 int phpcxx::ExtensionPrivate::moduleStartup(INIT_FUNC_ARGS)
@@ -114,7 +118,7 @@ int phpcxx::ExtensionPrivate::moduleStartup(INIT_FUNC_ARGS)
     zend_module_entry* me = EG(current_module);
     assert(me != nullptr);
 
-    phpcxx::Extension* e = maps().mapNumberToExt(me->name, module_number);
+    phpcxx::Extension* e = ExtensionMap::instance().mapNumberToExt(me->name, module_number);
 
 //  const zend_ini_entry_def* ini;
 //  zend_register_ini_entries(ini, int module_number)
@@ -138,7 +142,7 @@ int phpcxx::ExtensionPrivate::moduleShutdown(SHUTDOWN_FUNC_ARGS)
 {
     zend_unregister_ini_entries(module_number);
 
-    phpcxx::Extension* e = maps().extByModNumber(module_number);
+    phpcxx::Extension* e = ExtensionMap::instance().extByModNumber(module_number);
     if (EXPECTED(e)) {
         try {
             e->onModuleShutdown();
@@ -156,7 +160,7 @@ int phpcxx::ExtensionPrivate::moduleShutdown(SHUTDOWN_FUNC_ARGS)
 
 int phpcxx::ExtensionPrivate::requestStartup(INIT_FUNC_ARGS)
 {
-    phpcxx::Extension* e = maps().extByModNumber(module_number);
+    phpcxx::Extension* e = ExtensionMap::instance().extByModNumber(module_number);
     if (EXPECTED(e)) {
         try {
             e->onRequestStartup();
@@ -174,7 +178,7 @@ int phpcxx::ExtensionPrivate::requestStartup(INIT_FUNC_ARGS)
 
 int phpcxx::ExtensionPrivate::requestShutdown(SHUTDOWN_FUNC_ARGS)
 {
-    phpcxx::Extension* e = maps().extByModNumber(module_number);
+    phpcxx::Extension* e = ExtensionMap::instance().extByModNumber(module_number);
     if (EXPECTED(e)) {
         try {
             e->onRequestShutdown();
@@ -192,7 +196,7 @@ int phpcxx::ExtensionPrivate::requestShutdown(SHUTDOWN_FUNC_ARGS)
 
 void phpcxx::ExtensionPrivate::moduleInfo(ZEND_MODULE_INFO_FUNC_ARGS)
 {
-    phpcxx::Extension* e = maps().extByModNumber(zend_module->module_number);
+    phpcxx::Extension* e = ExtensionMap::instance().extByModNumber(zend_module->module_number);
     if (EXPECTED(e)) {
         e->onModuleInfo();
     }
