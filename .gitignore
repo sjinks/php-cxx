@@ -1,5 +1,7 @@
 .cproject
 .project
+.tracefile
 /.build
 /.lib
 /.settings
+/.coverage

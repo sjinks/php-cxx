@@ -1,7 +1,7 @@
 PHP_CONFIG     = php-config
 
 CPPFLAGS_EXTRA = $(shell $(PHP_CONFIG) --includes) -DBUILDING_PHPCXX
-CXXFLAGS_EXTRA = -Wall -Wextra -Wno-unused-parameter -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -fpic -g3
+CXXFLAGS_EXTRA = -Wall -Wextra -Wno-unused-parameter -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -fpic
 LDFLAGS_EXTRA  = $(shell $(PHP_CONFIG) --ldflags) -pthread
 
 SHARED_LIBRARY = .lib/php-cxx.so
@@ -20,6 +20,15 @@ LIBRARY_CXX_SOURCES = \
 	parameters.cpp \
 	phpexception.cpp \
 	value.cpp
+
+ifndef CXXFLAGS
+CXXFLAGS = -O2 -g
+endif
+
+ifeq ($(COVERAGE),1)
+CXXFLAGS_EXTRA += -O0 -coverage
+LDFLAGS_EXTRA  += -coverage
+endif
 
 TESTER_CXX_SOURCES = tester.cpp testsapi.cpp
 TESTER_CXX_OBJS    = $(patsubst %.cpp,.build/%.o,$(TESTER_CXX_SOURCES))
@@ -66,4 +75,14 @@ clean:
 	-rm -f $(DEPS)
 	-rm -f $(COV_GCDA) $(COV_GCNO)
 
-.PHONY: build_directory output_directory clean 
+clean-coverage:
+	-rm -rf .tracefile coverage $(COV_GCDA)
+
+coverage: clean-coverage
+	$(MAKE) $(TESTER) COVERAGE=1 MAKEFLAGS="$(MAKEFLAGS)"
+	-$(TESTER)
+	lcov -q -d .build -c -b . -o .tracefile
+	lcov -q -r .tracefile "/usr/include/*" "$(shell $(PHP_CONFIG) --include-dir)/*" -o .tracefile
+	genhtml -q --legend -o coverage -t "phpcxx Code Coverage" .tracefile
+
+.PHONY: build_directory output_directory clean coverage clean-coverage 
