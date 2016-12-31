@@ -1,14 +1,19 @@
 PHP_CONFIG      = php-config
 SRCDIR          = $(realpath $(dir $(lastword $(filter Makefile,$(MAKEFILE_LIST)))))
 
-CPPFLAGS_EXTRA  = -I$(SRCDIR) $(shell $(PHP_CONFIG) --includes) -DBUILDING_PHPCXX
+CPPFLAGS_EXTRA  = $(shell $(PHP_CONFIG) --includes)
 CXXFLAGS_EXTRA  = -Wall -Wextra -Wno-unused-parameter -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -fpic
-LDFLAGS_EXTRA   = $(shell $(PHP_CONFIG) --ldflags) -pthread
+LDFLAGS_EXTRA   = -pthread
 
 SHARED_LIBRARY  = .lib/php-cxx.so
 STATIC_LIBRARY  = .lib/php-cxx.a
 TESTER          = .lib/php-cxx-test
 
+PHPCXX_CPPFLAGS = -DBUILDING_PHPCXX
+PHPCXX_LDFLAGS  = -shared $(shell $(PHP_CONFIG) --ldflags)
+
+TESTER_CPPFLAGS = -I$(SRCDIR)
+TESTER_LDFLAGS  = 
 TESTER_LDLIBS   = -lphp7
 
 TARGET          = $(SHARED_LIBRARY) $(STATIC_LIBRARY) $(TESTER)
@@ -22,8 +27,20 @@ LIBRARY_CXX_SOURCES = \
 	phpcxx/phpexception.cpp \
 	phpcxx/value.cpp
 
+TESTER_CXX_SOURCES = \
+	test/tester.cpp \
+	test/testsapi.cpp \
+	test/test_lifecycle.cpp
+	
+	
+### Google Test
+GTEST_DIR  = /usr/src/gtest
+GTEST_SRCS = $(wildcard $(GTEST_DIR)/src/*.cc)
+GTEST_HDRS = $(wildcard /usr/include/gtest/*.h) $(wildcard /usr/include/gtest/internal/*.h)
+### END Google Test
+
 ifndef CXXFLAGS
-CXXFLAGS = -O2 -g
+CXXFLAGS = -O0 -g3
 endif
 
 ifeq ($(COVERAGE),1)
@@ -31,7 +48,6 @@ CXXFLAGS_EXTRA += -O0 -coverage
 LDFLAGS_EXTRA  += -coverage
 endif
 
-TESTER_CXX_SOURCES = test/tester.cpp test/testsapi.cpp
 TESTER_CXX_OBJS    = $(patsubst %.cpp,.build/%.o,$(TESTER_CXX_SOURCES))
 LIBRARY_CXX_OBJS   = $(patsubst %.cpp,.build/%.o,$(LIBRARY_CXX_SOURCES))
 
@@ -51,17 +67,23 @@ output_directory: .lib
 .lib:
 	mkdir -p "$@"
 
-$(TESTER): $(TESTER_CXX_OBJS) $(LIBRARY_CXX_OBJS) | output_directory
-	$(CXX) $(LDFLAGS) $(LDFLAGS_EXTRA) $^ $(TESTER_LDLIBS) $(LDLIBS) -o "$@"
+$(TESTER): $(TESTER_CXX_OBJS) $(LIBRARY_CXX_OBJS) .build/gtest-all.o | output_directory
+	$(CXX) $(LDFLAGS) $(TESTER_LDFLAGS) $(LDFLAGS_EXTRA) $^ $(TESTER_LDLIBS) $(LDLIBS) -o "$@"
 
 $(SHARED_LIBRARY): $(LIBRARY_CXX_OBJS) | output_directory
-	$(CXX) $(LDFLAGS) -shared $(LDFLAGS_EXTRA) $^ $(LDLIBS) -o "$@"
+	$(CXX) $(LDFLAGS) $(PHPCXX_LDFLAGS) $(LDFLAGS_EXTRA) $^ $(LDLIBS) -o "$@"
 
 $(STATIC_LIBRARY): $(LIBRARY_CXX_OBJS) | output_directory
 	$(AR) rcs "$@" $^
 
-.build/%.o: %.cpp | build_directory
-	$(CXX) $(CPPFLAGS) $(CPPFLAGS_EXTRA) $(CXXFLAGS) $(CXXFLAGS_EXTRA) -c "$<" -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$@" -o "$@"
+.build/gtest-all.o: $(GTEST_SRCS) | output_directory
+	$(CXX) -I$(GTEST_DIR) $(CXXFLAGS) -c $(GTEST_DIR)/src/gtest-all.cc -o $@
+
+.build/phpcxx/%.o: phpcxx/%.cpp | build_directory
+	$(CXX) $(CPPFLAGS) $(PHPCXX_CPPFLAGS) $(CPPFLAGS_EXTRA) $(CXXFLAGS) $(CXXFLAGS_EXTRA) -c "$<" -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$@" -o "$@"
+
+.build/test/%.o: test/%.cpp | build_directory
+	$(CXX) $(CPPFLAGS) $(TESTER_CPPFLAGS) $(CPPFLAGS_EXTRA) $(CXXFLAGS) $(CXXFLAGS_EXTRA) -c "$<" -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$@" -o "$@"
 
 clean-deps:
 	-rm -f $(DEPS)
@@ -78,6 +100,9 @@ clean:
 
 clean-coverage:
 	-rm -rf .tracefile coverage $(COV_GCDA)
+
+test: $(TESTER)
+	$(TESTER)
 
 coverage: clean-coverage
 	$(MAKE) $(TESTER) COVERAGE=1 MAKEFLAGS="$(MAKEFLAGS)"
