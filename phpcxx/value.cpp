@@ -29,7 +29,7 @@ static inline zval* separateOrCreateArray(zval* z)
         // special handling
     }
     else if (Z_TYPE_P(z) == IS_STRING && Z_STRLEN_P(z) != 0) {
-
+        // special handling
     }
     else if (EXPECTED(Z_TYPE_P(z) <= IS_FALSE) || (Z_TYPE_P(z) == IS_STRING && Z_STRLEN_P(z) == 0)) {
         zval_ptr_dtor_nogc(z);
@@ -79,9 +79,6 @@ phpcxx::Value& phpcxx::Value::operator[](const phpcxx::ZendString& key)
             zend_error(E_ERROR, "Assignment to string offset is not implemented yet");
             break;
         }
-
-        default:
-            assert(false);
     }
 
     return ErrorValue;
@@ -112,9 +109,6 @@ phpcxx::Value& phpcxx::Value::operator[](zend_long key)
             zend_error(E_ERROR, "Assignment to string offset is not implemented yet");
             break;
         }
-
-        default:
-            assert(false);
     }
 
     return ErrorValue;
@@ -141,9 +135,6 @@ phpcxx::Value& phpcxx::Value::operator[](std::nullptr_t)
         case IS_STRING:
             zend_throw_error(NULL, "[] operator not supported for strings");
             break;
-
-        default:
-            assert(false);
     }
 
     return ErrorValue;

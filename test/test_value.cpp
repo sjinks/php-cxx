@@ -340,19 +340,41 @@ TEST_F(ValueFixture, References)
         m_err.str(std::string());
         EXPECT_TRUE(m_out.str().empty());
         m_out.str(std::string());
+    });
+}
 
-        {
-            phpcxx::Value a;
-            a["a"]["b"]["c"] = 1;
-            a["a"]["b"]["d"] = 2;
-            a["a"]["e"]      = 3;
-            phpcxx::Value func("var_export");
-            func(a);
-        }
+TEST_F(ValueFixture, Arrays)
+{
+    m_sapi.run([this]() {
+        phpcxx::Value a;
+        a["a"]["b"]["c"] = 1;
+        a["a"]["b"]["d"] = 2;
+        a["a"]["e"]      = 3;
+        phpcxx::Value func("var_export");
+        func(a);
 
         std::string expected = "array (\n  'a' => \n  array (\n    'b' => \n    array (\n      'c' => 1,\n      'd' => 2,\n    ),\n    'e' => 3,\n  ),\n)";
         std::string actual   = m_out.str();
         m_out.str(std::string());
         EXPECT_EQ(expected, actual);
     });
+    EXPECT_TRUE(m_err.str().empty());
+    m_err.str(std::string());
+
+    m_sapi.run([]() {
+        phpcxx::Value a;
+        phpcxx::Value b;
+        a["a"] = 1;
+        b = a["a"];
+
+        EXPECT_EQ(phpcxx::Type::Integer, b.type());
+        EXPECT_EQ(1, b.asLong());
+
+        a["a"] = 2;
+
+        EXPECT_EQ(phpcxx::Type::Integer, b.type());
+        EXPECT_EQ(1, b.asLong());
+    });
+    EXPECT_TRUE(m_err.str().empty());
+    m_err.str(std::string());
 }
