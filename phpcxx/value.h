@@ -80,7 +80,7 @@ public:
             z = Z_REFVAL_P(z);
         }
 
-        ZVAL_COPY(&this->m_z, &other.m_z);
+        ZVAL_COPY(&this->m_z, z);
     }
 
     Value(Value& other, CopyPolicy policy)
