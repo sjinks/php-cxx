@@ -4,8 +4,8 @@
 #include <Zend/zend.h>
 #include <Zend/zend_string.h>
 #include <cstring>
-#include <string>
 #include <type_traits>
+#include "string.h"
 
 namespace phpcxx {
 
@@ -36,7 +36,7 @@ static inline void construct_zval(zval& z, const char* s)
     ZVAL_STR(&z, zs);
 }
 
-static inline void construct_zval(zval& z, const std::string& s)
+static inline void construct_zval(zval& z, const phpcxx::string& s)
 {
     zend_string* zs = zend_string_init(s.c_str(), s.size(), 0);
     ZVAL_STR(&z, zs);
