@@ -3,11 +3,26 @@
 #include <main/SAPI.h>
 #include <main/php_variables.h>
 #include <Zend/zend_exceptions.h>
+#include <cstring>
 #include <vector>
 #include "phpcxx/extension.h"
 #include "testsapi.h"
 
 namespace {
+
+static const char hardcoded_ini[] =
+    "html_errors=0\n"
+    "log_errors=1\n"
+    "display_errors=0\n"
+    "error_reporting=E_ALL\n"
+    "report_zend_debug=0\n"
+    "register_argc_argv=1\n"
+    "implicit_flush=1\n"
+    "output_buffering=0\n"
+    "max_execution_time=0\n"
+    "max_input_time=-1\n\0"
+;
+
 static int sapi_startup(sapi_module_struct* sapi_module);
 static int sapi_activate();
 static int sapi_deactivate();
@@ -50,7 +65,7 @@ public:
         nullptr,    // void (*default_post_reader)(void);
         nullptr,    // void (*treat_data)(int arg, char *str, zval *destArray);
         (char*)"-", // char *executable_location;
-        0,          // php_ini_ignore
+        1,          // php_ini_ignore
         1,          // php_ini_ignore_cwd
         nullptr,    // int (*get_fd)(int *fd);
         nullptr,    // int (*force_http_10)(void);
@@ -59,7 +74,7 @@ public:
         nullptr,    // unsigned int (*input_filter)(int arg, char *var, char **val, size_t val_len, size_t *new_val_len);
         nullptr,    // void (*ini_defaults)(HashTable *configuration_hash);
         1,          // phpinfo_as_text
-        (char*)"html_errors=0\nregister_argc_argv=1\nimplicit_flush=1\noutput_buffering=0\nmax_execution_time=0\nmax_input_time=-1\n\0",
+        nullptr,    // ini
         nullptr,    // const zend_function_entry *additional_functions
         nullptr     // unsigned int (*input_filter_init)(void)
     };
@@ -148,12 +163,21 @@ TestSAPI::~TestSAPI()
 #ifdef ZTS
     tsrm_shutdown();
 #endif
+
+    if (g.sapi.ini_entries) {
+        delete[] g.sapi.ini_entries;
+        g.sapi.ini_entries = nullptr;
+    }
 }
 
 void TestSAPI::initialize()
 {
     if (!this->m_initialized) {
         SAPIGlobals& g = SAPIGlobals::instance();
+
+        g.sapi.ini_entries = new char[sizeof(hardcoded_ini)];
+        std::memcpy(g.sapi.ini_entries, hardcoded_ini, sizeof(hardcoded_ini));
+
         g.sapi.startup(&g.sapi);
         this->m_initialized = true;
     }
