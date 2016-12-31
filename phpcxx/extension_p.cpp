@@ -71,6 +71,15 @@ public:
         return nullptr;
     }
 
+    void clear()
+    {
+#ifdef ZTS
+        std::unique_lock<std::mutex> locker(this->g_mutex);
+#endif
+        this->g_id2ext.clear();
+        this->g_name2ext.clear();
+    }
+
     /**
      * Ensures that ExtensionMap is initialized when we call this function.
      * If we declare ExtensionMap as a global static, we will depend on the
@@ -211,6 +220,7 @@ void phpcxx::ExtensionPrivate::globalsInit(void* g)
 
 void phpcxx::ExtensionPrivate::globalsShutdown(void* g)
 {
+    ExtensionMap::instance().clear();
 }
 
 void phpcxx::ExtensionPrivate::doRegisterFunction(const Function& f)
