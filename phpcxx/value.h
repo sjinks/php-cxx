@@ -357,24 +357,29 @@ public:
         return this->toString();
     }
 
-    Value operator[](const std::string& key)
+    Value& operator[](const std::string& key)
     {
         return this->operator[](ZendString(key));
     }
 
-    Value operator[](const string& key)
+    Value& operator[](const string& key)
     {
         return this->operator[](ZendString(key));
     }
 
-    Value operator[](const char* key)
+    Value& operator[](const char* key)
     {
         return this->operator[](ZendString(key));
     }
 
-    Value operator[](const ZendString& key);
-    Value operator[](zend_long key);
-    Value operator[](std::nullptr_t);
+    Value& operator[](int key)
+    {
+        return this->operator[](static_cast<zend_long>(key));
+    }
+
+    Value& operator[](const ZendString& key);
+    Value& operator[](zend_long key);
+    Value& operator[](std::nullptr_t);
 
     template<typename ...Args>
     Value operator()(Args&&... args)
@@ -385,8 +390,17 @@ public:
     std::string debugZval() const;
     static string typeToString(Type type);
 
+    /**
+     * @internal
+     */
+    zval* getZVal() { return &this->m_z; }
+
 private:
     mutable zval m_z;
+
+    struct placement_construction_t {};
+
+    Value(const placement_construction_t&) {}
 
     zval* maybeDeref()
     {
@@ -468,6 +482,7 @@ private:
     friend void construct_zval(zval& z, const Value& v) { ZVAL_COPY(&z, &v.m_z); }
 };
 
+extern Value ErrorValue;
 
 }
 
