@@ -121,3 +121,44 @@ TEST(LifecycleTest, ErroredRequest)
     EXPECT_EQ(ext.request_startup_called,  1);
     EXPECT_EQ(ext.request_shutdown_called, 1);
 }
+
+TEST(LifecycleTest, MultipleRequests)
+{
+    MyExtension ext("LifeCycle", "0.0");
+
+    EXPECT_EQ(ext.module_startup_called,   0);
+    EXPECT_EQ(ext.module_shutdown_called,  0);
+    EXPECT_EQ(ext.request_startup_called,  0);
+    EXPECT_EQ(ext.request_shutdown_called, 0);
+    int n = 100;
+
+    {
+        TestSAPI sapi(std::cout, std::cerr);
+        sapi.addExtension(ext);
+
+        sapi.initialize();
+        EXPECT_EQ(ext.module_startup_called,   1);
+        EXPECT_EQ(ext.module_shutdown_called,  0);
+        EXPECT_EQ(ext.request_startup_called,  0);
+        EXPECT_EQ(ext.request_shutdown_called, 0);
+
+        for (int i=0; i<n; ++i) {
+            sapi.run([&ext, &i]() {
+                EXPECT_EQ(ext.module_startup_called,   1);
+                EXPECT_EQ(ext.module_shutdown_called,  0);
+                EXPECT_EQ(ext.request_startup_called,  i+1);
+                EXPECT_EQ(ext.request_shutdown_called, i);
+            });
+        }
+
+        EXPECT_EQ(ext.module_startup_called,   1);
+        EXPECT_EQ(ext.module_shutdown_called,  0);
+        EXPECT_EQ(ext.request_startup_called,  n);
+        EXPECT_EQ(ext.request_shutdown_called, n);
+    }
+
+    EXPECT_EQ(ext.module_startup_called,   1);
+    EXPECT_EQ(ext.module_shutdown_called,  1);
+    EXPECT_EQ(ext.request_startup_called,  n);
+    EXPECT_EQ(ext.request_shutdown_called, n);
+}
