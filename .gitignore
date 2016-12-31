@@ -4,4 +4,4 @@
 /.build
 /.lib
 /.settings
-/.coverage
+/coverage

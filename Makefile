@@ -1,25 +1,26 @@
-PHP_CONFIG     = php-config
+PHP_CONFIG      = php-config
+SRCDIR          = $(realpath $(dir $(lastword $(filter Makefile,$(MAKEFILE_LIST)))))
 
-CPPFLAGS_EXTRA = $(shell $(PHP_CONFIG) --includes) -DBUILDING_PHPCXX
-CXXFLAGS_EXTRA = -Wall -Wextra -Wno-unused-parameter -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -fpic
-LDFLAGS_EXTRA  = $(shell $(PHP_CONFIG) --ldflags) -pthread
+CPPFLAGS_EXTRA  = -I$(SRCDIR) $(shell $(PHP_CONFIG) --includes) -DBUILDING_PHPCXX
+CXXFLAGS_EXTRA  = -Wall -Wextra -Wno-unused-parameter -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -fpic
+LDFLAGS_EXTRA   = $(shell $(PHP_CONFIG) --ldflags) -pthread
 
-SHARED_LIBRARY = .lib/php-cxx.so
-STATIC_LIBRARY = .lib/php-cxx.a
-TESTER         = .lib/php-cxx-test
+SHARED_LIBRARY  = .lib/php-cxx.so
+STATIC_LIBRARY  = .lib/php-cxx.a
+TESTER          = .lib/php-cxx-test
 
-TESTER_LDLIBS  = -lphp7
+TESTER_LDLIBS   = -lphp7
 
-TARGET         = $(SHARED_LIBRARY) $(STATIC_LIBRARY) $(TESTER)
+TARGET          = $(SHARED_LIBRARY) $(STATIC_LIBRARY) $(TESTER)
 
 LIBRARY_CXX_SOURCES = \
-	argument.cpp \
-	extension.cpp \
-	extension_p.cpp \
-	function.cpp \
-	parameters.cpp \
-	phpexception.cpp \
-	value.cpp
+	phpcxx/argument.cpp \
+	phpcxx/extension.cpp \
+	phpcxx/extension_p.cpp \
+	phpcxx/function.cpp \
+	phpcxx/parameters.cpp \
+	phpcxx/phpexception.cpp \
+	phpcxx/value.cpp
 
 ifndef CXXFLAGS
 CXXFLAGS = -O2 -g
@@ -30,7 +31,7 @@ CXXFLAGS_EXTRA += -O0 -coverage
 LDFLAGS_EXTRA  += -coverage
 endif
 
-TESTER_CXX_SOURCES = tester.cpp testsapi.cpp
+TESTER_CXX_SOURCES = test/tester.cpp test/testsapi.cpp
 TESTER_CXX_OBJS    = $(patsubst %.cpp,.build/%.o,$(TESTER_CXX_SOURCES))
 LIBRARY_CXX_OBJS   = $(patsubst %.cpp,.build/%.o,$(LIBRARY_CXX_SOURCES))
 
@@ -42,8 +43,8 @@ COV_GCNO    = $(patsubst %.o,%.gcno,$(OBJS))
 
 all: $(TARGET)
 
-build_directory: .build
-.build:
+build_directory: .build .build/phpcxx .build/test
+.build .build/phpcxx .build/test:
 	mkdir -p "$@"
 
 output_directory: .lib
