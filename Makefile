@@ -30,9 +30,10 @@ LIBRARY_CXX_SOURCES = \
 TESTER_CXX_SOURCES = \
 	test/tester.cpp \
 	test/testsapi.cpp \
-	test/test_lifecycle.cpp
-	
-	
+	test/test_lifecycle.cpp \
+	test/test_value.cpp
+
+
 ### Google Test
 GTEST_DIR  = /usr/src/gtest
 GTEST_SRCS = $(wildcard $(GTEST_DIR)/src/*.cc)
