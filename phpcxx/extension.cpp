@@ -31,12 +31,10 @@ struct _zend_module_entry* phpcxx::Extension::module()
 
 void phpcxx::Extension::registerExtension(phpcxx::Extension& other)
 {
-    zend_module_entry* me = zend_register_internal_module(other.module());
-    if (!me) {
+    int res = zend_startup_module(other.module());
+    if (FAILURE == res) {
         throw std::runtime_error("Failed to register the extension");
     }
-
-    zend_startup_module_ex(me);
 }
 
 void phpcxx::Extension::onModuleInfo()

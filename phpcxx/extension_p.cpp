@@ -1,3 +1,4 @@
+#include <atomic>
 #include <cassert>
 #include <stdexcept>
 #include <unordered_map>
@@ -18,8 +19,9 @@ private:
 #endif
     std::unordered_map<std::string, phpcxx::Extension*> g_name2ext;     ///< Maps extension name to Extension
     std::unordered_map<int, phpcxx::Extension*>         g_id2ext;       ///< Maps extension number to Extension
+    std::atomic<unsigned int>                           g_extensions;
 
-    ExtensionMap() {}
+    ExtensionMap() : g_extensions(0) {}
     ExtensionMap(const ExtensionMap&) = delete;
     ExtensionMap& operator=(const ExtensionMap&) = delete;
 
@@ -78,6 +80,16 @@ public:
 #endif
         this->g_id2ext.clear();
         this->g_name2ext.clear();
+    }
+
+    void onGINIT()
+    {
+        ++this->g_extensions;
+    }
+
+    unsigned int onGSHUTDOWN()
+    {
+        return --this->g_extensions;
     }
 
     /**
@@ -216,11 +228,14 @@ void phpcxx::ExtensionPrivate::moduleInfo(ZEND_MODULE_INFO_FUNC_ARGS)
 
 void phpcxx::ExtensionPrivate::globalsInit(void* g)
 {
+    ExtensionMap::instance().onGINIT();
 }
 
 void phpcxx::ExtensionPrivate::globalsShutdown(void* g)
 {
-    ExtensionMap::instance().clear();
+    if (!ExtensionMap::instance().onGSHUTDOWN()) {
+        ExtensionMap::instance().clear();
+    }
 }
 
 void phpcxx::ExtensionPrivate::doRegisterFunction(const Function& f)
