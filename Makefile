@@ -68,7 +68,7 @@ output_directory: .lib
 .lib:
 	mkdir -p "$@"
 
-$(TESTER): $(TESTER_CXX_OBJS) $(LIBRARY_CXX_OBJS) .build/gtest-all.o | output_directory
+$(TESTER): $(TESTER_CXX_OBJS) $(STATIC_LIBRARY) .build/gtest-all.o | output_directory
 	$(CXX) $(LDFLAGS) $(TESTER_LDFLAGS) $(LDFLAGS_EXTRA) $^ $(TESTER_LDLIBS) $(LDLIBS) -o "$@"
 
 $(SHARED_LIBRARY): $(LIBRARY_CXX_OBJS) | output_directory
