@@ -6,6 +6,8 @@
 #include "phpcxx/module.h"
 #include "testsapi.h"
 
+namespace {
+
 class MyModule : public phpcxx::Module {
 public:
     int module_startup_called   = 0;
@@ -87,6 +89,7 @@ private:
     phpcxx::Module& m_other;
 };
 
+}
 
 TEST(LifecycleTest, NormalRequest)
 {

@@ -31,6 +31,7 @@ TESTER_CXX_SOURCES = \
 	test/tester.cpp \
 	test/testsapi.cpp \
 	test/test_lifecycle.cpp \
+	test/test_moduleglobals.cpp \
 	test/test_value.cpp
 
 
