@@ -1,5 +1,3 @@
-#include <iostream>
-#include <memory>
 #include <sstream>
 #include <string>
 #include <gtest/gtest.h>
@@ -67,6 +65,19 @@ TEST(ModuleGlobalsTest, TestModuleGlobals)
         std::string e = err.str(); err.str("");
         EXPECT_EQ("", e);
         EXPECT_EQ("globalsConstructor\nmoduleStartup\n", o);
+
+        sapi.run([&module]() {
+            MyModuleGlobals* g1 = static_cast<MyModuleGlobals*>(module.globals());
+            MyModuleGlobals* g2 = dynamic_cast<MyModuleGlobals*>(module.globals());
+            ASSERT_TRUE(g1 != nullptr);
+            ASSERT_TRUE(g2 != nullptr);
+            ASSERT_EQ(g1, g2);
+
+            EXPECT_EQ("the fields are white", g1->s());
+            std::string s("the fields are white with harvest in the morning light");
+            g1->setS(s);
+            EXPECT_EQ(s, (static_cast<MyModuleGlobals*>(module.globals()))->s());
+        });
     }
 
     std::string o = out.str(); out.str("");
