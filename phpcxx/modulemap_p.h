@@ -16,7 +16,7 @@ class PHPCXX_HIDDEN ModuleMap {
 public:
     static ModuleMap& instance()
     {
-        thread_local static ModuleMap self;
+        static ModuleMap self;
         return self;
     }
 
