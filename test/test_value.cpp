@@ -1,6 +1,7 @@
 #include <sstream>
 #include <gtest/gtest.h>
 #include "phpcxx/value.h"
+#include "globals.h"
 #include "testsapi.h"
 
 class CommonFixture : public ::testing::Test {
@@ -27,7 +28,7 @@ TEST_F(ValueFixture, Initialization)
         EXPECT_EQ(0, undefined.refCount());
         EXPECT_FALSE(undefined.isReference());
     });
-    EXPECT_TRUE(m_err.str().empty());
+    EXPECT_EQ(m_err.str(), "");
     m_err.str(std::string());
 
     m_sapi.run([]() {
@@ -41,7 +42,7 @@ TEST_F(ValueFixture, Initialization)
         v = nullptr;
         EXPECT_EQ(phpcxx::Type::Null, v.type());
     });
-    EXPECT_TRUE(m_err.str().empty());
+    EXPECT_EQ(m_err.str(), "");
     m_err.str(std::string());
 
     m_sapi.run([]() {
@@ -56,7 +57,7 @@ TEST_F(ValueFixture, Initialization)
         EXPECT_EQ(phpcxx::Type::Integer, v.type());
         EXPECT_EQ(456, v.asLong());
     });
-    EXPECT_TRUE(m_err.str().empty());
+    EXPECT_EQ(m_err.str(), "");
     m_err.str(std::string());
 
     m_sapi.run([]() {
@@ -71,7 +72,7 @@ TEST_F(ValueFixture, Initialization)
         EXPECT_EQ(phpcxx::Type::Integer, v.type());
         EXPECT_EQ(456, v.asLong());
     });
-    EXPECT_TRUE(m_err.str().empty());
+    EXPECT_EQ(m_err.str(), "");
     m_err.str(std::string());
 
     m_sapi.run([]() {
@@ -96,7 +97,7 @@ TEST_F(ValueFixture, Initialization)
         EXPECT_EQ(phpcxx::Type::Double, v.type());
         EXPECT_EQ(456.0, v.asDouble());
     });
-    EXPECT_TRUE(m_err.str().empty());
+    EXPECT_EQ(m_err.str(), "");
     m_err.str(std::string());
 
     m_sapi.run([]() {
@@ -121,7 +122,7 @@ TEST_F(ValueFixture, Initialization)
         EXPECT_EQ("something", v.asString());
         EXPECT_EQ("anything",  w.asString());
     });
-    EXPECT_TRUE(m_err.str().empty());
+    EXPECT_EQ(m_err.str(), "");
     m_err.str(std::string());
 
     m_sapi.run([]() {
@@ -144,7 +145,7 @@ TEST_F(ValueFixture, Initialization)
         EXPECT_EQ(3, b.refCount());
         EXPECT_EQ(3, c.refCount());
     });
-    EXPECT_TRUE(m_err.str().empty());
+    EXPECT_EQ(m_err.str(), "");
     m_err.str(std::string());
 }
 
@@ -216,7 +217,7 @@ TEST_F(ValueFixture, References)
         EXPECT_EQ(6, a.asLong());
         EXPECT_EQ(6, b.asLong());
     });
-    EXPECT_TRUE(m_err.str().empty());
+    EXPECT_EQ(m_err.str(), "");
     m_err.str(std::string());
 
     m_sapi.run([]() {
@@ -245,7 +246,7 @@ TEST_F(ValueFixture, References)
         EXPECT_EQ(1, b.asLong());
         EXPECT_EQ(0, c.asLong());
     });
-    EXPECT_TRUE(m_err.str().empty());
+    EXPECT_EQ(m_err.str(), "");
     m_err.str(std::string());
 
     m_sapi.run([]() {
@@ -278,7 +279,7 @@ TEST_F(ValueFixture, References)
         EXPECT_EQ("s", b.asString());
         EXPECT_EQ("s", c.asString());
     });
-    EXPECT_TRUE(m_err.str().empty());
+    EXPECT_EQ(m_err.str(), "");
     m_err.str(std::string());
 
     m_sapi.run([this]() {
@@ -307,7 +308,7 @@ TEST_F(ValueFixture, References)
             EXPECT_EQ(4, Z_LVAL_P(x));
         }
 
-        EXPECT_TRUE(m_err.str().empty());
+        EXPECT_EQ(m_err.str(), "");
         m_err.str(std::string());
 
         {
@@ -336,7 +337,7 @@ TEST_F(ValueFixture, References)
             EXPECT_EQ(4, Z_LVAL_P(Z_REFVAL_P(x)));
         }
 
-        EXPECT_TRUE(m_err.str().empty());
+        EXPECT_EQ(m_err.str(), "");
         m_err.str(std::string());
         EXPECT_TRUE(m_out.str().empty());
         m_out.str(std::string());
@@ -358,7 +359,7 @@ TEST_F(ValueFixture, Arrays)
         m_out.str(std::string());
         EXPECT_EQ(expected, actual);
     });
-    EXPECT_TRUE(m_err.str().empty());
+    EXPECT_EQ(m_err.str(), "");
     m_err.str(std::string());
 
     m_sapi.run([]() {
@@ -374,7 +375,29 @@ TEST_F(ValueFixture, Arrays)
 
         EXPECT_EQ(phpcxx::Type::Integer, b.type());
         EXPECT_EQ(1, b.asLong());
+        EXPECT_EQ(2, a["a"].asLong());
     });
-    EXPECT_TRUE(m_err.str().empty());
+    EXPECT_EQ(m_err.str(), "");
+    m_err.str(std::string());
+
+    m_sapi.run([]() {
+        phpcxx::ZendString GLOBALS("GLOBALS");
+        phpcxx::ZendString SERVER("_SERVER");
+        zend_is_auto_global(GLOBALS.get());
+        zval* g = zend_hash_find_ind(&EG(symbol_table), GLOBALS.get());
+        ASSERT_TRUE(g != nullptr);
+        EXPECT_TRUE(Z_TYPE_P(g) == IS_ARRAY || (Z_TYPE_P(g) == IS_REFERENCE && Z_TYPE_P(Z_REFVAL_P(g)) == IS_ARRAY));
+
+        phpcxx::Value globals(g);
+
+        runPhpCode("global $a; $a = 14;");
+        phpcxx::Value& a = globals["a"];
+        EXPECT_EQ(14, a.asLong());
+
+        zend_is_auto_global(SERVER.get());
+        phpcxx::Value server(&PG(http_globals)[TRACK_VARS_SERVER]);
+        EXPECT_EQ(phpcxx::Type::Array, server.type());
+    });
+    EXPECT_EQ(m_err.str(), "");
     m_err.str(std::string());
 }
