@@ -5,7 +5,7 @@
 #include <Zend/zend_exceptions.h>
 #include <cstring>
 #include <vector>
-#include "phpcxx/extension.h"
+#include "phpcxx/module.h"
 #include "testsapi.h"
 
 namespace {
@@ -36,7 +36,7 @@ class SAPIGlobals {
 public:
     std::ostream* out;
     std::ostream* err;
-    std::vector<zend_module_entry> exts;
+    std::vector<zend_module_entry> mods;
 
     sapi_module_struct sapi = {
         (char*)"test",
@@ -92,7 +92,7 @@ private:
 static int sapi_startup(sapi_module_struct* sapi_module)
 {
     SAPIGlobals& g = SAPIGlobals::instance();
-    return php_module_startup(sapi_module, g.exts.data(), g.exts.size());
+    return php_module_startup(sapi_module, g.mods.data(), g.mods.size());
 }
 
 static int sapi_activate()
@@ -158,7 +158,7 @@ TestSAPI::~TestSAPI()
     ::sapi_shutdown();
 
     SAPIGlobals& g = SAPIGlobals::instance();
-    g.exts.clear();
+    g.mods.clear();
 
 #ifdef ZTS
     tsrm_shutdown();
@@ -183,11 +183,11 @@ void TestSAPI::initialize()
     }
 }
 
-void TestSAPI::addExtension(phpcxx::Extension& ext)
+void TestSAPI::addModule(phpcxx::Module& ext)
 {
     if (!this->m_initialized) {
         SAPIGlobals& g = SAPIGlobals::instance();
-        g.exts.push_back(*ext.module());
+        g.mods.push_back(*ext.module());
     }
 }
 

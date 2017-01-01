@@ -20,9 +20,9 @@ TARGET          = $(SHARED_LIBRARY) $(STATIC_LIBRARY) $(TESTER)
 
 LIBRARY_CXX_SOURCES = \
 	phpcxx/argument.cpp \
-	phpcxx/extension.cpp \
-	phpcxx/extension_p.cpp \
 	phpcxx/function.cpp \
+	phpcxx/module.cpp \
+	phpcxx/module_p.cpp \
 	phpcxx/parameters.cpp \
 	phpcxx/phpexception.cpp \
 	phpcxx/value.cpp

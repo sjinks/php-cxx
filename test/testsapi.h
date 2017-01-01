@@ -5,7 +5,7 @@
 #include <functional>
 
 namespace phpcxx {
-class Extension;
+class Module;
 }
 
 class TestSAPI {
@@ -14,7 +14,7 @@ public:
     ~TestSAPI();
 
     void initialize();
-    void addExtension(phpcxx::Extension& ext);
+    void addModule(phpcxx::Module& ext);
     void run(std::function<void(void)> callback);
 
     [[gnu::nonnull]] void setOutputStream(std::ostream* os);

@@ -3,82 +3,94 @@
 #include <sstream>
 #include <gtest/gtest.h>
 #include <Zend/zend.h>
-#include "phpcxx/extension.h"
+#include "phpcxx/module.h"
 #include "testsapi.h"
 
-class MyExtension : public phpcxx::Extension {
+class MyModule : public phpcxx::Module {
 public:
     int module_startup_called   = 0;
     int module_shutdown_called  = 0;
     int request_startup_called  = 0;
     int request_shutdown_called = 0;
 
-    using phpcxx::Extension::Extension;
+    using phpcxx::Module::Module;
 
 protected:
-    virtual void onModuleStartup() override
+    virtual bool moduleStartup() override
     {
         ++this->module_startup_called;
+        return true;
     }
 
-    virtual void onModuleShutdown() override
+    virtual bool moduleShutdown() override
     {
         ++this->module_shutdown_called;
+        return true;
     }
 
-    virtual void onRequestStartup() override
+    virtual bool requestStartup() override
     {
         ++this->request_startup_called;
+        return true;
     }
 
-    virtual void onRequestShutdown() override
+    virtual bool requestShutdown() override
     {
         ++this->request_shutdown_called;
+        return true;
     }
 };
 
-class LoadOtherExtension : public phpcxx::Extension {
+class LoadOtherModule : public phpcxx::Module {
 public:
     int module_startup_called   = 0;
     int module_shutdown_called  = 0;
     int request_startup_called  = 0;
     int request_shutdown_called = 0;
 
-    LoadOtherExtension(const char* name, const char* version, phpcxx::Extension& other)
-        : phpcxx::Extension(name, version), m_other(other)
+    LoadOtherModule(const char* name, const char* version, phpcxx::Module& other)
+        : phpcxx::Module(name, version), m_other(other)
     {
     }
 
 protected:
-    virtual void onModuleStartup() override
+    virtual bool moduleStartup() override
     {
         ++this->module_startup_called;
-        this->registerExtension(this->m_other);
+        return true;
     }
 
-    virtual void onModuleShutdown() override
+    virtual bool moduleShutdown() override
     {
         ++this->module_shutdown_called;
+        return true;
     }
 
-    virtual void onRequestStartup() override
+    virtual bool requestStartup() override
     {
         ++this->request_startup_called;
+        return true;
     }
 
-    virtual void onRequestShutdown() override
+    virtual bool requestShutdown() override
     {
         ++this->request_shutdown_called;
+        return true;
+    }
+
+    virtual std::vector<Module*> otherModules() override
+    {
+        return { &this->m_other };
     }
 
 private:
-    phpcxx::Extension& m_other;
+    phpcxx::Module& m_other;
 };
 
 
 TEST(LifecycleTest, NormalRequest)
 {
-    MyExtension ext("LifeCycle", "0.0");
+    MyModule ext("LifeCycle", "0.0");
 
     EXPECT_EQ(0, ext.module_startup_called);
     EXPECT_EQ(0, ext.module_shutdown_called);
@@ -87,7 +99,7 @@ TEST(LifecycleTest, NormalRequest)
 
     {
         TestSAPI sapi(std::cout, std::cerr);
-        sapi.addExtension(ext);
+        sapi.addModule(ext);
 
         sapi.initialize();
         EXPECT_EQ(1, ext.module_startup_called);
@@ -116,7 +128,7 @@ TEST(LifecycleTest, NormalRequest)
 
 TEST(LifecycleTest, ErroredRequest)
 {
-    MyExtension ext("LifeCycle", "0.0");
+    MyModule ext("LifeCycle", "0.0");
 
     EXPECT_EQ(0, ext.module_startup_called);
     EXPECT_EQ(0, ext.module_shutdown_called);
@@ -128,7 +140,7 @@ TEST(LifecycleTest, ErroredRequest)
 
     {
         TestSAPI sapi(out, err);
-        sapi.addExtension(ext);
+        sapi.addModule(ext);
 
         sapi.initialize();
         EXPECT_EQ(1, ext.module_startup_called);
@@ -163,7 +175,7 @@ TEST(LifecycleTest, ErroredRequest)
 
 TEST(LifecycleTest, MultipleRequests)
 {
-    MyExtension ext("LifeCycle", "0.0");
+    MyModule ext("LifeCycle", "0.0");
 
     EXPECT_EQ(0, ext.module_startup_called);
     EXPECT_EQ(0, ext.module_shutdown_called);
@@ -173,7 +185,7 @@ TEST(LifecycleTest, MultipleRequests)
 
     {
         TestSAPI sapi(std::cout, std::cerr);
-        sapi.addExtension(ext);
+        sapi.addModule(ext);
 
         sapi.initialize();
         EXPECT_EQ(1, ext.module_startup_called);
@@ -205,12 +217,12 @@ TEST(LifecycleTest, MultipleRequests)
 TEST(LifecycleTest, AdditionalModule)
 {
     {
-        MyExtension ext2("LifeCycle2", "0.0");
-        LoadOtherExtension ext1("LifeCycle1", "0.0", ext2);
+        MyModule ext2("LifeCycle2", "0.0");
+        LoadOtherModule ext1("LifeCycle1", "0.0", ext2);
 
         {
             TestSAPI sapi(std::cout, std::cerr);
-            sapi.addExtension(ext1);
+            sapi.addModule(ext1);
 
             sapi.initialize();
             EXPECT_EQ(1, ext1.module_startup_called);
@@ -226,37 +238,37 @@ TEST(LifecycleTest, AdditionalModule)
         EXPECT_EQ(1, ext2.module_shutdown_called);
     }
 
-    {
-        MyExtension ext1("LifeCycle1", "0.0");
-        MyExtension ext2("LifeCycle2", "0.0");
-
-        {
-            TestSAPI sapi(std::cout, std::cerr);
-            sapi.addExtension(ext1);
-
-            sapi.initialize();
-            ext1.registerExtension(ext2);
-            EXPECT_EQ(1, ext1.module_startup_called);
-            EXPECT_EQ(1, ext2.module_startup_called);
-
-            sapi.run([&ext1, &ext2]() {
-                EXPECT_EQ(1, ext1.request_startup_called);
-                // When a module is loaded after MINIT phase,
-                // its request startup / shutdown functions
-                // do not get registered
-                // However, I would prefer not to rely upon
-                // this behavior
-                // EXPECT_EQ(0, ext2.request_startup_called);
-            });
-
-            sapi.run([&ext1, &ext2]() {
-                EXPECT_EQ(2, ext1.request_startup_called);
-                // See above
-                // EXPECT_EQ(0, ext2.request_startup_called);
-            });
-        }
-
-        EXPECT_EQ(1, ext1.module_shutdown_called);
-        EXPECT_EQ(1, ext2.module_shutdown_called);
-    }
+//    {
+//        MyModule ext1("LifeCycle1", "0.0");
+//        MyModule ext2("LifeCycle2", "0.0");
+//
+//        {
+//            TestSAPI sapi(std::cout, std::cerr);
+//            sapi.addModule(ext1);
+//
+//            sapi.initialize();
+//            ext1.registerExtension(ext2);
+//            EXPECT_EQ(1, ext1.module_startup_called);
+//            EXPECT_EQ(1, ext2.module_startup_called);
+//
+//            sapi.run([&ext1, &ext2]() {
+//                EXPECT_EQ(1, ext1.request_startup_called);
+//                // When a module is loaded after MINIT phase,
+//                // its request startup / shutdown functions
+//                // do not get registered
+//                // However, I would prefer not to rely upon
+//                // this behavior
+//                // EXPECT_EQ(0, ext2.request_startup_called);
+//            });
+//
+//            sapi.run([&ext1, &ext2]() {
+//                EXPECT_EQ(2, ext1.request_startup_called);
+//                // See above
+//                // EXPECT_EQ(0, ext2.request_startup_called);
+//            });
+//        }
+//
+//        EXPECT_EQ(1, ext1.module_shutdown_called);
+//        EXPECT_EQ(1, ext2.module_shutdown_called);
+//    }
 }
