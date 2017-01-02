@@ -298,6 +298,42 @@ TEST_F(ValueFixture, Initialization)
         EXPECT_FALSE(c.isReference());
         EXPECT_FALSE(d.isReference());
     });
+
+    m_sapi.run([]() {
+        phpcxx::Value a = "string";
+        phpcxx::Value b = a;
+            EXPECT_EQ(2, a.refCount());
+            EXPECT_EQ(2, b.refCount());
+        phpcxx::Value c(a, phpcxx::CopyPolicy::Reference);
+            EXPECT_EQ(2, a.refCount());
+            EXPECT_EQ(2, b.refCount());
+            EXPECT_EQ(2, c.refCount());
+        phpcxx::Value d = a;
+
+        EXPECT_EQ(2, a.refCount());
+        EXPECT_EQ(3, b.refCount());
+        EXPECT_EQ(2, c.refCount());
+        EXPECT_EQ(3, d.refCount());
+
+        EXPECT_TRUE(a.isReference());
+        EXPECT_FALSE(b.isReference());
+        EXPECT_TRUE(c.isReference());
+        EXPECT_FALSE(d.isReference());
+
+        b = "STRING";
+        EXPECT_EQ(2, a.refCount());
+        EXPECT_EQ(1, b.refCount());
+        EXPECT_EQ(2, c.refCount());
+        EXPECT_EQ(2, d.refCount());
+        EXPECT_EQ(a, c);
+
+        a = "String";
+        EXPECT_EQ(2, a.refCount());
+        EXPECT_EQ(1, b.refCount());
+        EXPECT_EQ(2, c.refCount());
+        EXPECT_EQ(1, d.refCount());
+        EXPECT_EQ(a, c);
+    });
 }
 
 TEST_F(ValueFixture, References)
