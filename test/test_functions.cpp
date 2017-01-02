@@ -48,10 +48,15 @@ protected:
 private:
     static void func1()
     {
+        php_printf("%s\n", "func1");
     }
 
     static void func2(phpcxx::Parameters& p)
     {
+        if (p.count() > 0) {
+            phpcxx::Value a = p[0];
+            php_printf("func2: a = %s\n", a.toString().c_str());
+        }
     }
 
     static phpcxx::Value func3()
@@ -67,21 +72,19 @@ private:
 
 }
 
-
 TEST(FunctionsTest, TestDefinitions)
 {
     MyModule module("Functions", "0.0");
 
     std::stringstream out;
     std::stringstream err;
+    std::string o;
+    std::string e;
 
     {
         TestSAPI sapi(out, err);
         sapi.addModule(module);
         sapi.initialize();
-
-        std::string o;
-        std::string e;
 
         sapi.run([&out, &err, &o, &e]() {
             zval res;
@@ -163,10 +166,59 @@ TEST(FunctionsTest, TestDefinitions)
             EXPECT_EQ("func4\n1\n0\n0\n\na  1 1\n", o);
             EXPECT_EQ("", e);
         });
+    }
+
+    o = out.str(); out.str(std::string());
+    e = err.str(); err.str(std::string());
+    EXPECT_EQ("", o);
+    EXPECT_EQ("", e);
+}
+
+template<typename... Params>
+phpcxx::Value call(const char* name, Params&&... p)
+{
+    phpcxx::Value f(name);
+    return f(std::forward<Params>(p)...);
+}
+
+TEST(FunctionsTest, TestSimpleCalls)
+{
+    MyModule module("Functions", "0.0");
+
+    std::stringstream out;
+    std::stringstream err;
+    std::string o;
+    std::string e;
+
+    {
+        TestSAPI sapi(out, err);
+        sapi.addModule(module);
+        sapi.initialize();
+
+        std::string o;
+        std::string e;
+
+        sapi.run([&out, &err, &o, &e]() {
+            call("func1");
+        });
 
         o = out.str(); out.str(std::string());
         e = err.str(); err.str(std::string());
-        EXPECT_EQ("", o);
+        EXPECT_EQ("func1\n", o);
+        EXPECT_EQ("", e);
+
+        sapi.run([&out, &err, &o, &e]() {
+            call("func2", 44);
+        });
+
+        o = out.str(); out.str(std::string());
+        e = err.str(); err.str(std::string());
+        EXPECT_EQ("func2: a = 44\n", o);
         EXPECT_EQ("", e);
     }
+
+    o = out.str(); out.str(std::string());
+    e = err.str(); err.str(std::string());
+    EXPECT_EQ("", o);
+    EXPECT_EQ("", e);
 }
