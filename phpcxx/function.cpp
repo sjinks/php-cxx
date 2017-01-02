@@ -13,18 +13,21 @@ phpcxx::Function::~Function()
 
 phpcxx::Function&& phpcxx::Function::addRequiredArgument(const Argument& arg)
 {
-    auto& nreq = this->d_ptr->m_fe.num_args;
-    auto& args = this->d_ptr->m_arginfo;
-    args.insert(args.begin() + nreq + 1, arg.get());
-    ++nreq;
+    auto& args           = this->d_ptr->m_arginfo;
+    zend_uintptr_t* nreq = reinterpret_cast<zend_uintptr_t*>(&args[0].name);
+    args.insert(args.begin() + *nreq + 1, arg.get());
+    ++(*nreq);
+    ++this->d_ptr->m_fe.num_args;
     this->d_ptr->m_fe.arg_info = args.data();
     return std::move(*this);
 }
 
 phpcxx::Function&& phpcxx::Function::addOptionalArgument(const Argument& arg)
 {
-    this->d_ptr->m_arginfo.push_back(arg.get());
-    this->d_ptr->m_fe.arg_info = this->d_ptr->m_arginfo.data();
+    auto& args = this->d_ptr->m_arginfo;
+    args.push_back(arg.get());
+    ++this->d_ptr->m_fe.num_args;
+    this->d_ptr->m_fe.arg_info = args.data();
     return std::move(*this);
 }
 

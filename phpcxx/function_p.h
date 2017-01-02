@@ -20,11 +20,11 @@ public:
 
         this->m_fe.fname    = name ? name : "";
         this->m_fe.handler  = c;
-        this->m_fe.num_args = required.size();
+        this->m_fe.num_args = required.size() + optional.size();
         this->m_fe.flags    = 0;
 
         zend_internal_arg_info f;
-        f.name        = reinterpret_cast<const char*>(static_cast<zend_uintptr_t>(this->m_fe.num_args));
+        f.name        = reinterpret_cast<const char*>(static_cast<zend_uintptr_t>(required.size()));
         f.class_name  = nullptr;
         f.type_hint   = IS_UNDEF;
         f.pass_by_reference = byRef;
