@@ -37,14 +37,20 @@ phpcxx::ModulePrivate::~ModulePrivate()
 
 zend_module_entry* phpcxx::ModulePrivate::module()
 {
+    static zend_function_entry empty;
+    assert(empty.fname == nullptr && empty.handler == nullptr && empty.arg_info == nullptr);
+
     if (!this->entry.functions) {
-        std::vector<Function> funcs = this->q_ptr->functions();
-        this->m_funcs.reserve(funcs.size());
-        for (auto&& f : funcs) {
-            this->m_funcs.push_back(f.getFE());
+        this->m_funcs = this->q_ptr->functions();
+        this->m_zf.reset(new zend_function_entry[this->m_funcs.size()+1]);
+        zend_function_entry* ptr = this->m_zf.get();
+
+        for (auto&& f : this->m_funcs) {
+            *ptr++ = f.getFE();
         }
 
-        this->entry.functions = this->m_funcs.data();
+        *ptr = empty;
+        this->entry.functions = this->m_zf.get();
     }
 
     return &this->entry;
