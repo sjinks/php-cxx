@@ -17,7 +17,7 @@ class ModulePrivate;
 
 class PHPCXX_EXPORT Module {
 public:
-    [[gnu::nonnull(1)]] Module(const char* name, const char* version);
+    [[gnu::nonnull(2 /* name */)]] Module(const char* name, const char* version);
     virtual ~Module();
 
     struct _zend_module_entry* module();

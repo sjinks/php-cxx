@@ -21,7 +21,7 @@ class Module;
 
 class PHPCXX_HIDDEN ModulePrivate {
 public:
-    [[gnu::nonnull(1,2)]] ModulePrivate(Module* const q, const char* name, const char* version);
+    [[gnu::nonnull(2,3)]] ModulePrivate(Module* const q, const char* name, const char* version); // implicit first argument - `this`
     ~ModulePrivate();
 
     ModuleGlobals* globals()
