@@ -34,7 +34,8 @@ TESTER_CXX_SOURCES = \
 	test/test_lifecycle.cpp \
 	test/test_moduleglobals.cpp \
 	test/test_constants.cpp \
-	test/test_value.cpp
+	test/test_value.cpp \
+	test/test_functions.cpp
 
 
 ### Google Test
