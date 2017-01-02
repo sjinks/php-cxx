@@ -83,6 +83,7 @@ public:
         ZVAL_COPY(&this->m_z, z);
     }
 
+    /// TODO: policy = CopyPolicy::Wrap is asking for trouble
     Value(Value& other, CopyPolicy policy)
         : Value(&other.m_z, policy)
     {

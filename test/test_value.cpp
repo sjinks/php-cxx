@@ -147,6 +147,24 @@ TEST_F(ValueFixture, Initialization)
     });
     EXPECT_EQ(m_err.str(), "");
     m_err.str(std::string());
+
+    m_sapi.run([]() {
+        phpcxx::Value a = "somestring";
+        phpcxx::Value b(a, phpcxx::CopyPolicy::Assign);
+        phpcxx::Value c(a, phpcxx::CopyPolicy::Copy);
+        phpcxx::Value d(a, phpcxx::CopyPolicy::Reference);
+
+        EXPECT_EQ("somestring", a.toString());
+        EXPECT_EQ("somestring", b.toString());
+        EXPECT_EQ("somestring", c.toString());
+        EXPECT_EQ("somestring", d.toString());
+
+        a = "otherstring";
+        EXPECT_EQ("otherstring", a.toString());
+        EXPECT_EQ("somestring",  b.toString());
+        EXPECT_EQ("somestring",  c.toString());
+        EXPECT_EQ("otherstring", d.toString());
+    });
 }
 
 TEST_F(ValueFixture, References)
