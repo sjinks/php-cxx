@@ -61,6 +61,7 @@ TEST(ConstantsTest, TestConstants)
         zval* nc  = zend_get_constant_str(ZEND_STRL("NULL_CONST"));
         zval* sc1 = zend_get_constant_str(ZEND_STRL("STRING_CONST"));
         zval* sc2 = zend_get_constant_str(ZEND_STRL("STRING_CONST2"));
+        zval* uc  = zend_get_constant_str(ZEND_STRL("NOT_USED_CONSTANT"));
 
         ASSERT_TRUE(bc  != nullptr);
         ASSERT_TRUE(ic  != nullptr);
@@ -70,6 +71,7 @@ TEST(ConstantsTest, TestConstants)
         ASSERT_TRUE(nc  != nullptr);
         ASSERT_TRUE(sc1 != nullptr);
         ASSERT_TRUE(sc2  != nullptr);
+        EXPECT_EQ(uc, nullptr);
 
         EXPECT_EQ(IS_TRUE,   Z_TYPE_P(bc));
 
