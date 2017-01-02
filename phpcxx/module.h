@@ -10,6 +10,7 @@ struct _zend_module_entry;
 
 namespace phpcxx {
 
+class Constant;
 class Function;
 class ModuleGlobals;
 class ModulePrivate;
@@ -32,13 +33,13 @@ protected:
     virtual void moduleInfo();
 
     void registerModuleDependencies();
-    void registerConstants();
     void registerClasses();
     void registerIniEntries();
     void registerModules();
 
     virtual std::vector<Module*> otherModules();
     virtual std::vector<Function> functions();
+    virtual std::vector<Constant> constants();
 
 private:
     friend class ModulePrivate;

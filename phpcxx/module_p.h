@@ -70,6 +70,7 @@ private:
     static void moduleInfo(ZEND_MODULE_INFO_FUNC_ARGS);
 
     void registerOtherModules();
+    void registerConstants();
 };
 
 }

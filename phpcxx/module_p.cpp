@@ -1,3 +1,4 @@
+#include "constant.h"
 #include "function.h"
 #include "module.h"
 #include "module_p.h"
@@ -65,8 +66,8 @@ int phpcxx::ModulePrivate::moduleStartup(INIT_FUNC_ARGS)
         e->phpcxx_globals.globals = e->q_ptr->globalsConstructor();
 #endif
 //        e->registerIniEntries();
-//        e->registerConstants();
 //        e->registerClasses();
+        e->registerConstants();
         e->registerOtherModules();
 
         try {
@@ -162,5 +163,18 @@ void phpcxx::ModulePrivate::registerOtherModules()
     for (auto&& m : others) {
         /// TODO check if return value is SUCCESS
         zend_startup_module(m->module());
+    }
+}
+
+void phpcxx::ModulePrivate::registerConstants()
+{
+    std::vector<phpcxx::Constant> constants = std::move(this->q_ptr->constants());
+    for (auto&& c : constants) {
+        zend_constant& zc = c.get();
+        zc.module_number  = this->entry.module_number;
+        if (FAILURE == zend_register_constant(&zc)) {
+            // Zend calls zend_string_release() for constant name upon failure
+            zval_ptr_dtor(&zc.value);
+        }
     }
 }

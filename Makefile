@@ -20,6 +20,7 @@ TARGET          = $(SHARED_LIBRARY) $(STATIC_LIBRARY) $(TESTER)
 
 LIBRARY_CXX_SOURCES = \
 	phpcxx/argument.cpp \
+	phpcxx/constant.cpp \
 	phpcxx/function.cpp \
 	phpcxx/module.cpp \
 	phpcxx/module_p.cpp \
@@ -32,6 +33,7 @@ TESTER_CXX_SOURCES = \
 	test/testsapi.cpp \
 	test/test_lifecycle.cpp \
 	test/test_moduleglobals.cpp \
+	test/test_constants.cpp \
 	test/test_value.cpp
 
 

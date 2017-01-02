@@ -1,3 +1,4 @@
+#include "constant.h"
 #include "function.h"
 #include "module.h"
 #include "module_p.h"
@@ -40,10 +41,6 @@ void phpcxx::Module::registerModuleDependencies()
 {
 }
 
-void phpcxx::Module::registerConstants()
-{
-}
-
 void phpcxx::Module::registerClasses()
 {
 }
@@ -64,4 +61,9 @@ std::vector<phpcxx::Module*> phpcxx::Module::otherModules()
 std::vector<phpcxx::Function> phpcxx::Module::functions()
 {
     return std::vector<phpcxx::Function>();
+}
+
+std::vector<phpcxx::Constant> phpcxx::Module::constants()
+{
+    return std::vector<phpcxx::Constant>();
 }
