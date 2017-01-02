@@ -27,7 +27,10 @@ protected:
         phpcxx::Constant string_const("STRING_CONST", "string");
         phpcxx::Constant string_const2("STRING_CONST2", std::string("std::string"));
 
-        return { bool_const, int_const, long_const, double_const, float_const, null_const, string_const, string_const2 };
+        phpcxx::Constant not_used("NOT_USED_CONSTANT", "if a constant is not registered, it should not cause a memory leak");
+        phpcxx::Constant duplicate("STRING_CONST", "a duplicate constant should not cause memory leak");
+
+        return { bool_const, int_const, long_const, double_const, float_const, null_const, string_const, string_const2, duplicate };
     }
 };
 
@@ -37,10 +40,18 @@ TEST(ConstantsTest, TestConstants)
 {
     MyModule module("Constants", "0.0");
 
+    std::stringstream out;
+    std::stringstream err;
+
     {
-        TestSAPI sapi(std::cout, std::cerr);
+        TestSAPI sapi(out, err);
         sapi.addModule(module);
         sapi.initialize();
+
+        std::string o = out.str(); out.str("");
+        std::string e = err.str(); err.str("");
+        EXPECT_NE(std::string::npos, e.find("Constant STRING_CONST already defined"));
+        EXPECT_EQ("", o);
 
         zval* bc  = zend_get_constant_str(ZEND_STRL("BOOL_CONST"));
         zval* ic  = zend_get_constant_str(ZEND_STRL("INT_CONST"));
@@ -61,19 +72,28 @@ TEST(ConstantsTest, TestConstants)
         ASSERT_TRUE(sc2  != nullptr);
 
         EXPECT_EQ(IS_TRUE,   Z_TYPE_P(bc));
+
         EXPECT_EQ(IS_LONG,   Z_TYPE_P(ic));
         EXPECT_EQ(IS_LONG,   Z_TYPE_P(lc));
+        EXPECT_EQ(10,        Z_LVAL_P(ic));
+        EXPECT_EQ(100,       Z_LVAL_P(lc));
+
         EXPECT_EQ(IS_DOUBLE, Z_TYPE_P(dc));
         EXPECT_EQ(IS_DOUBLE, Z_TYPE_P(fc));
-        EXPECT_EQ(IS_NULL,   Z_TYPE_P(nc));
-        EXPECT_EQ(IS_STRING, Z_TYPE_P(sc1));
-        EXPECT_EQ(IS_STRING, Z_TYPE_P(sc2));
+        EXPECT_EQ(200,       Z_DVAL_P(dc));
+        EXPECT_EQ(300,       Z_DVAL_P(fc));
 
-        EXPECT_EQ(10,    Z_LVAL_P(ic));
-        EXPECT_EQ(100,   Z_LVAL_P(lc));
-        EXPECT_EQ(200,   Z_DVAL_P(dc));
-        EXPECT_EQ(300,   Z_DVAL_P(fc));
+        EXPECT_EQ(IS_NULL,   Z_TYPE_P(nc));
+
+        ASSERT_EQ(IS_STRING, Z_TYPE_P(sc1));
+        ASSERT_EQ(IS_STRING, Z_TYPE_P(sc2));
 
         EXPECT_STREQ(Z_STRVAL_P(sc1), "string");
+        EXPECT_STREQ(Z_STRVAL_P(sc2), "std::string");
     }
+
+    std::string o = out.str(); out.str("");
+    std::string e = err.str(); err.str("");
+    EXPECT_EQ("", o);
+    EXPECT_EQ("", e);
 }
