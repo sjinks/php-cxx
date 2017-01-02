@@ -34,7 +34,7 @@ protected:
         return new MyModuleGlobals();
     }
 
-    virtual void globalsDestructor(phpcxx::ModuleGlobals* g)
+    virtual void globalsDestructor(phpcxx::ModuleGlobals* g) override
     {
         sapi_module.ub_write(ZEND_STRL("globalsDestructor\n"));
         phpcxx::Module::globalsDestructor(g);
