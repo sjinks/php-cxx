@@ -150,20 +150,153 @@ TEST_F(ValueFixture, Initialization)
 
     m_sapi.run([]() {
         phpcxx::Value a = "somestring";
+            EXPECT_EQ(1, a.refCount());
         phpcxx::Value b(a, phpcxx::CopyPolicy::Assign);
+            EXPECT_EQ(2, a.refCount());
+            EXPECT_EQ(2, b.refCount());
         phpcxx::Value c(a, phpcxx::CopyPolicy::Copy);
+            EXPECT_EQ(3, a.refCount());
+            EXPECT_EQ(3, b.refCount());
+            EXPECT_EQ(3, c.refCount());
+            EXPECT_FALSE(a.isReference());
+            EXPECT_FALSE(b.isReference());
+            EXPECT_FALSE(c.isReference());
         phpcxx::Value d(a, phpcxx::CopyPolicy::Reference);
+            EXPECT_TRUE(a.isReference());
+            EXPECT_TRUE(d.isReference());
+            EXPECT_EQ(2, a.refCount());
+            EXPECT_EQ(2, d.refCount());
+            EXPECT_EQ(3, b.refCount());
+            EXPECT_EQ(3, c.refCount());
+        phpcxx::Value e(a, phpcxx::CopyPolicy::Duplicate);
 
-        EXPECT_EQ("somestring", a.toString());
-        EXPECT_EQ("somestring", b.toString());
-        EXPECT_EQ("somestring", c.toString());
-        EXPECT_EQ("somestring", d.toString());
+        EXPECT_TRUE(a.isReference());
+        EXPECT_FALSE(b.isReference());
+        EXPECT_FALSE(c.isReference());
+        EXPECT_TRUE(d.isReference());
+        EXPECT_TRUE(e.isReference());
+        EXPECT_EQ(3, a.refCount());
+        EXPECT_EQ(3, b.refCount());
+        EXPECT_EQ(3, c.refCount());
+        EXPECT_EQ(3, d.refCount());
+        EXPECT_EQ(3, e.refCount());
+
+        EXPECT_EQ("somestring",  a.toString());
+        EXPECT_EQ("somestring",  b.toString());
+        EXPECT_EQ("somestring",  c.toString());
+        EXPECT_EQ("somestring",  d.toString());
+        EXPECT_EQ("somestring",  e.toString());
 
         a = "otherstring";
         EXPECT_EQ("otherstring", a.toString());
         EXPECT_EQ("somestring",  b.toString());
         EXPECT_EQ("somestring",  c.toString());
         EXPECT_EQ("otherstring", d.toString());
+        EXPECT_EQ("otherstring", e.toString());
+
+        EXPECT_TRUE(a.isReference());
+        EXPECT_FALSE(b.isReference());
+        EXPECT_FALSE(c.isReference());
+        EXPECT_TRUE(d.isReference());
+        EXPECT_TRUE(e.isReference());
+        EXPECT_EQ(3, a.refCount());
+        EXPECT_EQ(2, b.refCount());
+        EXPECT_EQ(2, c.refCount());
+        EXPECT_EQ(3, d.refCount());
+        EXPECT_EQ(3, e.refCount());
+
+        a = 1;
+        EXPECT_EQ("1",           a.toString());
+        EXPECT_EQ("somestring",  b.toString());
+        EXPECT_EQ("somestring",  c.toString());
+        EXPECT_EQ("1",           d.toString());
+        EXPECT_EQ("1",           e.toString());
+
+        EXPECT_TRUE(a.isReference());
+        EXPECT_FALSE(b.isReference());
+        EXPECT_FALSE(c.isReference());
+        EXPECT_TRUE(d.isReference());
+        EXPECT_TRUE(e.isReference());
+        EXPECT_EQ(3, a.refCount());
+        EXPECT_EQ(2, b.refCount());
+        EXPECT_EQ(2, c.refCount());
+        EXPECT_EQ(3, d.refCount());
+        EXPECT_EQ(3, e.refCount());
+
+        a = 2;
+        EXPECT_EQ("2",           a.toString());
+        EXPECT_EQ("somestring",  b.toString());
+        EXPECT_EQ("somestring",  c.toString());
+        EXPECT_EQ("2",           d.toString());
+        EXPECT_EQ("2",           e.toString());
+
+        EXPECT_TRUE(a.isReference());
+        EXPECT_FALSE(b.isReference());
+        EXPECT_FALSE(c.isReference());
+        EXPECT_TRUE(d.isReference());
+        EXPECT_TRUE(e.isReference());
+        EXPECT_EQ(3, a.refCount());
+        EXPECT_EQ(2, b.refCount());
+        EXPECT_EQ(2, c.refCount());
+        EXPECT_EQ(3, d.refCount());
+        EXPECT_EQ(3, e.refCount());
+    });
+
+    m_sapi.run([]() {
+        phpcxx::Value a = "somestring";
+            EXPECT_EQ(1, a.refCount());
+        phpcxx::Value b(a, phpcxx::CopyPolicy::Assign);
+            EXPECT_EQ(2, a.refCount());
+            EXPECT_EQ(2, b.refCount());
+        phpcxx::Value c(a, phpcxx::CopyPolicy::Copy);
+            EXPECT_EQ(3, a.refCount());
+            EXPECT_EQ(3, b.refCount());
+            EXPECT_EQ(3, c.refCount());
+        phpcxx::Value d(a, phpcxx::CopyPolicy::Duplicate);
+
+        EXPECT_EQ(3, a.refCount());
+        EXPECT_EQ(3, b.refCount());
+        EXPECT_EQ(3, c.refCount());
+        EXPECT_EQ(1, d.refCount());
+        EXPECT_FALSE(a.isReference());
+        EXPECT_FALSE(b.isReference());
+        EXPECT_FALSE(c.isReference());
+        EXPECT_FALSE(d.isReference());
+
+        EXPECT_EQ("somestring",  a.toString());
+        EXPECT_EQ("somestring",  b.toString());
+        EXPECT_EQ("somestring",  c.toString());
+        EXPECT_EQ("somestring",  d.toString());
+
+        a = "otherstring";
+        EXPECT_EQ("otherstring", a.toString());
+        EXPECT_EQ("somestring",  b.toString());
+        EXPECT_EQ("somestring",  c.toString());
+        EXPECT_EQ("somestring",  d.toString());
+
+        EXPECT_EQ(1, a.refCount());
+        EXPECT_EQ(2, b.refCount());
+        EXPECT_EQ(2, c.refCount());
+        EXPECT_EQ(1, d.refCount());
+        EXPECT_FALSE(a.isReference());
+        EXPECT_FALSE(b.isReference());
+        EXPECT_FALSE(c.isReference());
+        EXPECT_FALSE(d.isReference());
+
+        a = 1;
+        EXPECT_EQ("1",           a.toString());
+        EXPECT_EQ("somestring",  b.toString());
+        EXPECT_EQ("somestring",  c.toString());
+        EXPECT_EQ("somestring",  d.toString());
+
+        EXPECT_EQ(0, a.refCount());
+        EXPECT_EQ(2, b.refCount());
+        EXPECT_EQ(2, c.refCount());
+        EXPECT_EQ(1, d.refCount());
+        EXPECT_FALSE(a.isReference());
+        EXPECT_FALSE(b.isReference());
+        EXPECT_FALSE(c.isReference());
+        EXPECT_FALSE(d.isReference());
     });
 }
 
