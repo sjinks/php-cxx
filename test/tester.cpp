@@ -15,6 +15,13 @@ void runPhpCode(const phpcxx::string& code)
     efree(desc);
 }
 
+void runPhpCode(const phpcxx::string& code, zval& retval)
+{
+    char* desc = zend_make_compiled_string_description("eval'd code");
+    zend_eval_stringl_ex(const_cast<char*>(code.c_str()), code.size(), &retval, desc, 1);
+    efree(desc);
+}
+
 int main(int argc, char** argv)
 {
     if (RUNNING_ON_VALGRIND) {

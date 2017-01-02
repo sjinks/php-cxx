@@ -4,5 +4,6 @@
 #include "phpcxx/string.h"
 
 void runPhpCode(const phpcxx::string& code);
+void runPhpCode(const phpcxx::string& code, zval& retval);
 
 #endif /* TEST_GLOBALS_H */
