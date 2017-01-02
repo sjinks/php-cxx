@@ -20,12 +20,12 @@ public:
     Function(const char* name, InternalFunction c, const Arguments& required = {}, const Arguments& optional = {}, bool byref = false);
     ~Function();
 
-    Function& addRequiredArgument(const Argument& arg);
-    Function& addOptionalArgument(const Argument& arg);
-    Function& setReturnByReference(bool byref);
-    Function& setAllowNull(bool allow);
-    Function& setTypeHint(ArgumentType t);
-    Function& setTypeHint(const char* className);
+    Function&& addRequiredArgument(const Argument& arg);
+    Function&& addOptionalArgument(const Argument& arg);
+    Function&& setReturnByReference(bool byref);
+    Function&& setAllowNull(bool allow);
+    Function&& setTypeHint(ArgumentType t);
+    Function&& setTypeHint(const char* className);
 
     const struct _zend_function_entry& getFE() const;
     const std::vector<struct _zend_internal_arg_info>& getArgInfo() const;
