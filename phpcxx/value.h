@@ -23,11 +23,6 @@ public:
         ZVAL_UNDEF(&this->m_z);
     }
 
-    Value(std::nullptr_t)
-    {
-        construct_zval(this->m_z, nullptr);
-    }
-
     Value(zval* z, CopyPolicy policy = CopyPolicy::Assign)
     {
         switch (policy) {
@@ -94,79 +89,9 @@ public:
         i_zval_ptr_dtor(&this->m_z ZEND_FILE_LINE_CC);
     }
 
-    static void assign(zval* a, zval* b, AssignPolicy policy = AssignPolicy::AssignVariable)
-    {
-        if (Z_ISREF_P(b)) {
-            b = Z_REFVAL_P(b);
-        }
-
-        if (Z_ISREF_P(a)) {
-            a = Z_REFVAL_P(a);
-        }
-
-        if (Z_IMMUTABLE_P(a)) {
-            zend_error(E_ERROR, "Cannot assign to an immutable variable");
-            ZEND_ASSUME(0); // unreachable
-        }
-
-        if (AssignPolicy::AssignVariable == policy) {
-            if (Z_REFCOUNTED_P(a)) {
-                if (Z_TYPE_P(a) == IS_OBJECT && Z_OBJ_HANDLER_P(a, set)) {
-                    Z_OBJ_HANDLER_P(a, set)(a, b);
-                    return;
-                }
-
-                if (a == b) {
-                    return;
-                }
-
-                if (Z_REFCOUNT_P(a) == 1) {
-                    zval_dtor(a);
-                    ZVAL_COPY(a, b);
-                    return;
-                }
-
-                zval_ptr_dtor(a);
-                zval_copy_ctor_func(a);
-            }
-
-            ZVAL_COPY(a, b);
-        }
-        else {
-            if (Z_REFCOUNTED_P(a)) {
-                if (Z_TYPE_P(a) == IS_OBJECT && Z_OBJ_HANDLER_P(a, set)) {
-                    Z_OBJ_HANDLER_P(a, set)(a, b);
-                    zval_ptr_dtor(b);
-                    return;
-                }
-
-                if (a == b) {
-                    return;
-                }
-
-                if (Z_REFCOUNT_P(a) == 1) {
-                    zval_dtor(a);
-                    ZVAL_COPY_VALUE(a, b);
-                    return;
-                }
-
-                zval_ptr_dtor(a);
-            }
-
-            ZVAL_COPY_VALUE(a, b);
-        }
-    }
-
-    Value& assign(zval* b, AssignPolicy policy = AssignPolicy::AssignVariable)
-    {
-        zval* a = &this->m_z;
-        Value::assign(a, b, policy);
-        return *this;
-    }
-
     void assignTo(zval* a)
     {
-        Value::assign(a, &this->m_z);
+        phpcxx::assign(a, &this->m_z);
     }
 
     /*
@@ -174,7 +99,8 @@ public:
      */
     Value& operator=(zval* b)
     {
-        return assign(b, AssignPolicy::AssignVariable);
+        phpcxx::assign(&this->m_z, b);
+        return *this;
     }
 
     Value& operator=(Value& other)
@@ -199,14 +125,13 @@ public:
     template<typename T>
     Value& operator=(T v)
     {
-        zval z;
         if (!this->isRefcounted()) {
             construct_zval(this->m_z, v);
             return *this;
         }
 
-        construct_zval(z, v);
-        return this->assign(&z, AssignPolicy::AssignTemporary);
+        phpcxx::assign(&this->m_z, v);
+        return *this;
     }
 
     static Value createReference(Value& to)
@@ -323,8 +248,8 @@ public:
     // pow
     // instanceof
 
-    Value& operator++() { return this->voidOperator(increment_function); }
-    Value& operator--() { return this->voidOperator(decrement_function); }
+    Value& operator++() { return this->inplaceOperator(increment_function); }
+    Value& operator--() { return this->inplaceOperator(decrement_function); }
 
     Value operator++(int)
     {
@@ -340,8 +265,8 @@ public:
         return tmp;
     }
 
-    Value& operator!() { return this->unaryOperator(boolean_not_function); }
-    Value& operator~() { return this->unaryOperator(bitwise_not_function); }
+    Value operator!() { return this->unaryOperator(boolean_not_function); }
+    Value operator~() { return this->unaryOperator(bitwise_not_function); }
 
     zend_long asLong() const
     {
@@ -433,7 +358,7 @@ private:
     static zval* paramHelper(const T& v, zval& z) { construct_zval(z, v); Z_TRY_DELREF(z); return &z; }
 
     template<typename Operator>
-    Value& voidOperator(Operator op)
+    Value& inplaceOperator(Operator op)
     {
         if (!this->isRefcounted()) {
             op(&this->m_z);
@@ -443,20 +368,16 @@ private:
         zval res;
         construct_zval(res, *this);
         op(&res);
-        return this->assign(&res, AssignPolicy::AssignTemporary);
+        phpcxx::assignTemporary(&this->m_z, &res);
+        return *this;
     }
 
     template<typename Operator>
-    Value& unaryOperator(Operator op)
+    Value unaryOperator(Operator op)
     {
-        if (!this->isRefcounted()) {
-            op(&this->m_z, &this->m_z);
-            return *this;
-        }
-
         zval res;
         op(&res, &this->m_z);
-        return this->assign(&res, AssignPolicy::AssignTemporary);
+        return Value(&res, CopyPolicy::Wrap);
     }
 
     template<typename Operator>
@@ -468,8 +389,9 @@ private:
         }
 
         zval res;
-        op(&this->m_z, &this->m_z, &rhs.m_z);
-        return this->assign(&res, AssignPolicy::AssignTemporary);
+        op(&res, &this->m_z, &rhs.m_z);
+        phpcxx::assignTemporary(&this->m_z, &res);
+        return *this;
     }
 
     template<typename Operator>
