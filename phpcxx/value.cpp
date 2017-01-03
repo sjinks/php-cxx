@@ -16,6 +16,38 @@ static_assert(sizeof(phpcxx::Value) == sizeof(zval), "sizeof(Value) must be equa
 
 phpcxx::Value phpcxx::ErrorValue(nullptr);
 
+phpcxx::Value& phpcxx::Value::operator++()
+{
+    zval& z = this->m_z;
+
+    if (Z_TYPE(z) == IS_LONG) {
+        fast_long_increment_function(&z);
+    }
+    else {
+        ZVAL_DEREF(&z);
+        SEPARATE_ZVAL_NOREF(&z);
+        increment_function(&z);
+    }
+
+    return *this;
+}
+
+phpcxx::Value& phpcxx::Value::operator--()
+{
+    zval& z = this->m_z;
+
+    if (Z_TYPE(z) == IS_LONG) {
+        fast_long_decrement_function(&z);
+    }
+    else {
+        ZVAL_DEREF(&z);
+        SEPARATE_ZVAL_NOREF(&z);
+        decrement_function(&z);
+    }
+
+    return *this;
+}
+
 static inline zval* separateOrCreateArray(zval* z)
 {
     if (Z_ISREF_P(z)) {

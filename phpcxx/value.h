@@ -248,8 +248,8 @@ public:
     // pow
     // instanceof
 
-    Value& operator++() { return this->inplaceOperator(increment_function); }
-    Value& operator--() { return this->inplaceOperator(decrement_function); }
+    Value& operator++();
+    Value& operator--();
 
     Value operator++(int)
     {
@@ -356,21 +356,6 @@ private:
 
     template<typename T>
     static zval* paramHelper(const T& v, zval& z) { construct_zval(z, v); Z_TRY_DELREF(z); return &z; }
-
-    template<typename Operator>
-    Value& inplaceOperator(Operator op)
-    {
-        if (!this->isRefcounted()) {
-            op(&this->m_z);
-            return *this;
-        }
-
-        zval res;
-        construct_zval(res, *this);
-        op(&res);
-        phpcxx::assignTemporary(&this->m_z, &res);
-        return *this;
-    }
 
     template<typename Operator>
     Value unaryOperator(Operator op)
