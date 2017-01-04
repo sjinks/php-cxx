@@ -13,7 +13,7 @@ namespace phpcxx {
 class PHPCXX_EXPORT ZendString {
 public:
     ZendString(const char* s)
-        : m_s(zend_string_init(s, std::strlen(s), 0))
+        : m_s(zend_string_init(s, s ? std::strlen(s) : 0, 0))
     {
     }
 
@@ -91,6 +91,16 @@ public:
     }
 
     zend_string* get() const
+    {
+        return this->m_s;
+    }
+
+    explicit operator zend_string*()
+    {
+        return this->m_s;
+    }
+
+    explicit operator const zend_string*() const
     {
         return this->m_s;
     }

@@ -8,6 +8,7 @@
 #include <Zend/zend_operators.h>
 #include <array>
 #include <string>
+#include "array.h"
 #include "helpers.h"
 #include "operators.h"
 #include "phpexception.h"
@@ -23,6 +24,25 @@ public:
     {
         FTRACE();
         ZVAL_UNDEF(&this->m_z);
+    }
+
+    Value(Type t)
+    {
+        FTRACE();
+        switch (t) {
+            case Type::Null:      ZVAL_NULL(&this->m_z);          return;
+            case Type::False:     ZVAL_FALSE(&this->m_z);         return;
+            case Type::True:      ZVAL_TRUE(&this->m_z);          return;
+            case Type::Integer:   ZVAL_LONG(&this->m_z, 0);       return;
+            case Type::Double:    ZVAL_DOUBLE(&this->m_z, 0);     return;
+            case Type::String:    ZVAL_EMPTY_STRING(&this->m_z);  return;
+            case Type::Array:     array_init(&this->m_z);         return;
+            case Type::Object:    object_init(&this->m_z);        return;
+            case Type::Reference: ZVAL_NEW_EMPTY_REF(&this->m_z); return;
+            case Type::Bool:      ZVAL_FALSE(&this->m_z);         return;
+            default: // Resource, Constant, ConstantAST, Callable, Indirect, Pointer
+            case Type::Undefined: ZVAL_UNDEF(&this->m_z); return;
+        }
     }
 
     Value(zval* z, CopyPolicy policy = CopyPolicy::Assign)
@@ -392,11 +412,7 @@ private:
     friend bool operator>(const phpcxx::Value& lhs, const phpcxx::Value& rhs);
     friend bool operator>=(const phpcxx::Value& lhs, const phpcxx::Value& rhs);
 
-
-    zval* maybeDeref()
-    {
-        return this->isReference() ? Z_REFVAL(this->m_z) : &this->m_z;
-    }
+    friend class Array;
 
     template<typename ...Args, std::size_t ...Is>
     Value _call(zval* object, indices<Is...>, Args&&... args)
@@ -418,6 +434,7 @@ private:
     }
 
     static zval* paramHelper(Value&& v, zval&) { return &v.m_z; }
+    static zval* paramHelper(Array&& v, zval&) { return &v.m_z; }
 
     template<typename T>
     static zval* paramHelper(const T& v, zval& z) { construct_zval(z, v); Z_TRY_DELREF(z); return &z; }

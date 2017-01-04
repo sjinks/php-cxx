@@ -20,6 +20,7 @@ TARGET          = $(SHARED_LIBRARY) $(STATIC_LIBRARY) $(TESTER)
 
 LIBRARY_CXX_SOURCES = \
 	phpcxx/argument.cpp \
+	phpcxx/array.cpp \
 	phpcxx/constant.cpp \
 	phpcxx/function.cpp \
 	phpcxx/module.cpp \
