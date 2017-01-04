@@ -111,6 +111,12 @@ void construct_zval(zval& z, const T& s)
  * @defgroup Assignment
  * @{
  */
+
+/**
+ * Assign a null/boolean/integer/double to a zval
+ * @param a
+ * @param b
+ */
 template<typename T, enable_if_t<std::is_arithmetic<T>::value || is_null_pointer<T>::value>* = nullptr>
 void assign(zval* a, T b)
 {
@@ -146,6 +152,11 @@ void assign(zval* a, T b)
     phpcxx::construct_zval(*a, b);
 }
 
+/**
+ * Assign a string/char* to zval
+ * @param a
+ * @param b
+ */
 template<typename T, enable_if_t<is_string<T>::value || is_pchar<T>::value>* = nullptr>
 void assign(zval* a, const T& b)
 {
@@ -181,6 +192,11 @@ void assign(zval* a, const T& b)
     phpcxx::construct_zval(*a, b);
 }
 
+/**
+ * Assign zval to zval
+ * @param a
+ * @param b
+ */
 template<typename T, enable_if_t<is_pzval<T>::value>* = nullptr>
 static void assign(zval* a, T b)
 {

@@ -32,6 +32,26 @@ void phpcxx::Module::globalsDestructor(phpcxx::ModuleGlobals* g)
     delete g;
 }
 
+bool phpcxx::Module::moduleStartup()
+{
+    return true;
+}
+
+bool phpcxx::Module::moduleShutdown()
+{
+    return true;
+}
+
+bool phpcxx::Module::requestStartup()
+{
+    return true;
+}
+
+bool phpcxx::Module::requestShutdown()
+{
+    return true;
+}
+
 void phpcxx::Module::moduleInfo()
 {
     display_ini_entries(&this->d_ptr->entry);

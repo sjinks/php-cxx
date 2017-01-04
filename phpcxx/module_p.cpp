@@ -4,6 +4,10 @@
 #include "module_p.h"
 #include "modulemap_p.h"
 
+#ifdef PHPCXX_DEBUG
+int phpcxx_ftrace = 0;
+#endif
+
 static void moduleNotFound(int number)
 {
     zend_error(

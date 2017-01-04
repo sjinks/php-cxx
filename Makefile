@@ -2,17 +2,17 @@ PHP_CONFIG      = php-config
 SRCDIR          = $(realpath $(dir $(lastword $(filter Makefile,$(MAKEFILE_LIST)))))
 
 CPPFLAGS_EXTRA  = $(shell $(PHP_CONFIG) --includes)
-CXXFLAGS_EXTRA  = -Wall -Wextra -Wno-unused-parameter -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -fpic
+CXXFLAGS_EXTRA  = -Wall -Wextra -Wno-unused-parameter -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -fPIC
 LDFLAGS_EXTRA   = -pthread
 
 SHARED_LIBRARY  = .lib/php-cxx.so
 STATIC_LIBRARY  = .lib/php-cxx.a
 TESTER          = .lib/php-cxx-test
 
-PHPCXX_CPPFLAGS = -DBUILDING_PHPCXX
+PHPCXX_CPPFLAGS = -DBUILDING_PHPCXX -DPHPCXX_DEBUG
 PHPCXX_LDFLAGS  = -shared $(shell $(PHP_CONFIG) --ldflags)
 
-TESTER_CPPFLAGS = -I$(SRCDIR)
+TESTER_CPPFLAGS = -I$(SRCDIR) -DPHPCXX_DEBUG
 TESTER_LDFLAGS  = 
 TESTER_LDLIBS   = -lphp7
 
@@ -24,6 +24,7 @@ LIBRARY_CXX_SOURCES = \
 	phpcxx/function.cpp \
 	phpcxx/module.cpp \
 	phpcxx/module_p.cpp \
+	phpcxx/operators.cpp \
 	phpcxx/parameters.cpp \
 	phpcxx/phpexception.cpp \
 	phpcxx/value.cpp

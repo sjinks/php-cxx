@@ -1,5 +1,6 @@
 #include <sstream>
 #include <gtest/gtest.h>
+#include "phpcxx/operators.h"
 #include "phpcxx/value.h"
 #include "globals.h"
 #include "testsapi.h"
@@ -41,6 +42,26 @@ TEST_F(ValueFixture, Initialization)
         EXPECT_EQ(phpcxx::Type::Undefined, v.type());
         v = nullptr;
         EXPECT_EQ(phpcxx::Type::Null, v.type());
+    });
+    EXPECT_EQ(m_err.str(), "");
+    m_err.str(std::string());
+
+    m_sapi.run([]() {
+        phpcxx::Value t(true);
+        phpcxx::Value f(false);
+        EXPECT_EQ(phpcxx::Type::True,  t.type());
+        EXPECT_EQ(phpcxx::Type::False, f.type());
+        EXPECT_EQ(0, t.refCount());
+        EXPECT_EQ(0, f.refCount());
+        EXPECT_FALSE(t.isReference());
+        EXPECT_FALSE(f.isReference());
+
+        phpcxx::Value v;
+        EXPECT_EQ(phpcxx::Type::Undefined, v.type());
+        v = true;
+        EXPECT_EQ(phpcxx::Type::True, v.type());
+        v = false;
+        EXPECT_EQ(phpcxx::Type::False, v.type());
     });
     EXPECT_EQ(m_err.str(), "");
     m_err.str(std::string());
@@ -584,6 +605,85 @@ TEST_F(ValueFixture, Arrays)
         zend_is_auto_global(SERVER.get());
         phpcxx::Value server(&PG(http_globals)[TRACK_VARS_SERVER]);
         EXPECT_EQ(phpcxx::Type::Array, server.type());
+    });
+    EXPECT_EQ(m_err.str(), "");
+    m_err.str(std::string());
+}
+
+TEST_F(ValueFixture, Assignment)
+{
+    // template<typename T, enable_if_t<is_string<T>::value || is_pchar<T>::value>* = nullptr>
+    // void assign(zval* a, const T& b)
+    m_sapi.run([this]() {
+        // Skip all branches
+        phpcxx::Value a = "string";
+        EXPECT_TRUE(a.isRefcounted());
+        EXPECT_EQ(1, a.refCount());
+
+        // Z_REFCOUNTED_P(a) branch + zval_dtor_func_for_ptr
+        a = "otherstring";
+        EXPECT_TRUE(a.isRefcounted());
+        EXPECT_EQ(1, a.refCount());
+
+        a    = nullptr;
+        a[0] = "test";
+        EXPECT_TRUE(a.isRefcounted());
+        EXPECT_TRUE(a.isCollectable());
+
+        phpcxx::Value b = a;
+        EXPECT_EQ(2, a.refCount());
+        EXPECT_EQ(2, b.refCount());
+        EXPECT_TRUE(a.isRefcounted());
+
+        // Z_REFCOUNTED_P(a) branch + Z_COLLECTABLE_P(a) branch
+        a = "xxx";
+        EXPECT_EQ(1, a.refCount());
+        EXPECT_EQ(1, b.refCount());
+        EXPECT_TRUE(a.isRefcounted());
+        EXPECT_TRUE(b.isRefcounted());
+        EXPECT_EQ(phpcxx::Type::String, a.type());
+        EXPECT_EQ(phpcxx::Type::Array,  b.type());
+    });
+    EXPECT_EQ(m_err.str(), "");
+    m_err.str(std::string());
+
+    // template<typename T, enable_if_t<std::is_arithmetic<T>::value || is_null_pointer<T>::value>* = nullptr>
+    // void assign(zval* a, const T& b)
+    m_sapi.run([this]() {
+        phpcxx::Value a = "string";
+        EXPECT_TRUE(a.isRefcounted());
+        EXPECT_EQ(1, a.refCount());
+
+        // Z_REFCOUNTED_P(a) branch + zval_dtor_func_for_ptr
+        a = "otherstring";
+        EXPECT_TRUE(a.isRefcounted());
+        EXPECT_EQ(1, a.refCount());
+
+        // Skip all branches
+        a = nullptr;
+        EXPECT_FALSE(a.isRefcounted());
+
+        a[0] = "test";
+        EXPECT_TRUE(a.isRefcounted());
+        EXPECT_TRUE(a.isCollectable());
+
+        phpcxx::Value b = a;
+        EXPECT_EQ(2, a.refCount());
+        EXPECT_EQ(2, b.refCount());
+        EXPECT_TRUE(a.isRefcounted());
+
+        // Z_REFCOUNTED_P(a) branch + Z_COLLECTABLE_P(a) branch
+        a = -1;
+        EXPECT_EQ(0, a.refCount());
+        EXPECT_EQ(1, b.refCount());
+        EXPECT_FALSE(a.isRefcounted());
+        EXPECT_TRUE(b.isRefcounted());
+        EXPECT_EQ(phpcxx::Type::Integer, a.type());
+        EXPECT_EQ(phpcxx::Type::Array,   b.type());
+
+        phpcxx::Value x = 1;
+        phpcxx::Value y = 2;
+        EXPECT_EQ(3, x + y);
     });
     EXPECT_EQ(m_err.str(), "");
     m_err.str(std::string());

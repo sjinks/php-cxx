@@ -1,6 +1,22 @@
 #ifndef PHPCXX_H
 #define PHPCXX_H
 
+#ifdef PHPCXX_DEBUG
+#include <iostream>
+
+extern int phpcxx_ftrace;
+
+#   define FTRACE()         do { if (::phpcxx_ftrace) { std::cout << "* " << __PRETTY_FUNCTION__ << std::endl; } } while (0)
+#   define FTRACE_ENABLE()  do { ::phpcxx_ftrace = 1; } while (0)
+#   define FTRACE_DISABLE() do { ::phpcxx_ftrace = 0; } while (0)
+#   define FTRACE_ENABLED() (::phpcxx_ftrace != 0)
+#else
+#   define FTRACE()
+#   define FTRACE_ENABLE()
+#   define FTRACE_DISABLE()
+#   define FTRACE_ENABLED   0
+#endif
+
 #if defined _WIN32 || defined __CYGWIN__
 #   ifdef BUILDING_PHPCXX
 #       if defined(__GNUC__) && __GNUC__ >= 4

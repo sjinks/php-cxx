@@ -26,10 +26,10 @@ public:
 protected:
     virtual ModuleGlobals* globalsConstructor();
     virtual void globalsDestructor(ModuleGlobals* g);
-    virtual bool moduleStartup()   { return true; }
-    virtual bool moduleShutdown()  { return true; }
-    virtual bool requestStartup()  { return true; }
-    virtual bool requestShutdown() { return true; }
+    virtual bool moduleStartup();
+    virtual bool moduleShutdown();
+    virtual bool requestStartup();
+    virtual bool requestShutdown();
     virtual void moduleInfo();
 
     void registerModuleDependencies();

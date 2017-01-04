@@ -8,10 +8,11 @@
 #include <Zend/zend_operators.h>
 #include <array>
 #include <string>
+#include "helpers.h"
+#include "operators.h"
 #include "phpexception.h"
 #include "string.h"
 #include "types.h"
-#include "helpers.h"
 #include "zendstring.h"
 
 namespace phpcxx {
@@ -20,11 +21,13 @@ class PHPCXX_EXPORT Value {
 public:
     Value()
     {
+        FTRACE();
         ZVAL_UNDEF(&this->m_z);
     }
 
     Value(zval* z, CopyPolicy policy = CopyPolicy::Assign)
     {
+        FTRACE();
         switch (policy) {
             case CopyPolicy::Assign:
                 if (Z_ISREF_P(z)) {
@@ -59,17 +62,20 @@ public:
     template<typename T>
     Value(const T& v)
     {
+        FTRACE();
         construct_zval(this->m_z, v);
     }
 
     Value(Value&& other) noexcept
         : m_z(other.m_z)
     {
+        FTRACE();
         ZVAL_UNDEF(&other.m_z);
     }
 
     Value(const Value& other) noexcept
     {
+        FTRACE();
         const zval* z = &other.m_z;
         if (Z_ISREF_P(z)) {
             z = Z_REFVAL_P(z);
@@ -86,7 +92,11 @@ public:
 
     ~Value()
     {
+        FTRACE();
         i_zval_ptr_dtor(&this->m_z ZEND_FILE_LINE_CC);
+#ifdef PHPCXX_DEBUG
+        ZVAL_UNDEF(&this->m_z);
+#endif
     }
 
     void assignTo(zval* a)
@@ -99,17 +109,20 @@ public:
      */
     Value& operator=(zval* b)
     {
+        FTRACE();
         phpcxx::assign(&this->m_z, b);
         return *this;
     }
 
     Value& operator=(Value& other)
     {
+        FTRACE();
         return operator=(&other.m_z);
     }
 
     Value& operator=(Value&& other)
     {
+        FTRACE();
         if (this == &other) {
             return *this;
         }
@@ -125,6 +138,7 @@ public:
     template<typename T>
     Value& operator=(T v)
     {
+        FTRACE();
         if (!this->isRefcounted()) {
             construct_zval(this->m_z, v);
             return *this;
@@ -134,17 +148,27 @@ public:
         return *this;
     }
 
+    Value reference()
+    {
+        return Value(*this, CopyPolicy::Reference);
+    }
+
+    Value& dereference()
+    {
+        zval* a = &this->m_z;
+        if (Z_ISREF_P(a)) {
+            a = Z_REFVAL_P(a);
+        }
+        else {
+            a = &EG(error_zval);
+        }
+
+        return *(new(a) Value(nullptr));
+    }
+
     static Value createReference(Value& to)
     {
-        Value res;
-        zval* b = &to.m_z;
-        zval* a = &res.m_z;
-
-        ZVAL_MAKE_REF(b);
-        zend_reference* ref = Z_REF_P(b);
-        ++GC_REFCOUNT(ref);
-        ZVAL_REF(a, ref);
-        return res;
+        return to.reference();
     }
 
     Type type() const
@@ -207,45 +231,79 @@ public:
 
     string toString() const
     {
+        if (Z_TYPE(this->m_z) == IS_UNDEF) {
+            return "[unset]";
+        }
+
         zend_string* s = zval_get_string(const_cast<zval*>(&this->m_z));
         string ret(ZSTR_VAL(s), ZSTR_LEN(s));
         zend_string_release(s);
         return ret;
     }
 
-    Value& operator+=(const Value& rhs)  { return binaryOperator(fast_add_function, rhs); }
-    Value& operator-=(const Value& rhs)  { return binaryOperator(sub_function, rhs); }
-    Value& operator*=(const Value& rhs)  { return binaryOperator(mul_function, rhs); }
-    Value& operator/=(const Value& rhs)  { return binaryOperator(fast_div_function, rhs); }
-    Value& operator%=(const Value& rhs)  { return binaryOperator(mod_function, rhs); }
-    Value& operator^=(const Value& rhs)  { return binaryOperator(bitwise_xor_function, rhs); }
-    Value& operator&=(const Value& rhs)  { return binaryOperator(bitwise_and_function, rhs); }
-    Value& operator|=(const Value& rhs)  { return binaryOperator(bitwise_or_function, rhs); }
-    Value& operator<<=(const Value& rhs) { return binaryOperator(shift_left_function, rhs); }
-    Value& operator>>=(const Value& rhs) { return binaryOperator(shift_right_function, rhs); }
+    Value& operator+=(const Value& rhs);
+    Value& operator-=(const Value& rhs);
+    Value& operator*=(const Value& rhs);
+    Value& operator/=(const Value& rhs);
+    Value& operator%=(const Value& rhs);
+    Value& operator^=(const Value& rhs);
+    Value& operator&=(const Value& rhs);
+    Value& operator|=(const Value& rhs);
+    Value& operator<<=(const Value& rhs);
+    Value& operator>>=(const Value& rhs);
 
-    friend Value operator+(Value lhs, const Value& rhs) { lhs += rhs; return lhs; }
-    friend Value operator-(Value lhs, const Value& rhs) { lhs -= rhs; return lhs; }
-    friend Value operator*(Value lhs, const Value& rhs) { lhs *= rhs; return lhs; }
-    friend Value operator/(Value lhs, const Value& rhs) { lhs /= rhs; return lhs; }
-    friend Value operator%(Value lhs, const Value& rhs) { lhs %= rhs; return lhs; }
-    friend Value operator^(Value lhs, const Value& rhs) { lhs ^= rhs; return lhs; }
-    friend Value operator&(Value lhs, const Value& rhs) { lhs &= rhs; return lhs; }
-    friend Value operator|(Value lhs, const Value& rhs) { lhs |= rhs; return lhs; }
-    friend Value operator<<(Value lhs, const Value& rhs) { lhs <<= rhs; return lhs; }
-    friend Value operator>>(Value lhs, const Value& rhs) { lhs >>= rhs; return lhs; }
+    friend Value   operator+(const Value& lhs, const Value& rhs) { Value t(lhs); t += rhs; return t;  }
+    friend Value&& operator+(Value&& lhs, const Value& rhs)      { lhs += rhs; return std::move(lhs); }
+    friend Value&& operator+(const Value& lhs, Value&& rhs)      { rhs += lhs; return std::move(rhs); }
+    friend Value&& operator+(Value&& lhs, Value&& rhs)           { lhs += rhs; return std::move(lhs); }
 
-    friend bool operator==(const Value& lhs, const Value& rhs) { return compareOperator(is_equal_function, lhs, rhs); }
-    friend bool operator!=(const Value& lhs, const Value& rhs) { return compareOperator(is_not_equal_function, lhs, rhs); }
-    friend bool operator<(const Value& lhs, const Value& rhs)  { return compareOperator(is_smaller_function, lhs, rhs); }
-    friend bool operator<=(const Value& lhs, const Value& rhs) { return compareOperator(is_smaller_or_equal_function, lhs, rhs); }
-    friend bool operator>(const Value& lhs, const Value& rhs)  { return rhs < lhs; }
-    friend bool operator>=(const Value& lhs, const Value& rhs) { return rhs <= lhs; }
-    bool isIdenticalTo(const Value& rhs)    { return compareOperator(is_identical_function, *this, rhs); }
-    bool isNotIdenticalTo(const Value& rhs) { return compareOperator(is_not_identical_function, *this, rhs); }
+    friend Value   operator-(const Value& lhs, const Value& rhs) { Value t(lhs); t -= rhs; return t;  }
+    friend Value&& operator-(Value&& lhs, const Value& rhs)      { lhs -= rhs; return std::move(lhs); }
+    friend Value&& operator-(Value&& lhs, Value&& rhs)           { lhs -= rhs; return std::move(lhs); }
 
-    // boolean xor
-    // pow
+    friend Value   operator*(const Value& lhs, const Value& rhs) { Value t(lhs); t *= rhs; return t;  }
+    friend Value&& operator*(Value&& lhs, const Value& rhs)      { lhs *= rhs; return std::move(lhs); }
+    friend Value&& operator*(const Value& lhs, Value&& rhs)      { rhs *= lhs; return std::move(rhs); }
+    friend Value&& operator*(Value&& lhs, Value&& rhs)           { lhs *= rhs; return std::move(lhs); }
+
+    friend Value   operator/(const Value& lhs, const Value& rhs) { Value t(lhs); t /= rhs; return t;  }
+    friend Value&& operator/(Value&& lhs, const Value& rhs)      { lhs /= rhs; return std::move(lhs); }
+    friend Value&& operator/(Value&& lhs, Value&& rhs)           { lhs /= rhs; return std::move(lhs); }
+
+    friend Value   operator%(const Value& lhs, const Value& rhs) { Value t(lhs); t %= rhs; return t;  }
+    friend Value&& operator%(Value&& lhs, const Value& rhs)      { lhs %= rhs; return std::move(lhs); }
+    friend Value&& operator%(Value&& lhs, Value&& rhs)           { lhs %= rhs; return std::move(lhs); }
+
+    friend Value   operator^(const Value& lhs, const Value& rhs) { Value t(lhs); t ^= rhs; return t;  }
+    friend Value&& operator^(Value&& lhs, const Value& rhs)      { lhs ^= rhs; return std::move(lhs); }
+    friend Value&& operator^(const Value& lhs, Value&& rhs)      { rhs ^= lhs; return std::move(rhs); }
+    friend Value&& operator^(Value&& lhs, Value&& rhs)           { lhs ^= rhs; return std::move(lhs); }
+
+    friend Value   operator&(const Value& lhs, const Value& rhs) { Value t(lhs); t &= rhs; return t;  }
+    friend Value&& operator&(Value&& lhs, const Value& rhs)      { lhs &= rhs; return std::move(lhs); }
+    friend Value&& operator&(const Value& lhs, Value&& rhs)      { rhs &= lhs; return std::move(rhs); }
+    friend Value&& operator&(Value&& lhs, Value&& rhs)           { lhs &= rhs; return std::move(lhs); }
+
+    friend Value   operator|(const Value& lhs, const Value& rhs) { Value t(lhs); t |= rhs; return t;  }
+    friend Value&& operator|(Value&& lhs, const Value& rhs)      { lhs |= rhs; return std::move(lhs); }
+    friend Value&& operator|(const Value& lhs, Value&& rhs)      { rhs |= lhs; return std::move(rhs); }
+    friend Value&& operator|(Value&& lhs, Value&& rhs)           { lhs |= rhs; return std::move(lhs); }
+
+    friend Value   operator<<(const Value& lhs, const Value& rhs) { Value t(lhs); t <<= rhs; return t;  }
+    friend Value&& operator<<(Value&& lhs, const Value& rhs)      { lhs <<= rhs; return std::move(lhs); }
+    friend Value&& operator<<(Value&& lhs, Value&& rhs)           { lhs <<= rhs; return std::move(lhs); }
+
+    friend Value   operator>>(const Value& lhs, const Value& rhs) { Value t(lhs); t >>= rhs; return t;  }
+    friend Value&& operator>>(Value&& lhs, const Value& rhs)      { lhs >>= rhs; return std::move(lhs); }
+    friend Value&& operator>>(Value&& lhs, Value&& rhs)           { lhs >>= rhs; return std::move(lhs); }
+
+    friend Value pow(Value lhs, const Value& rhs);
+    friend Value concat(Value lhs, const Value& rhs);
+    friend int compare(const Value& lhs, const Value& rhs);
+
+    bool isIdenticalTo(const Value& rhs);
+    bool isNotIdenticalTo(const Value& rhs);
+
     // instanceof
 
     Value& operator++();
@@ -264,9 +322,6 @@ public:
         this->operator--();
         return tmp;
     }
-
-    Value operator!() { return this->unaryOperator(boolean_not_function); }
-    Value operator~() { return this->unaryOperator(bitwise_not_function); }
 
     zend_long asLong() const
     {
@@ -328,6 +383,16 @@ private:
 
     Value(const placement_construction_t&) {}
 
+    friend phpcxx::Value operator~(const phpcxx::Value& op);
+    friend phpcxx::Value operator!(const phpcxx::Value& op);
+    friend bool operator==(const phpcxx::Value& lhs, const phpcxx::Value& rhs);
+    friend bool operator!=(const phpcxx::Value& lhs, const phpcxx::Value& rhs);
+    friend bool operator<(const phpcxx::Value& lhs, const phpcxx::Value& rhs);
+    friend bool operator<=(const phpcxx::Value& lhs, const phpcxx::Value& rhs);
+    friend bool operator>(const phpcxx::Value& lhs, const phpcxx::Value& rhs);
+    friend bool operator>=(const phpcxx::Value& lhs, const phpcxx::Value& rhs);
+
+
     zval* maybeDeref()
     {
         return this->isReference() ? Z_REFVAL(this->m_z) : &this->m_z;
@@ -356,36 +421,6 @@ private:
 
     template<typename T>
     static zval* paramHelper(const T& v, zval& z) { construct_zval(z, v); Z_TRY_DELREF(z); return &z; }
-
-    template<typename Operator>
-    Value unaryOperator(Operator op)
-    {
-        zval res;
-        op(&res, &this->m_z);
-        return Value(&res, CopyPolicy::Wrap);
-    }
-
-    template<typename Operator>
-    Value& binaryOperator(Operator op, const Value& rhs)
-    {
-        if (!this->isRefcounted()) {
-            op(&this->m_z, &this->m_z, &rhs.m_z);
-            return *this;
-        }
-
-        zval res;
-        op(&res, &this->m_z, &rhs.m_z);
-        phpcxx::assignTemporary(&this->m_z, &res);
-        return *this;
-    }
-
-    template<typename Operator>
-    friend bool compareOperator(Operator op, const Value& lhs, const Value& rhs)
-    {
-        zval res;
-        op(&res, const_cast<zval*>(&lhs.m_z), const_cast<zval*>(&rhs.m_z));
-        return zend_is_true(&res);
-    }
 
     friend void construct_zval(zval& z, const Value& v) { ZVAL_COPY(&z, &v.m_z); }
 };

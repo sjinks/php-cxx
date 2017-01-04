@@ -13,8 +13,8 @@ struct _zend_object;
 namespace phpcxx {
 
 class Value;
-
 class PhpExceptionPrivate;
+
 class PHPCXX_EXPORT PhpException : public std::exception {
 public:
     PhpException();

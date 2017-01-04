@@ -1,51 +1,306 @@
 #include <new>
 #include <Zend/zend.h>
 #include <Zend/zend_API.h>
+#include <Zend/zend_exceptions.h>
 #include <Zend/zend_operators.h>
 #include <Zend/zend_string.h>
 #include <array>
 #include <cstdio>
 #include <string>
 #include <unordered_map>
+#include "phpexception.h"
 #include "string.h"
 #include "value.h"
 
+#define TYPE_PAIR(t1, t2) (((t1) << 4) | (t2))
 #undef snprintf
 
 static_assert(sizeof(phpcxx::Value) == sizeof(zval), "sizeof(Value) must be equal to sizeof(zval)");
 
 phpcxx::Value phpcxx::ErrorValue(nullptr);
 
-phpcxx::Value& phpcxx::Value::operator++()
+phpcxx::Value& phpcxx::Value::operator+=(const phpcxx::Value& rhs)
 {
-    zval& z = this->m_z;
+    zval* a = &this->m_z;
+    zval* b = &rhs.m_z;
 
-    if (Z_TYPE(z) == IS_LONG) {
-        fast_long_increment_function(&z);
+    if (this->isRefcounted()) {
+        ZVAL_DEREF(a);
+        SEPARATE_ZVAL_NOREF(a);
     }
-    else {
-        ZVAL_DEREF(&z);
-        SEPARATE_ZVAL_NOREF(&z);
-        increment_function(&z);
+
+    switch (TYPE_PAIR(Z_TYPE_P(a), Z_TYPE_P(b))) {
+        case TYPE_PAIR(IS_LONG, IS_LONG):
+            fast_long_add_function(a, a, b);
+            return *this;
+
+        case TYPE_PAIR(IS_LONG, IS_DOUBLE):
+            ZVAL_DOUBLE(a, static_cast<double>(Z_LVAL_P(a)) + Z_DVAL_P(b));
+            return *this;
+
+        case TYPE_PAIR(IS_DOUBLE, IS_LONG):
+            ZVAL_DOUBLE(a, Z_DVAL_P(a) + static_cast<double>(Z_LVAL_P(b)));
+            return *this;
+
+        case TYPE_PAIR(IS_DOUBLE, IS_DOUBLE):
+            ZVAL_DOUBLE(a, Z_DVAL_P(a) + Z_DVAL_P(b));
+            return *this;
+
+        case TYPE_PAIR(IS_ARRAY, IS_ARRAY):
+            if (a == b) {
+                // $a += $a
+                return *this;
+            }
+
+            zend_hash_merge(Z_ARRVAL_P(a), Z_ARRVAL_P(b), zval_add_ref, 0);
+            return *this;
+    }
+
+    add_function(a, a, b);
+    if (UNEXPECTED(EG(exception))) {
+        throw phpcxx::PhpException();
     }
 
     return *this;
 }
 
-phpcxx::Value& phpcxx::Value::operator--()
+phpcxx::Value& phpcxx::Value::operator-=(const phpcxx::Value& rhs)
 {
-    zval& z = this->m_z;
+    zval* a = &this->m_z;
+    zval* b = &rhs.m_z;
 
-    if (Z_TYPE(z) == IS_LONG) {
-        fast_long_decrement_function(&z);
+    if (this->isRefcounted()) {
+        ZVAL_DEREF(a);
+        SEPARATE_ZVAL_NOREF(a);
     }
-    else {
-        ZVAL_DEREF(&z);
-        SEPARATE_ZVAL_NOREF(&z);
-        decrement_function(&z);
+
+    switch (TYPE_PAIR(Z_TYPE_P(a), Z_TYPE_P(b))) {
+        case TYPE_PAIR(IS_LONG, IS_LONG):
+            fast_long_sub_function(a, a, b);
+            return *this;
+
+        case TYPE_PAIR(IS_LONG, IS_DOUBLE):
+            ZVAL_DOUBLE(a, static_cast<double>(Z_LVAL_P(a)) - Z_DVAL_P(b));
+            return *this;
+
+        case TYPE_PAIR(IS_DOUBLE, IS_LONG):
+            ZVAL_DOUBLE(a, Z_DVAL_P(a) - static_cast<double>(Z_LVAL_P(b)));
+            return *this;
+
+        case TYPE_PAIR(IS_DOUBLE, IS_DOUBLE):
+            ZVAL_DOUBLE(a, Z_DVAL_P(a) - Z_DVAL_P(b));
+            return *this;
+    }
+
+    sub_function(a, a, b);
+    if (UNEXPECTED(EG(exception))) {
+        throw phpcxx::PhpException();
     }
 
     return *this;
+}
+
+phpcxx::Value& phpcxx::Value::operator*=(const phpcxx::Value& rhs)
+{
+    zval* a = &this->m_z;
+    zval* b = &rhs.m_z;
+
+    if (this->isRefcounted()) {
+        ZVAL_DEREF(a);
+        SEPARATE_ZVAL_NOREF(a);
+    }
+
+    switch (TYPE_PAIR(Z_TYPE_P(a), Z_TYPE_P(b))) {
+        case TYPE_PAIR(IS_LONG, IS_LONG): {
+            zend_long overflow;
+            ZEND_SIGNED_MULTIPLY_LONG(Z_LVAL_P(a), Z_LVAL_P(b), Z_LVAL_P(a), Z_LVAL_P(a), overflow);
+            Z_TYPE_INFO_P(a) = overflow ? IS_DOUBLE : IS_LONG;
+            return *this;
+        }
+
+        case TYPE_PAIR(IS_LONG, IS_DOUBLE):
+            ZVAL_DOUBLE(a, static_cast<double>(Z_LVAL_P(a)) * Z_DVAL_P(b));
+            return *this;
+
+        case TYPE_PAIR(IS_DOUBLE, IS_LONG):
+            ZVAL_DOUBLE(a, Z_DVAL_P(a) * static_cast<double>(Z_LVAL_P(b)));
+            return *this;
+
+        case TYPE_PAIR(IS_DOUBLE, IS_DOUBLE):
+            ZVAL_DOUBLE(a, Z_DVAL_P(a) * Z_DVAL_P(b));
+            return *this;
+    }
+
+    mul_function(a, a, b);
+    if (UNEXPECTED(EG(exception))) {
+        throw phpcxx::PhpException();
+    }
+
+    return *this;
+}
+
+phpcxx::Value& phpcxx::Value::operator/=(const phpcxx::Value& rhs)
+{
+    zval* a = &this->m_z;
+    zval* b = &rhs.m_z;
+
+    if (this->isRefcounted()) {
+        ZVAL_DEREF(a);
+        SEPARATE_ZVAL_NOREF(a);
+    }
+
+    fast_div_function(a, a, b);
+    if (UNEXPECTED(EG(exception))) {
+        throw phpcxx::PhpException();
+    }
+
+    return *this;
+}
+
+phpcxx::Value& phpcxx::Value::operator%=(const phpcxx::Value& rhs)
+{
+    zval* a = &this->m_z;
+    zval* b = &rhs.m_z;
+
+    if (this->isRefcounted()) {
+        ZVAL_DEREF(a);
+        SEPARATE_ZVAL_NOREF(a);
+    }
+
+    if (Z_TYPE_P(a) == IS_LONG && Z_TYPE_P(b) == IS_LONG) {
+        if (Z_LVAL_P(b) == 0) {
+            zend_throw_exception_ex(zend_ce_division_by_zero_error, 0, "Modulo by zero");
+            throw phpcxx::PhpException();
+        }
+
+        if (Z_LVAL_P(b) == -1) {
+            ZVAL_LONG(a, 0);
+            return *this;
+        }
+
+        ZVAL_LONG(a, Z_LVAL_P(a) % Z_LVAL_P(b));
+    }
+
+    mod_function(a, a, b);
+    if (UNEXPECTED(EG(exception))) {
+        throw phpcxx::PhpException();
+    }
+
+    return *this;
+}
+
+phpcxx::Value& phpcxx::Value::operator|=(const phpcxx::Value& rhs)
+{
+    zval* a = &this->m_z;
+    zval* b = &rhs.m_z;
+
+    if (this->isRefcounted()) {
+        ZVAL_DEREF(a);
+        SEPARATE_ZVAL_NOREF(a);
+    }
+
+    bitwise_or_function(a, a, b);
+    if (UNEXPECTED(EG(exception))) {
+        throw phpcxx::PhpException();
+    }
+
+    return *this;
+}
+
+phpcxx::Value& phpcxx::Value::operator&=(const phpcxx::Value& rhs)
+{
+    zval* a = &this->m_z;
+    zval* b = &rhs.m_z;
+
+    if (this->isRefcounted()) {
+        ZVAL_DEREF(a);
+        SEPARATE_ZVAL_NOREF(a);
+    }
+
+    bitwise_and_function(a, a, b);
+    if (UNEXPECTED(EG(exception))) {
+        throw phpcxx::PhpException();
+    }
+
+    return *this;
+}
+
+phpcxx::Value& phpcxx::Value::operator^=(const phpcxx::Value& rhs)
+{
+    zval* a = &this->m_z;
+    zval* b = &rhs.m_z;
+
+    if (this->isRefcounted()) {
+        ZVAL_DEREF(a);
+        SEPARATE_ZVAL_NOREF(a);
+    }
+
+    bitwise_xor_function(a, a, b);
+    if (UNEXPECTED(EG(exception))) {
+        throw phpcxx::PhpException();
+    }
+
+    return *this;
+}
+
+phpcxx::Value& phpcxx::Value::operator<<=(const phpcxx::Value& rhs)
+{
+    zval* a = &this->m_z;
+    zval* b = &rhs.m_z;
+
+    if (this->isRefcounted()) {
+        ZVAL_DEREF(a);
+        SEPARATE_ZVAL_NOREF(a);
+    }
+
+    shift_left_function(a, a, b);
+    if (UNEXPECTED(EG(exception))) {
+        throw phpcxx::PhpException();
+    }
+
+    return *this;
+}
+
+phpcxx::Value& phpcxx::Value::operator>>=(const phpcxx::Value& rhs)
+{
+    zval* a = &this->m_z;
+    zval* b = &rhs.m_z;
+
+    if (this->isRefcounted()) {
+        ZVAL_DEREF(a);
+        SEPARATE_ZVAL_NOREF(a);
+    }
+
+    shift_right_function(a, a, b);
+    if (UNEXPECTED(EG(exception))) {
+        throw phpcxx::PhpException();
+    }
+
+    return *this;
+}
+
+bool phpcxx::Value::isIdenticalTo(const phpcxx::Value& rhs)
+{
+    zval& a = this->m_z;
+    zval& b = rhs.m_z;
+    bool  c = fast_is_identical_function(&a, &b);
+    if (UNEXPECTED(EG(exception))) {
+        throw phpcxx::PhpException();
+    }
+
+    return c;
+}
+
+bool phpcxx::Value::isNotIdenticalTo(const phpcxx::Value& rhs)
+{
+    zval& a = this->m_z;
+    zval& b = rhs.m_z;
+    bool  c = fast_is_not_identical_function(&a, &b);
+    if (UNEXPECTED(EG(exception))) {
+        throw phpcxx::PhpException();
+    }
+
+    return c;
 }
 
 static inline zval* separateOrCreateArray(zval* z)
@@ -144,6 +399,38 @@ phpcxx::Value& phpcxx::Value::operator[](zend_long key)
     }
 
     return ErrorValue;
+}
+
+phpcxx::Value& phpcxx::Value::operator++()
+{
+    zval* z = &this->m_z;
+
+    if (Z_TYPE_P(z) == IS_LONG) {
+        fast_long_increment_function(z);
+    }
+    else {
+        ZVAL_DEREF(z);
+        SEPARATE_ZVAL_NOREF(z);
+        increment_function(z);
+    }
+
+    return *this;
+}
+
+phpcxx::Value& phpcxx::Value::operator--()
+{
+    zval* z = &this->m_z;
+
+    if (Z_TYPE_P(z) == IS_LONG) {
+        fast_long_decrement_function(z);
+    }
+    else {
+        ZVAL_DEREF(z);
+        SEPARATE_ZVAL_NOREF(z);
+        decrement_function(z);
+    }
+
+    return *this;
 }
 
 phpcxx::Value& phpcxx::Value::operator[](std::nullptr_t)
