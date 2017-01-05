@@ -3,8 +3,12 @@
 
 #include "phpcxx.h"
 
+#include <initializer_list>
 #include <memory>
 #include "emallocallocator.h"
+#include "vector.h"
+
+struct _zend_execute_data;
 
 namespace phpcxx {
 
@@ -12,10 +16,13 @@ class Value;
 class ParametersPrivate;
 class PHPCXX_EXPORT Parameters {
 public:
-    Parameters(ParametersPrivate* dd);
+    Parameters(std::initializer_list<Value*> l);
+    Parameters(const vector<Value*>& v);
     ~Parameters();
 
-    std::size_t count() const;
+    std::size_t size() const;
+
+    bool verify() const;
 
     Value& operator[](std::size_t idx);
     const Value& operator[](std::size_t idx) const;
@@ -23,7 +30,7 @@ public:
 private:
     std::unique_ptr<ParametersPrivate, emdeleter> d_ptr;
 
-    Parameters();
+    Parameters(struct _zend_execute_data* execute_data);
     friend class FunctionHandler;
 };
 

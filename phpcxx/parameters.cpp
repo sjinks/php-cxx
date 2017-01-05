@@ -1,18 +1,19 @@
-#include <cassert>
-#include <memory>
 #include "parameters.h"
 #include "parameters_p.h"
-#include "emallocallocator.h"
 #include "value.h"
 
-phpcxx::Parameters::Parameters(ParametersPrivate* dd)
-    : d_ptr(dd)
+phpcxx::Parameters::Parameters(std::initializer_list<Value*> l)
+    : d_ptr(emcreate<ParametersPrivate>(l), emdeleter())
 {
-    assert(dd != nullptr);
 }
 
-phpcxx::Parameters::Parameters()
-    : d_ptr(emcreate<ParametersPrivate>(), emdeleter())
+phpcxx::Parameters::Parameters(const vector<Value*>& v)
+    : d_ptr(emcreate<ParametersPrivate>(v), emdeleter())
+{
+}
+
+phpcxx::Parameters::Parameters(struct _zend_execute_data* execute_data)
+    : d_ptr(emcreate<ParametersPrivate>(execute_data), emdeleter())
 {
 }
 
@@ -20,21 +21,24 @@ phpcxx::Parameters::~Parameters()
 {
 }
 
-std::size_t phpcxx::Parameters::count() const
+std::size_t phpcxx::Parameters::size() const
 {
     return this->d_ptr->m_params.size();
 }
 
+bool phpcxx::Parameters::verify() const
+{
+    return this->d_ptr->verify();
+}
+
 phpcxx::Value& phpcxx::Parameters::operator[](std::size_t idx)
 {
-    FTRACE();
     zval* z = this->d_ptr->m_params[idx];
     return *new(reinterpret_cast<void*>(z)) Value(placement_construct);
 }
 
 const phpcxx::Value& phpcxx::Parameters::operator[](std::size_t idx) const
 {
-    FTRACE();
     zval* z = this->d_ptr->m_params[idx];
     return *new(reinterpret_cast<void*>(z)) Value(placement_construct);
 }

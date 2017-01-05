@@ -29,7 +29,7 @@ public:
     template<FunctionPrototypeNV f>
     static void handler(struct _zend_execute_data* execute_data, struct _zval_struct* return_value)
     {
-        Parameters p;
+        Parameters p(execute_data);
 
         f(p);
         if (EXPECTED(!EG(exception))) {
@@ -55,7 +55,7 @@ public:
     template<FunctionPrototypeVV f>
     static void handler(struct _zend_execute_data* execute_data, struct _zval_struct* return_value)
     {
-        Parameters p;
+        Parameters p(execute_data);
         Value r = f(p);
         if (EXPECTED(!EG(exception))) {
             r.assignTo(return_value);

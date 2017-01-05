@@ -16,6 +16,13 @@ class MyModule : public phpcxx::Module {
 public:
     using phpcxx::Module::Module;
 
+    static void swap(phpcxx::Parameters& p)
+    {
+        phpcxx::Value tmp = p[0];
+        p[0] = p[1];
+        p[1] = tmp;
+    }
+
 protected:
     virtual std::vector<phpcxx::Function> functions() override
     {
@@ -57,7 +64,7 @@ private:
 
     static void func2(phpcxx::Parameters& p)
     {
-        if (p.count() > 0) {
+        if (p.size() > 0) {
             phpcxx::Value a = p[0];
             php_printf("func2: a = %s\n", a.toString().c_str());
         }
@@ -70,14 +77,7 @@ private:
 
     static phpcxx::Value func4(phpcxx::Parameters& p)
     {
-        return p.count() ? p[0] : phpcxx::Value();
-    }
-
-    static void swap(phpcxx::Parameters& p)
-    {
-        phpcxx::Value tmp = p[0];
-        p[0] = p[1];
-        p[1] = tmp;
+        return p.size() ? p[0] : phpcxx::Value();
     }
 };
 
@@ -291,6 +291,24 @@ TEST(FunctionsTest, ParamsByReference)
         o = out.str(); out.str(std::string());
         e = err.str(); err.str(std::string());
         EXPECT_EQ("This is b\nThis is a\n", o);
+        EXPECT_EQ("", e);
+
+        sapi.run([&out, &err, &o, &e]() {
+            phpcxx::Value a("This is a");
+            phpcxx::Value b("This is b");
+
+            a.reference();
+            b.reference();
+            phpcxx::vector<phpcxx::Value*> v({ &a, &b });
+            phpcxx::Parameters params(v);
+            MyModule::swap(params);
+            EXPECT_EQ("This is a", b.toString());
+            EXPECT_EQ("This is b", a.toString());
+        });
+
+        o = out.str(); out.str(std::string());
+        e = err.str(); err.str(std::string());
+        EXPECT_EQ("", o);
         EXPECT_EQ("", e);
     }
 
