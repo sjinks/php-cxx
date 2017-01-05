@@ -18,7 +18,6 @@ public:
     typedef T value_type;
 
     EMallocAllocator(void) noexcept = default;
-    ~EMallocAllocator(void) noexcept = default;
 
     template<typename U>
     EMallocAllocator(const EMallocAllocator<U>&) noexcept

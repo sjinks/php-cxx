@@ -22,6 +22,8 @@ public:
     Constant(const char* name, const char* v);
     ~Constant();
 
+    Constant(const Constant& other) : d_ptr(other.d_ptr) {}
+
     template<typename T, typename std::enable_if<(sizeof(T) < sizeof(zend_long)) && std::is_integral<T>::value>::type* = nullptr>
     Constant(const char* name, T v) : Constant(name, static_cast<zend_long>(v)) {}
 
