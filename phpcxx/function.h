@@ -18,6 +18,7 @@ class FunctionPrivate;
 class PHPCXX_EXPORT Function {
 public:
     Function(const char* name, InternalFunction c, const Arguments& required = {}, const Arguments& optional = {}, bool byref = false);
+    Function(const Function& other);
     ~Function();
 
     Function&& addRequiredArgument(const Argument& arg);
