@@ -41,6 +41,12 @@ public:
             case Type::Reference: ZVAL_NEW_EMPTY_REF(&this->m_z); return;
             case Type::Bool:      ZVAL_FALSE(&this->m_z);         return;
             default: // Resource, Constant, ConstantAST, Callable, Indirect, Pointer
+            case Type::Resource:
+            case Type::Constant:
+            case Type::ConstantAST:
+            case Type::Callable:
+            case Type::Indirect:
+            case Type::Pointer:
             case Type::Undefined: ZVAL_UNDEF(&this->m_z); return;
         }
     }
@@ -77,6 +83,10 @@ public:
                 ZVAL_DUP(&this->m_z, z);
                 break;
         }
+    }
+
+    Value(const placement_construct_t&)
+    {
     }
 
     template<typename T>
@@ -383,10 +393,7 @@ public:
     Value& operator[](std::nullptr_t);
 
     template<typename ...Args>
-    Value operator()(Args&&... args)
-    {
-        return this->_call(nullptr, IndicesFor<Args...>{}, std::forward<Args>(args)...);
-    }
+    Value operator()(Args&&... args);
 
     std::string debugZval() const;
     static string typeToString(Type type);
@@ -394,14 +401,10 @@ public:
     /**
      * @internal
      */
-    zval* getZVal() { return &this->m_z; }
+    zval* pzval() const { return &this->m_z; }
 
 private:
     mutable zval m_z;
-
-    struct placement_construction_t {};
-
-    Value(const placement_construction_t&) {}
 
     friend phpcxx::Value operator~(const phpcxx::Value& op);
     friend phpcxx::Value operator!(const phpcxx::Value& op);
@@ -414,36 +417,20 @@ private:
 
     friend class Array;
 
-    template<typename ...Args, std::size_t ...Is>
-    Value _call(zval* object, indices<Is...>, Args&&... args)
-    {
-        std::array<zval, sizeof...(args)> zparams;
-        zparams = { { *Value::paramHelper(std::move(args), zparams[Is])... } };
-
-        zval retval;
-        if (call_user_function_ex(CG(function_table), object, &this->m_z, &retval, zparams.size(), zparams.data(), 1, nullptr) == SUCCESS) {
-            if (UNEXPECTED(EG(exception))) {
-                i_zval_ptr_dtor(&retval ZEND_FILE_LINE_CC);
-                throw PhpException();
-            }
-
-            return Value(&retval, CopyPolicy::Wrap);
-        }
-
-        return Value();
-    }
-
-    static zval* paramHelper(Value&& v, zval&) { return &v.m_z; }
-    static zval* paramHelper(Array&& v, zval&) { return &v.m_z; }
-
-    template<typename T>
-    static zval* paramHelper(const T& v, zval& z) { construct_zval(z, v); Z_TRY_DELREF(z); return &z; }
-
     friend void construct_zval(zval& z, const Value& v) { ZVAL_COPY(&z, &v.m_z); }
 };
 
 extern Value ErrorValue;
 
 }
+
+#include "call.h"
+
+template<typename ...Args>
+phpcxx::Value phpcxx::Value::operator()(Args&&... args)
+{
+    return phpcxx::call(*this, std::forward<Args>(args)...);
+}
+
 
 #endif /* PHPCXX */

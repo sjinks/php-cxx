@@ -5,19 +5,14 @@
 #include "emallocallocator.h"
 #include "value.h"
 
-phpcxx::Parameters::Parameters(std::initializer_list<phpcxx::Value> v)
-    : d_ptr(emcreate<ParametersPrivate>(v), emdeleter())
-{
-}
-
 phpcxx::Parameters::Parameters(ParametersPrivate* dd)
     : d_ptr(dd)
 {
     assert(dd != nullptr);
 }
 
-phpcxx::Parameters::Parameters(int argc)
-    : d_ptr(emcreate<ParametersPrivate>(argc), emdeleter())
+phpcxx::Parameters::Parameters()
+    : d_ptr(emcreate<ParametersPrivate>(), emdeleter())
 {
 }
 
@@ -32,10 +27,14 @@ std::size_t phpcxx::Parameters::count() const
 
 phpcxx::Value& phpcxx::Parameters::operator[](std::size_t idx)
 {
-    return this->d_ptr->m_params[idx];
+    FTRACE();
+    zval* z = this->d_ptr->m_params[idx];
+    return *new(reinterpret_cast<void*>(z)) Value(placement_construct);
 }
 
 const phpcxx::Value& phpcxx::Parameters::operator[](std::size_t idx) const
 {
-    return this->d_ptr->m_params[idx];
+    FTRACE();
+    zval* z = this->d_ptr->m_params[idx];
+    return *new(reinterpret_cast<void*>(z)) Value(placement_construct);
 }

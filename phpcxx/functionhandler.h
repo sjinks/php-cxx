@@ -18,16 +18,22 @@ public:
     static void handler(struct _zend_execute_data* execute_data, struct _zval_struct* return_value)
     {
         f();
-        ZVAL_NULL(return_value);
+        if (EXPECTED(!EG(exception))) {
+            ZVAL_NULL(return_value);
+        }
+        else {
+            throw PhpException();
+        }
     }
 
     template<FunctionPrototypeNV f>
     static void handler(struct _zend_execute_data* execute_data, struct _zval_struct* return_value)
     {
-        Parameters p(ZEND_NUM_ARGS());
+        Parameters p;
+
+        f(p);
         if (EXPECTED(!EG(exception))) {
             ZVAL_NULL(return_value);
-            f(p);
         }
         else {
             throw PhpException();
@@ -49,9 +55,10 @@ public:
     template<FunctionPrototypeVV f>
     static void handler(struct _zend_execute_data* execute_data, struct _zval_struct* return_value)
     {
-        Parameters p(ZEND_NUM_ARGS());
+        Parameters p;
+        Value r = f(p);
         if (EXPECTED(!EG(exception))) {
-            f(p).assignTo(return_value);
+            r.assignTo(return_value);
         }
         else {
             throw PhpException();
@@ -61,4 +68,4 @@ public:
 
 };
 
-#endif /* FUNCTIONHANDLER_H_ */
+#endif /* FUNCTIONHANDLER_H */

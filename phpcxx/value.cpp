@@ -353,7 +353,7 @@ phpcxx::Value& phpcxx::Value::operator[](const phpcxx::ZendString& key)
                 retval = zend_hash_add_new(Z_ARRVAL_P(z), key.get(), &EG(uninitialized_zval));
             }
 
-            return *(new(retval) Value(placement_construction_t()));
+            return *(new(retval) Value(placement_construct));
         }
 
         case IS_OBJECT:
@@ -382,7 +382,7 @@ phpcxx::Value& phpcxx::Value::operator[](zend_long key)
                 retval = zend_hash_index_add_new(Z_ARRVAL_P(z), h, &EG(uninitialized_zval));
             }
 
-            return *(new(retval) Value(placement_construction_t()));
+            return *(new(retval) Value(placement_construct));
         }
 
         case IS_OBJECT:
@@ -444,7 +444,7 @@ phpcxx::Value& phpcxx::Value::operator[](std::nullptr_t)
                 return ErrorValue;
             }
 
-            return *(new(var_ptr) Value(placement_construction_t()));
+            return *(new(var_ptr) Value(placement_construct));
         }
 
         case IS_OBJECT:

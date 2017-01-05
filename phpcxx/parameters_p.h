@@ -5,7 +5,7 @@
 
 #include <Zend/zend_API.h>
 #include <cassert>
-#include <initializer_list>
+#include "phpexception.h"
 #include "vector.h"
 #include "value.h"
 
@@ -14,40 +14,26 @@ namespace phpcxx {
 class PHPCXX_HIDDEN ParametersPrivate {
     friend class Parameters;
 public:
-    ParametersPrivate(int argc)
+    ParametersPrivate()
     {
-        assert(argc >= 0);
+        zval* param_ptr       = ZEND_CALL_ARG(EG(current_execute_data), 1);
+        std::size_t arg_count = ZEND_CALL_NUM_ARGS(EG(current_execute_data));
 
-        this->m_params.reserve(argc);
-        zval p[argc];
-
+        this->m_params.reserve(arg_count);
         zend_function* f = EG(current_execute_data)->func;
+        zval* ptr        = param_ptr;
 
-        if (EXPECTED(SUCCESS == _zend_get_parameters_array_ex(argc, p))) {
-            for (int i=0; i<argc; ++i) {
-                zend_check_internal_arg_type(f, i+1, &p[i]);
-                if (UNEXPECTED(EG(exception))) {
-                    return;
-                }
+        for (std::size_t i=0; i<arg_count; ++i, ++ptr) {
+            zend_check_internal_arg_type(f, i+1, ptr);
+            this->m_params.push_back(ptr);
+            if (UNEXPECTED(EG(exception))) {
+                throw PhpException();
             }
-
-            for (int i=0; i<argc; ++i) {
-                this->m_params.emplace_back(&p[i]);
-            }
-
-            return;
         }
     }
 
-    ParametersPrivate(std::initializer_list<Value> v)
-        : m_params(v)
-    {
-    }
-
-    ~ParametersPrivate() = default;
-
 private:
-    phpcxx::vector<Value> m_params;
+    phpcxx::vector<zval*> m_params;
 };
 
 }

@@ -510,7 +510,7 @@ TEST_F(ValueFixture, References)
             EXPECT_EQ(2, a.refCount());
             EXPECT_EQ(2, b.refCount());
 
-            zval* z = arr.getZVal();
+            zval* z = arr.pzval();
             zval* x = zend_hash_index_find(Z_ARRVAL_P(z), 0);
             ASSERT_TRUE(x != nullptr);
             ASSERT_EQ(IS_LONG, Z_TYPE_P(x));
@@ -538,7 +538,7 @@ TEST_F(ValueFixture, References)
             EXPECT_EQ(3, a.refCount());
             EXPECT_EQ(3, b.refCount());
 
-            zval* z = arr.getZVal();
+            zval* z = arr.pzval();
             zval* x = zend_hash_index_find(Z_ARRVAL_P(z), 0);
             ASSERT_TRUE(x != nullptr);
             ASSERT_EQ(IS_REFERENCE, Z_TYPE_P(x));
@@ -551,6 +551,41 @@ TEST_F(ValueFixture, References)
         EXPECT_TRUE(m_out.str().empty());
         m_out.str(std::string());
     });
+
+    m_sapi.run([]() {
+        /*
+            $aa = 1;
+            $bb = 2;
+
+            $a = &$aa;
+            $b = &$bb;
+
+            $tmp = $a;
+            $a   = $b;
+            $b   = $tmp;
+         */
+        phpcxx::Value aa = 1;
+        phpcxx::Value bb = 2;
+
+        phpcxx::Value a   = aa.reference();
+        phpcxx::Value b   = bb.reference();
+        phpcxx::Value tmp;
+
+        EXPECT_EQ(1, a.asLong());
+        EXPECT_EQ(2, b.asLong());
+
+        tmp = a;
+        a   = b;
+        b   = tmp;
+
+        EXPECT_TRUE(a.isReference());
+        EXPECT_TRUE(b.isReference());
+        EXPECT_EQ(2, a.asLong());
+        EXPECT_EQ(1, b.asLong());
+    });
+    EXPECT_EQ(m_err.str(), "");
+    m_err.str(std::string());
+
 }
 
 TEST_F(ValueFixture, Arrays)

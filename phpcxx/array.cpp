@@ -66,7 +66,7 @@ phpcxx::Array& phpcxx::Array::operator=(const Array& other)
     return *this;
 }
 
-phpcxx::Value& phpcxx::Array::operator[](nullptr_t)
+phpcxx::Value& phpcxx::Array::operator[](std::nullptr_t)
 {
     zval* z = derefAndCheck(&this->m_z);
     SEPARATE_ARRAY(z);
@@ -76,7 +76,7 @@ phpcxx::Value& phpcxx::Array::operator[](nullptr_t)
         throw std::runtime_error("Cannot add element to the array as the next element is already occupied");
     }
 
-    return *(new(var_ptr) Value(Value::placement_construction_t()));
+    return *(new(var_ptr) Value(placement_construct));
 }
 
 phpcxx::Value& phpcxx::Array::operator[](zend_long idx)
@@ -90,7 +90,7 @@ phpcxx::Value& phpcxx::Array::operator[](zend_long idx)
         retval = zend_hash_index_add_new(Z_ARRVAL_P(z), h, &EG(uninitialized_zval));
     }
 
-    return *(new(retval) Value(Value::placement_construction_t()));
+    return *(new(retval) Value(placement_construct));
 }
 
 phpcxx::Value& phpcxx::Array::operator[](const Value& key)
@@ -140,7 +140,7 @@ phpcxx::Value& phpcxx::Array::operator[](zend_string* key)
         retval = zend_hash_add_new(Z_ARRVAL_P(z), key, &EG(uninitialized_zval));
     }
 
-    return *(new(retval) Value(Value::placement_construction_t()));
+    return *(new(retval) Value(placement_construct));
 }
 
 std::size_t phpcxx::Array::size() const
@@ -238,8 +238,4 @@ void phpcxx::Array::unset(zend_string* key)
     else {
         zend_hash_del(ht, key);
     }
-}
-
-phpcxx::Array::Array(nullptr_t nullptr_t)
-{
 }

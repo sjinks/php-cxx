@@ -28,7 +28,8 @@ LIBRARY_CXX_SOURCES = \
 	phpcxx/operators.cpp \
 	phpcxx/parameters.cpp \
 	phpcxx/phpexception.cpp \
-	phpcxx/value.cpp
+	phpcxx/value.cpp \
+	phpcxx/variables.cpp
 
 TESTER_CXX_SOURCES = \
 	test/tester.cpp \

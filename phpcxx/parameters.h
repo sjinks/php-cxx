@@ -3,7 +3,6 @@
 
 #include "phpcxx.h"
 
-#include <initializer_list>
 #include <memory>
 #include "emallocallocator.h"
 
@@ -13,7 +12,6 @@ class Value;
 class ParametersPrivate;
 class PHPCXX_EXPORT Parameters {
 public:
-    Parameters(std::initializer_list<Value> v);
     Parameters(ParametersPrivate* dd);
     ~Parameters();
 
@@ -25,7 +23,7 @@ public:
 private:
     std::unique_ptr<ParametersPrivate, emdeleter> d_ptr;
 
-    Parameters(int);
+    Parameters();
     friend class FunctionHandler;
 };
 

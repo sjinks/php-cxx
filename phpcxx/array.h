@@ -25,7 +25,7 @@ public:
 
     Array& operator=(const Array& other);
 
-    Value& operator[](nullptr_t);
+    Value& operator[](std::nullptr_t);
     Value& operator[](zend_long idx);
     Value& operator[](const Value& key);
     [[gnu::nonnull]] Value& operator[](zend_string* key);
@@ -51,10 +51,12 @@ public:
     void unset(const string& key)     { this->unset(ZendString(key)); }
     void unset(const char* key)       { this->unset(ZendString(key)); }
     void unset(const ZendString& key) { this->unset(key.get()); }
+
+    zval* pzval() const { return &this->m_z; }
 private:
     mutable zval m_z;
 
-    Array(nullptr_t); // for placement new
+    Array(std::nullptr_t) {} // for placement new
 
     friend class Value;
 };

@@ -6,6 +6,7 @@
 #include <Zend/zend.h>
 #include "phpcxx/module.h"
 #include "phpcxx/function.h"
+#include "phpcxx/call.h"
 #include "testsapi.h"
 #include "globals.h"
 
@@ -41,7 +42,10 @@ protected:
                     phpcxx::Argument("a")
                         .setType(phpcxx::ArgumentType::Any)
                         .setNullable(true)
-                )
+                ),
+            phpcxx::createFunction<&MyModule::swap>("swap")
+                .addRequiredArgument(phpcxx::byReference("a"))
+                .addRequiredArgument(phpcxx::byReference("b"))
         };
     }
 
@@ -68,11 +72,18 @@ private:
     {
         return p.count() ? p[0] : phpcxx::Value();
     }
+
+    static void swap(phpcxx::Parameters& p)
+    {
+        phpcxx::Value tmp = p[0];
+        p[0] = p[1];
+        p[1] = tmp;
+    }
 };
 
 }
 
-TEST(FunctionsTest, TestDefinitions)
+TEST(FunctionsTest, Definitions)
 {
     MyModule module("Functions", "0.0");
 
@@ -165,6 +176,25 @@ TEST(FunctionsTest, TestDefinitions)
             e = err.str(); err.str(std::string());
             EXPECT_EQ("func4\n1\n0\n0\n\na  1 1\n", o);
             EXPECT_EQ("", e);
+
+            // swap(&$a, &$b)
+            // return type Any = no type
+            runPhpCode(
+                "$r = new ReflectionFunction('swap'); "
+                "echo $r->getName(), PHP_EOL; "
+                "echo $r->getNumberOfParameters(), PHP_EOL; "
+                "echo $r->getNumberOfRequiredParameters(), PHP_EOL; "
+                "echo (int)$r->hasReturnType(), PHP_EOL; "
+                "echo $r->getReturnType(), PHP_EOL; "
+                "$params = $r->getParameters(); "
+                "echo $params[0]->getName(), ' ', $params[0]->getType(), ' ', (int)$params[0]->allowsNull(), ' ', (int)$params[0]->canBePassedByValue(), PHP_EOL;"
+                "echo $params[1]->getName(), ' ', $params[1]->getType(), ' ', (int)$params[1]->allowsNull(), ' ', (int)$params[1]->canBePassedByValue(), PHP_EOL;"
+            );
+
+            o = out.str(); out.str(std::string());
+            e = err.str(); err.str(std::string());
+            EXPECT_EQ("swap\n2\n2\n0\n\na  1 0\nb  1 0\n", o);
+            EXPECT_EQ("", e);
         });
     }
 
@@ -174,14 +204,7 @@ TEST(FunctionsTest, TestDefinitions)
     EXPECT_EQ("", e);
 }
 
-template<typename... Params>
-phpcxx::Value call(const char* name, Params&&... p)
-{
-    phpcxx::Value f(name);
-    return f(std::forward<Params>(p)...);
-}
-
-TEST(FunctionsTest, TestSimpleCalls)
+TEST(FunctionsTest, SimpleCalls)
 {
     MyModule module("Functions", "0.0");
 
@@ -199,7 +222,7 @@ TEST(FunctionsTest, TestSimpleCalls)
         std::string e;
 
         sapi.run([&out, &err, &o, &e]() {
-            call("func1");
+            phpcxx::call("func1");
         });
 
         o = out.str(); out.str(std::string());
@@ -208,12 +231,66 @@ TEST(FunctionsTest, TestSimpleCalls)
         EXPECT_EQ("", e);
 
         sapi.run([&out, &err, &o, &e]() {
-            call("func2", 44);
+            phpcxx::call("func2", 44);
         });
 
         o = out.str(); out.str(std::string());
         e = err.str(); err.str(std::string());
         EXPECT_EQ("func2: a = 44\n", o);
+        EXPECT_EQ("", e);
+    }
+
+    o = out.str(); out.str(std::string());
+    e = err.str(); err.str(std::string());
+    EXPECT_EQ("", o);
+    EXPECT_EQ("", e);
+}
+
+TEST(FunctionsTest, ParamsByReference)
+{
+    MyModule module("Functions", "0.0");
+
+    std::stringstream out;
+    std::stringstream err;
+    std::string o;
+    std::string e;
+
+    {
+        TestSAPI sapi(out, err);
+        sapi.addModule(module);
+        sapi.initialize();
+
+        std::string o;
+        std::string e;
+
+        sapi.run([&out, &err, &o, &e]() {
+            phpcxx::Value a("This is a");
+            phpcxx::Value b("This is b");
+
+            a.reference();
+            b.reference();
+            phpcxx::call("swap", a, b);
+            EXPECT_EQ("This is a", b.toString());
+            EXPECT_EQ("This is b", a.toString());
+        });
+
+        o = out.str(); out.str(std::string());
+        e = err.str(); err.str(std::string());
+        EXPECT_EQ("", o);
+        EXPECT_EQ("", e);
+
+        sapi.run([&out, &err, &o, &e]() {
+            runPhpCode(
+                "$a = 'This is a'; "
+                "$b = 'This is b'; "
+                "swap($a, $b); "
+                "echo $a, PHP_EOL, $b, PHP_EOL;"
+            );
+        });
+
+        o = out.str(); out.str(std::string());
+        e = err.str(); err.str(std::string());
+        EXPECT_EQ("This is b\nThis is a\n", o);
         EXPECT_EQ("", e);
     }
 

@@ -9,6 +9,9 @@
 
 namespace phpcxx {
 
+struct placement_construct_t {};
+extern const placement_construct_t placement_construct;
+
 // See http://loungecpp.wikidot.com/tips-and-tricks:indices
 template<std::size_t... Is>
 struct indices {};
