@@ -51,7 +51,12 @@ public:
             zend_execute_data* execute_data = this->m_execute_data;
 
             if (EX(func)->common.required_num_args < EX_NUM_ARGS()) {
-                zend_wrong_paramers_count_error(EX_NUM_ARGS(), EX(func)->common.required_num_args, EX(func)->common.num_args);
+                zend_wrong_paramers_count_error(
+                    static_cast<int>(EX_NUM_ARGS()),
+                    static_cast<int>(EX(func)->common.required_num_args),
+                    static_cast<int>(EX(func)->common.num_args)
+                );
+
                 if (UNEXPECTED(EG(exception))) {
                     throw PhpException();
                 }
@@ -61,7 +66,7 @@ public:
 
             zend_function* f = EX(func);
             for (std::size_t i=0; i<this->m_params.size(); ++i) {
-                zend_check_internal_arg_type(f, i+1, this->m_params[i]);
+                zend_check_internal_arg_type(f, static_cast<uint32_t>(i+1), this->m_params[i]);
                 if (UNEXPECTED(EG(exception))) {
                     throw PhpException();
                 }

@@ -39,8 +39,8 @@ public:
     std::vector<zend_module_entry> mods;
 
     sapi_module_struct sapi = {
-        (char*)"test",
-        (char*)"Test SAPI",
+        const_cast<char*>("test"),
+        const_cast<char*>("Test SAPI"),
         sapi_startup,
         php_module_shutdown_wrapper,
         sapi_activate,
@@ -64,7 +64,7 @@ public:
         nullptr,    // void (*unblock_interruptions)(void);
         nullptr,    // void (*default_post_reader)(void);
         nullptr,    // void (*treat_data)(int arg, char *str, zval *destArray);
-        (char*)"-", // char *executable_location;
+        const_cast<char*>("-"), // char *executable_location;
         1,          // php_ini_ignore
         1,          // php_ini_ignore_cwd
         nullptr,    // int (*get_fd)(int *fd);
@@ -92,7 +92,7 @@ private:
 static int sapi_startup(sapi_module_struct* sapi_module)
 {
     SAPIGlobals& g = SAPIGlobals::instance();
-    return php_module_startup(sapi_module, g.mods.data(), g.mods.size());
+    return php_module_startup(sapi_module, g.mods.data(), static_cast<uint>(g.mods.size()));
 }
 
 static int sapi_activate()
@@ -108,7 +108,7 @@ static int sapi_deactivate()
 
 static size_t sapi_ub_write(const char* str, size_t str_length)
 {
-    SAPIGlobals::instance().out->write(str, str_length).flush();
+    SAPIGlobals::instance().out->write(str, static_cast<std::streamsize>(str_length)).flush();
     return str_length;
 }
 
@@ -199,7 +199,7 @@ void TestSAPI::run(std::function<void(void)> callback)
     php_request_startup();
     SG(headers_sent) = 1;
     SG(request_info).no_headers = 1;
-    php_register_variable((char*)"PHP_SELF", (char*)"-", NULL);
+    php_register_variable(const_cast<char*>("PHP_SELF"), const_cast<char*>("-"), NULL);
 
     zend_first_try {
         callback();

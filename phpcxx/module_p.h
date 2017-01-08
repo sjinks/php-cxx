@@ -56,13 +56,13 @@ public:
 
 private:
     Module* const q_ptr;
+    std::vector<Function> m_funcs;
+    std::unique_ptr<zend_function_entry[]> m_zf;
 #ifdef ZTS
     ts_rsrc_id phpcxx_globals_id;
 #else
     zend_phpcxx_globals phpcxx_globals;
 #endif
-    std::vector<Function> m_funcs;
-    std::unique_ptr<zend_function_entry[]> m_zf;
 
     static int moduleStartup(INIT_FUNC_ARGS);
     static int moduleShutdown(SHUTDOWN_FUNC_ARGS);

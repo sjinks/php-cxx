@@ -18,10 +18,10 @@ phpcxx::Function::~Function()
 
 phpcxx::Function&& phpcxx::Function::addRequiredArgument(const Argument& arg)
 {
-    auto& args          = this->d_ptr->m_arginfo;
-    zend_uintptr_t nreq = reinterpret_cast<zend_uintptr_t>(args[0].name);
-    args.insert(args.begin() + nreq + 1, arg.get());
-    args[0].name        = reinterpret_cast<const char*>(reinterpret_cast<zend_uintptr_t>(++nreq));
+    auto& args         = this->d_ptr->m_arginfo;
+    zend_intptr_t nreq = reinterpret_cast<zend_intptr_t>(args[0].name);
+    args.insert(args.begin() + nreq + 1u, arg.get());
+    args[0].name       = reinterpret_cast<const char*>(++nreq);
     ++this->d_ptr->m_fe.num_args;
     this->d_ptr->m_fe.arg_info = args.data();
     return std::move(*this);

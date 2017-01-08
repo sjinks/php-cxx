@@ -101,7 +101,7 @@ int phpcxx::ModulePrivate::moduleShutdown(SHUTDOWN_FUNC_ARGS)
         try {
             retcode = e->q_ptr->moduleShutdown() ? SUCCESS : FAILURE;
         }
-        catch (const std::exception& e) {
+        catch (const std::exception&) {
             retcode = FAILURE;
         }
 

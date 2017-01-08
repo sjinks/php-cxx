@@ -40,14 +40,8 @@ public:
             case Type::Object:    object_init(&this->m_z);        return;
             case Type::Reference: ZVAL_NEW_EMPTY_REF(&this->m_z); return;
             case Type::Bool:      ZVAL_FALSE(&this->m_z);         return;
-            default: // Resource, Constant, ConstantAST, Callable, Indirect, Pointer
-            case Type::Resource:
-            case Type::Constant:
-            case Type::ConstantAST:
-            case Type::Callable:
-            case Type::Indirect:
-            case Type::Pointer:
-            case Type::Undefined: ZVAL_UNDEF(&this->m_z); return;
+            default: // Undefined, Resource, Constant, ConstantAST, Callable, Indirect, Pointer
+                ZVAL_UNDEF(&this->m_z); return;
         }
     }
 
@@ -189,9 +183,6 @@ public:
         if (Z_ISREF_P(a)) {
             a = Z_REFVAL_P(a);
         }
-        else {
-            a = &EG(error_zval);
-        }
 
         return *(new(a) Value(nullptr));
     }
@@ -224,35 +215,21 @@ public:
         }
     }
 
-    bool isRefcounted() const
-    {
-        return Z_REFCOUNTED(this->m_z);
-    }
-
-    bool isReference() const
-    {
-        return Z_ISREF(this->m_z);
-    }
-
-    bool isCollectable() const
-    {
-        return Z_COLLECTABLE(this->m_z);
-    }
-
-    bool isCopyable() const
-    {
-        return Z_COPYABLE(this->m_z);
-    }
-
-    bool isImmutable() const
-    {
-        return Z_IMMUTABLE(this->m_z);
-    }
-
-    bool isIndirect() const
-    {
-        return Z_TYPE(this->m_z) == IS_INDIRECT;
-    }
+    bool isRefcounted() const { return Z_REFCOUNTED(this->m_z); }
+    bool isReference() const { return Z_ISREF(this->m_z); }
+    bool isCollectable() const { return Z_COLLECTABLE(this->m_z); }
+    bool isCopyable() const  { return Z_COPYABLE(this->m_z); }
+    bool isImmutable() const { return Z_IMMUTABLE(this->m_z); }
+    bool isIndirect() const  { return Z_TYPE(this->m_z) == IS_INDIRECT; }
+    bool isUndefined() const { return Z_ISUNDEF(this->m_z); }
+    bool isNull() const      { return Z_ISNULL(this->m_z);  }
+    bool isBoolen() const    { return IS_TRUE     == Z_TYPE(this->m_z) || IS_FALSE == Z_TYPE(this->m_z); }
+    bool isInteger() const   { return IS_LONG     == Z_TYPE(this->m_z); }
+    bool isDouble() const    { return IS_DOUBLE   == Z_TYPE(this->m_z); }
+    bool isString() const    { return IS_STRING   == Z_TYPE(this->m_z); }
+    bool isArray() const     { return IS_ARRAY    == Z_TYPE(this->m_z); }
+    bool isObject() const    { return IS_OBJECT   == Z_TYPE(this->m_z); }
+    bool isResource() const  { return IS_RESOURCE == Z_TYPE(this->m_z); }
 
     uint32_t refCount() const
     {

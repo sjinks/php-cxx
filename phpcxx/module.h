@@ -48,7 +48,7 @@ private:
 
 class PHPCXX_EXPORT ModuleGlobals {
 public:
-    virtual ~ModuleGlobals() {}
+    virtual ~ModuleGlobals();
 };
 
 }

@@ -3,6 +3,10 @@
 #include "module.h"
 #include "module_p.h"
 
+phpcxx::ModuleGlobals::~ModuleGlobals()
+{
+}
+
 phpcxx::Module::Module(const char* name, const char* version)
     : d_ptr(new ModulePrivate(this, name, version))
 {

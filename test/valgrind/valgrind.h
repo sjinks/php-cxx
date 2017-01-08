@@ -55,6 +55,9 @@
    ---------------------------------------------------------------- 
 */
 
+#ifdef __clang
+#pragma clang system_header
+#endif
 
 /* This file is for inclusion into client (your!) code.
 

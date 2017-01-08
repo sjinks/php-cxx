@@ -66,6 +66,6 @@ public:
     }
 };
 
-};
+}
 
 #endif /* FUNCTIONHANDLER_H */

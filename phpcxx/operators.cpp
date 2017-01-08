@@ -217,5 +217,5 @@ int phpcxx::compare(const phpcxx::Value& lhs, const phpcxx::Value& rhs)
         throw phpcxx::PhpException();
     }
 
-    return Z_LVAL(c);
+    return static_cast<int>(Z_LVAL(c));
 }

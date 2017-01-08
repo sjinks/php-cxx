@@ -20,7 +20,7 @@ public:
 
         this->m_fe.fname    = name ? name : "";
         this->m_fe.handler  = c;
-        this->m_fe.num_args = required.size() + optional.size();
+        this->m_fe.num_args = static_cast<decltype(this->m_fe.num_args)>(required.size() + optional.size());
         this->m_fe.flags    = 0;
 
         zend_internal_arg_info f;

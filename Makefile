@@ -51,6 +51,11 @@ ifndef CXXFLAGS
 CXXFLAGS = -O0 -g3
 endif
 
+ifeq ($(CXX),clang++)
+CPPFLAGS_EXTRA = $(subst -I,-isystem ,$(shell $(PHP_CONFIG) --includes))
+# CXXFLAGS_EXTRA += -Weverything -Werror -Wno-c++98-compat -Wno-documentation -Wno-documentation-unknown-command -Wno-switch-enum -Wno-error=padded -Wno-error=exit-time-destructors -Wno-error=float-equal -Wno-error=global-constructors -Wno-error=double-promotion -Wno-error=weak-vtables -Wno-shadow
+endif
+
 ifeq ($(COVERAGE),1)
 CXXFLAGS_EXTRA += -O0 -coverage
 LDFLAGS_EXTRA  += -coverage
@@ -84,8 +89,13 @@ $(SHARED_LIBRARY): $(LIBRARY_CXX_OBJS) | output_directory
 $(STATIC_LIBRARY): $(LIBRARY_CXX_OBJS) | output_directory
 	$(AR) rcs "$@" $^
 
+ifeq ($(CXX),clang++)
 .build/gtest-all.o: $(GTEST_SRCS) | output_directory
-	$(CXX) -I$(GTEST_DIR) $(CXXFLAGS) -c $(GTEST_DIR)/src/gtest-all.cc -o $@
+	$(CXX) -isystem $(GTEST_DIR) $(CXXFLAGS) -O2 -c $(GTEST_DIR)/src/gtest-all.cc -o $@
+else
+.build/gtest-all.o: $(GTEST_SRCS) | output_directory
+	$(CXX) -I$(GTEST_DIR) $(CXXFLAGS) -O2 -c $(GTEST_DIR)/src/gtest-all.cc -o $@
+endif
 
 .build/phpcxx/%.o: phpcxx/%.cpp | build_directory
 	$(CXX) $(CPPFLAGS) $(PHPCXX_CPPFLAGS) $(CPPFLAGS_EXTRA) $(CXXFLAGS) $(CXXFLAGS_EXTRA) -c "$<" -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$@" -o "$@"
