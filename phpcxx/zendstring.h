@@ -110,6 +110,13 @@ public:
         return this->m_s;
     }
 
+    zend_string* release()
+    {
+        zend_string* s = this->m_s;
+        this->m_s      = nullptr;
+        return s;
+    }
+
 private:
     mutable zend_string* m_s;
 
