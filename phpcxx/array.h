@@ -1,17 +1,21 @@
-#ifndef PHPCXX_ARRAY_H_
-#define PHPCXX_ARRAY_H_
+#ifndef PHPCXX_ARRAY_H
+#define PHPCXX_ARRAY_H
 
 #include "phpcxx.h"
 
+#include <type_traits>
 #include <Zend/zend.h>
 #include <Zend/zend_long.h>
 #include <Zend/zend_string.h>
+#include "helpers.h"
 #include "string.h"
-#include "zendstring.h"
+#include "map.h"
+#include "vector.h"
 
 namespace phpcxx {
 
 class Value;
+class ZendString;
 
 class PHPCXX_EXPORT Array {
 public:
@@ -25,14 +29,19 @@ public:
 
     Array& operator=(const Array& other);
 
+    template<typename T>
+    Array& operator=(const vector<T>& v);
+
+    template<typename K, typename V, enable_if_t<std::is_integral<K>::value>* = nullptr>
+    Array& operator=(const map<K, V>& v);
+
+    template<typename K, typename V, enable_if_t<is_pchar<K>::value || is_string<K>::value>* = nullptr>
+    Array& operator=(const map<K, V>& v);
+
     Value& operator[](std::nullptr_t);
     Value& operator[](zend_long idx);
     Value& operator[](const Value& key);
     [[gnu::nonnull]] Value& operator[](zend_string* key);
-
-    Value& operator[](const string& key)     { return this->operator[](ZendString(key)); }
-    Value& operator[](const char* key)       { return this->operator[](ZendString(key)); }
-    Value& operator[](const ZendString& key) { return this->operator[](key.get());       }
 
     std::size_t size() const;
 
@@ -40,17 +49,21 @@ public:
     bool contains(const Value& key) const;
     [[gnu::nonnull]] bool contains(zend_string* key) const;
 
-    bool contains(const string& key) const     { return this->contains(ZendString(key)); }
-    bool contains(const char* key) const       { return this->contains(ZendString(key)); }
-    bool contains(const ZendString& key) const { return this->contains(key.get());       }
-
     void unset(zend_long idx);
     void unset(const Value& key);
     [[gnu::nonnull]] void unset(zend_string* key);
 
-    void unset(const string& key)     { this->unset(ZendString(key)); }
-    void unset(const char* key)       { this->unset(ZendString(key)); }
-    void unset(const ZendString& key) { this->unset(key.get()); }
+    Value& operator[](const char* key);
+    Value& operator[](const string& key);
+    Value& operator[](const ZendString& key);
+
+    bool contains(const char* key) const;
+    bool contains(const string& key) const;
+    bool contains(const ZendString& key) const;
+
+    void unset(const char* key);
+    void unset(const string& key);
+    void unset(const ZendString& key);
 
     zval* pzval() const { return &this->m_z; }
 private:
@@ -63,4 +76,6 @@ private:
 
 }
 
-#endif /* PHPCXX_ARRAY_H_ */
+#include "array.tcc"
+
+#endif /* PHPCXX_ARRAY_H */

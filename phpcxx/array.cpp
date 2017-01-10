@@ -3,6 +3,7 @@
 #include "helpers.h"
 #include "string.h"
 #include "value.h"
+#include "zendstring.h"
 
 static inline zval* derefAndCheck(zval* z)
 {
@@ -238,4 +239,49 @@ void phpcxx::Array::unset(zend_string* key)
     else {
         zend_hash_del(ht, key);
     }
+}
+
+phpcxx::Value& phpcxx::Array::operator[](const char* key)
+{
+    return this->operator[](ZendString(key).release());
+}
+
+phpcxx::Value& phpcxx::Array::operator[](const string& key)
+{
+    return this->operator[](ZendString(key).release());
+}
+
+phpcxx::Value& phpcxx::Array::operator[](const ZendString& key)
+{
+    return this->operator[](key.get());
+}
+
+bool phpcxx::Array::contains(const char* key) const
+{
+    return this->contains(ZendString(key).release());
+}
+
+bool phpcxx::Array::contains(const string& key) const
+{
+    return this->contains(ZendString(key).release());
+}
+
+bool phpcxx::Array::contains(const ZendString& key) const
+{
+    return this->contains(key.get());
+}
+
+void phpcxx::Array::unset(const char* key)
+{
+    this->unset(ZendString(key).release());
+}
+
+void phpcxx::Array::unset(const string& key)
+{
+    this->unset(ZendString(key).release());
+}
+
+void phpcxx::Array::unset(const ZendString& key)
+{
+    this->unset(key.get());
 }
