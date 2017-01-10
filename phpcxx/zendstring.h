@@ -15,6 +15,11 @@ public:
     ZendString(const char* s)
         : m_s(zend_string_init(s, s ? std::strlen(s) : 0, 0))
     {
+#ifdef HAVE_BUILTIN_CONSTANT_P
+        if (__builtin_constant_p(s)) {
+            ZSTR_H(this->m_s) = zend_inline_hash_func(s, std::strlen(s));
+        }
+#endif
     }
 
     ZendString(const std::string& s)
