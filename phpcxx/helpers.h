@@ -2,10 +2,10 @@
 #define PHPCXX_HELPERS_H
 
 #include <Zend/zend.h>
-#include <Zend/zend_string.h>
 #include <cstring>
 #include <type_traits>
 #include "string.h"
+#include "zendstring.h"
 
 namespace phpcxx {
 
@@ -96,18 +96,11 @@ void construct_zval(zval& z, T v) { ZVAL_LONG(&z, v); }
 template<typename T, enable_if_t<std::is_floating_point<T>::value>* = nullptr>
 void construct_zval(zval& z, T v) { ZVAL_DOUBLE(&z, v); }
 
-template<typename T, enable_if_t<is_pchar<T>::value>* = nullptr>
+template<typename T, enable_if_t<is_pchar<T>::value || is_string<T>::value>* = nullptr>
 void construct_zval(zval& z, T s)
 {
-    zend_string* zs = zend_string_init(s, std::strlen(s), 0);
-    ZVAL_STR(&z, zs);
-}
-
-template<typename T, enable_if_t<is_string<T>::value>* = nullptr>
-void construct_zval(zval& z, const T& s)
-{
-    zend_string* zs = zend_string_init(s.c_str(), s.size(), 0);
-    ZVAL_STR(&z, zs);
+    ZendString zs(s);
+    ZVAL_STR(&z, zs.release());
 }
 /**
  * @}
