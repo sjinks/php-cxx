@@ -2,6 +2,7 @@
 .project
 .tracefile
 /.build
+/.gcov
 /.lib
 /.settings
 /coverage

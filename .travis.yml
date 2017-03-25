@@ -1,0 +1,27 @@
+language: cpp
+dist: trusty
+sudo: true
+
+compiler:
+  - clang
+  - gcc
+
+env:
+  matrix:
+    - PHPVER=7.0
+    - PHPVER=7.1
+
+matrix:
+  allow_failures:
+    - env: PHPVER=7.1
+
+before_install:
+  - sudo add-apt-repository -y ppa:ondrej/php
+  - sudo apt-get -qq update
+  - sudo apt-get -qq install valgrind libgtest-dev libphp$PHPVER-embed php$PHPVER-dev
+
+script:
+  - ./.travis/script.sh
+
+after_success:
+  - ./.travis/after_success.sh
