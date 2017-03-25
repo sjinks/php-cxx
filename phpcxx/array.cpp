@@ -165,8 +165,8 @@ bool phpcxx::Array::contains(const Value& key) const
             case Type::String:    return this->contains(Z_STR(key.m_z));
             case Type::Integer:   return this->contains(Z_LVAL(this->m_z));
             case Type::Double:    return this->contains(zend_dval_to_lval(Z_DVAL(this->m_z)));
-            case Type::True:      return this->contains(static_cast<zend_long>(1l));
-            case Type::False:     return this->contains(static_cast<zend_long>(0l));
+            case Type::True:      return this->contains(static_cast<zend_long>(1));
+            case Type::False:     return this->contains(static_cast<zend_long>(0));
             case Type::Resource:  return this->contains(Z_RES_HANDLE_P(z));
             case Type::Undefined: return this->contains(ZSTR_EMPTY_ALLOC());
             case Type::Null:      return this->contains(ZSTR_EMPTY_ALLOC());
@@ -207,8 +207,8 @@ void phpcxx::Array::unset(const Value& key)
             case Type::String:    return this->unset(Z_STR(key.m_z));
             case Type::Integer:   return this->unset(Z_LVAL(this->m_z));
             case Type::Double:    return this->unset(zend_dval_to_lval(Z_DVAL(this->m_z)));
-            case Type::True:      return this->unset(static_cast<zend_long>(1l));
-            case Type::False:     return this->unset(static_cast<zend_long>(0l));
+            case Type::True:      return this->unset(static_cast<zend_long>(1));
+            case Type::False:     return this->unset(static_cast<zend_long>(0));
             case Type::Resource:  return this->unset(Z_RES_HANDLE_P(z));
             case Type::Undefined: return this->unset(ZSTR_EMPTY_ALLOC());
             case Type::Null:      return this->unset(ZSTR_EMPTY_ALLOC());
