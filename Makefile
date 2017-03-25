@@ -36,6 +36,7 @@ LIBRARY_CXX_SOURCES = \
 TESTER_CXX_SOURCES = \
 	test/tester.cpp \
 	test/testsapi.cpp \
+	test/test_arguments.cpp \
 	test/test_lifecycle.cpp \
 	test/test_moduleglobals.cpp \
 	test/test_constants.cpp \
