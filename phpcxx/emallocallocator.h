@@ -17,6 +17,16 @@ class PHPCXX_EXPORT EMallocAllocator {
 public:
     typedef T value_type;
 
+    typedef size_t size_type;
+    typedef ptrdiff_t difference_type;
+    typedef T* pointer;
+    typedef const T* const_pointer;
+    typedef T& reference;
+    typedef const T& const_reference;
+
+    template<class U>
+    struct rebind { typedef EMallocAllocator<U> other; };
+
     EMallocAllocator(void) noexcept = default;
 
     template<typename U>
