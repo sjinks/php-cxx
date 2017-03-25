@@ -360,10 +360,12 @@ public:
         return this->operator[](ZendString(key));
     }
 
+#ifdef ZEND_ENABLE_ZVAL_LONG64
     Value& operator[](int key)
     {
         return this->operator[](static_cast<zend_long>(key));
     }
+#endif
 
     Value& operator[](const ZendString& key);
     Value& operator[](zend_long key);
