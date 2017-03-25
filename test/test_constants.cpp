@@ -92,6 +92,10 @@ TEST(ConstantsTest, TestConstants)
 
         EXPECT_STREQ(Z_STRVAL_P(sc1), "string");
         EXPECT_STREQ(Z_STRVAL_P(sc2), "std::string");
+
+        // Issue #4: if we don't run php_request_startup() and php_request_shutdown() after sapi.initialize()
+        // we can get memory corruption in NTS builds
+        sapi.run();
     }
 
     std::string o = out.str(); out.str("");

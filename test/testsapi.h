@@ -15,6 +15,7 @@ public:
 
     void initialize();
     void addModule(phpcxx::Module& ext);
+    void run();
     void run(std::function<void(void)> callback);
 
     [[gnu::nonnull]] void setOutputStream(std::ostream* os);

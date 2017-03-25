@@ -208,6 +208,15 @@ void TestSAPI::addModule(phpcxx::Module& ext)
     }
 }
 
+void TestSAPI::run()
+{
+    this->initialize();
+
+    SG(options) |= SAPI_OPTION_NO_CHDIR;
+    php_request_startup();
+    php_request_shutdown(nullptr);
+}
+
 void TestSAPI::run(std::function<void(void)> callback)
 {
     this->initialize();
