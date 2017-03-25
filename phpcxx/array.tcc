@@ -24,7 +24,7 @@ Array& Array::operator=(const vector<T>& v)
     return *this;
 }
 
-template<typename K, typename V, enable_if_t<std::is_integral<K>::value>* = nullptr>
+template<typename K, typename V, enable_if_t<std::is_integral<K>::value>*>
 Array& Array::operator=(const map<K, V>& v)
 {
     zval* z = &this->m_z;
@@ -41,7 +41,7 @@ Array& Array::operator=(const map<K, V>& v)
     return *this;
 }
 
-template<typename K, typename V, enable_if_t<is_pchar<K>::value || is_string<K>::value>* = nullptr>
+template<typename K, typename V, enable_if_t<is_pchar<K>::value || is_string<K>::value>*>
 Array& Array::operator=(const map<K, V>& v)
 {
     zval* z = &this->m_z;

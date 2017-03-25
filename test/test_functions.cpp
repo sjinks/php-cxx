@@ -79,6 +79,11 @@ private:
     {
         return p.size() ? p[0] : phpcxx::Value();
     }
+
+    static void func5(zend_execute_data* execute_data, zval* return_value)
+    {
+
+    }
 };
 
 }

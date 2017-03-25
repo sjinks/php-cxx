@@ -51,11 +51,19 @@ public:
             zend_execute_data* execute_data = this->m_execute_data;
 
             if (EX(func)->common.required_num_args < EX_NUM_ARGS()) {
+#if PHP_VERSION_ID >= 70100
+                zend_wrong_parameters_count_error(
+                    static_cast<int>(EX_NUM_ARGS()),
+                    static_cast<int>(EX(func)->common.required_num_args),
+                    static_cast<int>(EX(func)->common.num_args)
+                );
+#else
                 zend_wrong_paramers_count_error(
                     static_cast<int>(EX_NUM_ARGS()),
                     static_cast<int>(EX(func)->common.required_num_args),
                     static_cast<int>(EX(func)->common.num_args)
                 );
+#endif
 
                 if (UNEXPECTED(EG(exception))) {
                     throw PhpException();

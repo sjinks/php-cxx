@@ -25,6 +25,8 @@ LIBRARY_CXX_SOURCES = \
 	phpcxx/function.cpp \
 	phpcxx/module.cpp \
 	phpcxx/module_p.cpp \
+	phpcxx/object.cpp \
+	phpcxx/objectdimension.cpp \
 	phpcxx/operators.cpp \
 	phpcxx/parameters.cpp \
 	phpcxx/phpexception.cpp \

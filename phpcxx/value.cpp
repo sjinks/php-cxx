@@ -522,3 +522,69 @@ phpcxx::string phpcxx::Value::typeToString(phpcxx::Type type)
     std::snprintf(buf, sizeof(buf), "%u", static_cast<unsigned int>(t));
     return string(buf);
 }
+
+void get_dimension_address(zval* result, zval* container, zval* dim, int type)
+{
+    if (Z_TYPE_P(container) == IS_REFERENCE) {
+        container = Z_REFVAL_P(container);
+    }
+
+    zval* retval;
+    switch (Z_TYPE_P(container)) {
+        case IS_OBJECT:
+            if (Z_OBJ_HT_P(container)->read_dimension) {
+                retval = Z_OBJ_HT_P(container)->read_dimension(container, dim, type, result);
+                if (BP_VAR_R == type || BP_VAR_IS == type) {
+                    if (retval) {
+                        if (result != retval) {
+                            // If offsetExists returns false, retval will be &EG(uninitialized_zval), result will be garbage
+                            ZVAL_COPY(result, retval);
+                        }
+                    }
+                    else {
+                        // This is the case when offsetExistsreturns IS_UNDEF
+                        ZVAL_NULL(result);
+                    }
+                }
+                else {
+                    if (retval && Z_TYPE_P(retval) != IS_UNDEF) {
+                        if (!Z_ISREF_P(retval)) {
+                            if (Z_REFCOUNTED_P(retval) && Z_REFCOUNT_P(retval) > 1) {
+                                if (Z_TYPE_P(retval) != IS_OBJECT) {
+                                    Z_DELREF_P(retval);
+                                    ZVAL_DUP(result, retval);
+                                    retval = result;
+                                }
+                                else {
+                                    ZVAL_COPY_VALUE(result, retval);
+                                    retval = result;
+                                }
+                            }
+
+                            if (Z_TYPE_P(retval) != IS_OBJECT) {
+                                // Indirect modification of overloaded element of <class> has no effect
+                            }
+                        }
+                        else if (Z_REFCOUNT_P(retval) == 1) {
+                            ZVAL_UNREF(retval);
+                        }
+
+                        if (result != retval) {
+                            ZVAL_INDIRECT(result, retval);
+                        }
+                    }
+                    else if (retval == &EG(uninitialized_zval)) {
+                        // Indirect modification of overloaded element of <class> has no effect
+                        ZVAL_NULL(result);
+                    }
+                    else {
+                        ZVAL_INDIRECT(result, &EG(error_zval));
+                    }
+                }
+            }
+            else {
+                zend_throw_error(NULL, "Cannot use object as array");
+                ZVAL_NULL(result);
+            }
+    }
+}

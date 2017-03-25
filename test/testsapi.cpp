@@ -1,8 +1,11 @@
+extern "C" {
 #include <main/php.h>
 #include <main/php_main.h>
 #include <main/SAPI.h>
 #include <main/php_variables.h>
 #include <Zend/zend_exceptions.h>
+void zend_signal_startup();
+}
 #include <cstring>
 #include <vector>
 #include "phpcxx/module.h"
@@ -30,7 +33,11 @@ static size_t sapi_ub_write(const char* str, size_t str_length);
 static void sapi_flush(void*);
 static void sapi_send_header(sapi_header_struct*, void*);
 static char* sapi_read_cookies();
+#if PHP_VERSION_ID >= 70100
+static void sapi_log_message(char* message, int syslog_type_int);
+#else
 static void sapi_log_message(char* message);
+#endif
 
 class SAPIGlobals {
 public:
@@ -39,29 +46,35 @@ public:
     std::vector<zend_module_entry> mods;
 
     sapi_module_struct sapi = {
-        const_cast<char*>("test"),
-        const_cast<char*>("Test SAPI"),
-        sapi_startup,
-        php_module_shutdown_wrapper,
-        sapi_activate,
-        sapi_deactivate,
-        sapi_ub_write,
-        sapi_flush,
-        nullptr,    // get UID
-        nullptr,    // get env
-        zend_error,
-        nullptr,    // header handler
-        nullptr,    // send headers handler
-        sapi_send_header,
-        nullptr,    // read POST data
-        sapi_read_cookies,
-        php_import_environment_variables,
-        sapi_log_message,
-        nullptr,    // double (*get_request_time)(void);
-        nullptr,    // void (*terminate_process)(void);
-        nullptr,    // char *php_ini_path_override;
-        nullptr,    // void (*block_interruptions)(void);
-        nullptr,    // void (*unblock_interruptions)(void);
+        const_cast<char*>("test"),          // name
+        const_cast<char*>("Test SAPI"),     // pretty_name
+        sapi_startup,                       // startup
+        php_module_shutdown_wrapper,        // shutdown
+        sapi_activate,                      // activate
+        sapi_deactivate,                    // deactivate
+        sapi_ub_write,                      // ub_write
+        sapi_flush,                         // flush
+#if PHP_VERSION_ID >= 70100
+        nullptr,                            // get_stat
+#else
+        nullptr,                            // get UID
+#endif
+        nullptr,                            // getenv
+        zend_error,                         // sapi_error
+        nullptr,                            // header_handler
+        nullptr,                            // send_headers
+        sapi_send_header,                   // send_header
+        nullptr,                            // read_post
+        sapi_read_cookies,                  // read_cookies
+        php_import_environment_variables,   // register_server_variables
+        sapi_log_message,                   // log_message
+        nullptr,                            // double (*get_request_time)(void);
+        nullptr,                            // void (*terminate_process)(void);
+        nullptr,                            // char *php_ini_path_override;
+#if PHP_VERSION_ID < 70100
+        nullptr,                            // void (*block_interruptions)(void);
+        nullptr,                            // void (*unblock_interruptions)(void);
+#endif
         nullptr,    // void (*default_post_reader)(void);
         nullptr,    // void (*treat_data)(int arg, char *str, zval *destArray);
         const_cast<char*>("-"), // char *executable_location;
@@ -126,11 +139,17 @@ static char* sapi_read_cookies()
     return nullptr;
 }
 
+#if PHP_VERSION_ID >= 70100
+static void sapi_log_message(char* message, int syslog_type_int)
+{
+    *(SAPIGlobals::instance().err) << message << std::endl;
+}
+#else
 static void sapi_log_message(char* message)
 {
     *(SAPIGlobals::instance().err) << message << std::endl;
 }
-
+#endif
 }
 
 TestSAPI::TestSAPI(std::ostream& out, std::ostream& err)
@@ -141,7 +160,8 @@ TestSAPI::TestSAPI(std::ostream& out, std::ostream& err)
     ts_resource(0);
     ZEND_TSRMLS_CACHE_UPDATE();
 #endif
-#ifdef ZEND_SIGNALS
+
+#if defined(ZEND_SIGNALS)
     zend_signal_startup();
 #endif
 

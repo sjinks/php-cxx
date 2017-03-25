@@ -3,6 +3,9 @@
 #include "phpcxx/array.h"
 #include "phpcxx/operators.h"
 #include "phpcxx/value.h"
+
+#include "phpcxx/objectdimension.h"
+
 #include "globals.h"
 #include "testsapi.h"
 
@@ -790,6 +793,68 @@ TEST_F(ValueFixture, Assignment)
         phpcxx::Value x = 1;
         phpcxx::Value y = 2;
         EXPECT_EQ(3, x + y);
+    });
+    EXPECT_EQ(m_err.str(), "");
+    m_err.str(std::string());
+}
+
+TEST_F(ValueFixture, Objects)
+{
+    m_sapi.run([this]() {
+        runPhpCode(R"code(
+class A implements ArrayAccess
+{
+    private $a = 1;
+
+    public function& offsetGet($offset)
+    {
+        echo __METHOD__, PHP_EOL;
+        return $this->$offset;
+    }
+
+    public function offsetSet($offset, $value)
+    {
+        echo __METHOD__, PHP_EOL;
+        $this->$offset = $value;
+    }
+
+    public function offsetExists($offset)
+    {
+        echo __METHOD__, PHP_EOL;
+    }
+
+    public function offsetUnset($offset)
+    {
+        unset($this->$offset);
+    }
+}
+
+$a = new A();
+)code"
+        );
+
+//        zval* a = zend_hash_str_find_ind(&EG(symbol_table), ZEND_STRL("a"));
+//        ASSERT_TRUE(a != nullptr);
+//        ASSERT_EQ(Z_TYPE_P(a), IS_OBJECT);
+//
+//        zval offset;
+//        ZVAL_STRING(&offset, "a");
+//
+//        phpcxx::ObjectDimension dim(a, &offset);
+//
+//        phpcxx::Value v = dim;
+//        v += 1;
+//
+//        EXPECT_EQ(2, v.asLong());
+//        phpcxx::Value w = dim;
+//        EXPECT_EQ(2, w.asLong());
+//
+//        zval_ptr_dtor(&offset);
+//
+//        std::string expected = "A::offsetGet\nA::offsetGet\n";
+//        std::string actual   = m_out.str();
+//        m_out.str(std::string());
+//        EXPECT_EQ(expected, actual);
     });
     EXPECT_EQ(m_err.str(), "");
     m_err.str(std::string());

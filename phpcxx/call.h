@@ -19,14 +19,16 @@ Value call(zval* object, zval* callable, indices<Is...>, Args&&... args)
 
     zend_fcall_info fci;
     fci.size           = sizeof(fci);
-    fci.function_table = CG(function_table);
     fci.object         = object ? Z_OBJ_P(object) : nullptr;
     ZVAL_COPY_VALUE(&fci.function_name, callable);
     fci.retval         = &retval;
     fci.param_count    = sizeof...(args);
     fci.params         = zparams;
     fci.no_separation  = 1;
+#if PHP_VERSION_ID < 70100
+    fci.function_table = CG(function_table);
     fci.symbol_table   = nullptr;
+#endif
 
     if (zend_call_function(&fci, nullptr) == SUCCESS) {
         if (throwable && UNEXPECTED(EG(exception))) {

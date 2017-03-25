@@ -139,7 +139,11 @@ void assign(zval* a, T b)
 
         zend_refcounted* r = Z_COUNTED_P(a);
         if (--GC_REFCOUNT(r) == 0) {
+#if PHP_VERSION_ID >= 70100
+            zval_dtor_func(r);
+#else
             zval_dtor_func_for_ptr(r);
+#endif
         }
         else {
             if (Z_COLLECTABLE_P(a) && UNEXPECTED(!GC_INFO(r))) {
@@ -179,7 +183,11 @@ void assign(zval* a, const T& b)
 
         zend_refcounted* r = Z_COUNTED_P(a);
         if (--GC_REFCOUNT(r) == 0) {
+#if PHP_VERSION_ID >= 70100
+            zval_dtor_func(r);
+#else
             zval_dtor_func_for_ptr(r);
+#endif
         }
         else {
             if (Z_COLLECTABLE_P(a) && UNEXPECTED(!GC_INFO(r))) {
@@ -224,7 +232,11 @@ static void assign(zval* a, T b)
 
         zend_refcounted* r = Z_COUNTED_P(a);
         if (--GC_REFCOUNT(r) == 0) {
+#if PHP_VERSION_ID >= 70100
+            zval_dtor_func(r);
+#else
             zval_dtor_func_for_ptr(r);
+#endif
         }
         else {
             if (Z_COLLECTABLE_P(a) && UNEXPECTED(!GC_INFO(r))) {
@@ -264,7 +276,11 @@ static inline void assignTemporary(zval* a, zval* b)
 
         zend_refcounted* r = Z_COUNTED_P(a);
         if (--GC_REFCOUNT(r) == 0) {
+#if PHP_VERSION_ID >= 70100
+            zval_dtor_func(r);
+#else
             zval_dtor_func_for_ptr(r);
+#endif
         }
         else {
             if (Z_COLLECTABLE_P(a) && UNEXPECTED(!GC_INFO(r))) {

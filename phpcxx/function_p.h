@@ -14,6 +14,18 @@ namespace phpcxx {
 class PHPCXX_HIDDEN FunctionPrivate {
     friend class Function;
 public:
+    FunctionPrivate(const char* name, InternalFunction c, zend_internal_arg_info* ai, uint32_t size)
+    {
+        this->m_arginfo.reserve(size);
+
+        this->m_fe.fname    = name ? name : "";
+        this->m_fe.handler  = c;
+        this->m_fe.num_args = size - 1;
+        this->m_fe.flags    = 0;
+
+        std::memcpy(this->m_arginfo.data(), ai, size * sizeof(zend_internal_arg_info));
+    }
+
     FunctionPrivate(const char* name, InternalFunction c, const Arguments& required, const Arguments& optional, bool byRef)
     {
         this->m_arginfo.reserve(required.size() + optional.size() + 1);
