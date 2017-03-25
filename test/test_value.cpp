@@ -9,6 +9,8 @@
 #include "globals.h"
 #include "testsapi.h"
 
+namespace {
+
 class CommonFixture : public ::testing::Test {
 protected:
     std::stringstream m_out;
@@ -24,6 +26,7 @@ protected:
 };
 
 typedef CommonFixture ValueFixture;
+}
 
 TEST_F(ValueFixture, Initialization)
 {
