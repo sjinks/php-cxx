@@ -1,11 +1,8 @@
-extern "C" {
 #include <main/php.h>
 #include <main/php_main.h>
 #include <main/SAPI.h>
 #include <main/php_variables.h>
 #include <Zend/zend_exceptions.h>
-void zend_signal_startup();
-}
 #include <cstring>
 #include <vector>
 #include "phpcxx/module.h"
