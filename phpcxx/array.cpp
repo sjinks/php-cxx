@@ -243,12 +243,12 @@ void phpcxx::Array::unset(zend_string* key)
 
 phpcxx::Value& phpcxx::Array::operator[](const char* key)
 {
-    return this->operator[](ZendString(key).release());
+    return this->operator[](ZendString(key).get());
 }
 
 phpcxx::Value& phpcxx::Array::operator[](const string& key)
 {
-    return this->operator[](ZendString(key).release());
+    return this->operator[](ZendString(key).get());
 }
 
 phpcxx::Value& phpcxx::Array::operator[](const ZendString& key)
@@ -258,12 +258,12 @@ phpcxx::Value& phpcxx::Array::operator[](const ZendString& key)
 
 bool phpcxx::Array::contains(const char* key) const
 {
-    return this->contains(ZendString(key).release());
+    return this->contains(ZendString(key).get());
 }
 
 bool phpcxx::Array::contains(const string& key) const
 {
-    return this->contains(ZendString(key).release());
+    return this->contains(ZendString(key).get());
 }
 
 bool phpcxx::Array::contains(const ZendString& key) const
@@ -273,12 +273,12 @@ bool phpcxx::Array::contains(const ZendString& key) const
 
 void phpcxx::Array::unset(const char* key)
 {
-    this->unset(ZendString(key).release());
+    this->unset(ZendString(key).get());
 }
 
 void phpcxx::Array::unset(const string& key)
 {
-    this->unset(ZendString(key).release());
+    this->unset(ZendString(key).get());
 }
 
 void phpcxx::Array::unset(const ZendString& key)
