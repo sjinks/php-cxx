@@ -13,6 +13,7 @@ namespace phpcxx { class ModuleGlobals; }
 ZEND_BEGIN_MODULE_GLOBALS(phpcxx)
     phpcxx::ModuleGlobals* globals;
 ZEND_END_MODULE_GLOBALS(phpcxx)
+extern ZEND_DECLARE_MODULE_GLOBALS(phpcxx);
 
 namespace phpcxx {
 
@@ -27,9 +28,9 @@ public:
     ModuleGlobals* globals()
     {
 #ifdef ZTS
-        return ZEND_TSRMG(this->phpcxx_globals_id, zend_phpcxx_globals*, globals);
+        return ZEND_TSRMG(phpcxx_globals_id, zend_phpcxx_globals*, globals);
 #else
-        return this->phpcxx_globals.globals;
+        return phpcxx_globals.globals;
 #endif
     }
 
@@ -58,12 +59,13 @@ private:
     Module* const q_ptr;
     std::vector<Function> m_funcs;
     std::unique_ptr<zend_function_entry[]> m_zf;
+/*
 #ifdef ZTS
     ts_rsrc_id phpcxx_globals_id;
 #else
     zend_phpcxx_globals phpcxx_globals;
 #endif
-
+*/
     static int moduleStartup(INIT_FUNC_ARGS);
     static int moduleShutdown(SHUTDOWN_FUNC_ARGS);
     static int requestStartup(INIT_FUNC_ARGS);

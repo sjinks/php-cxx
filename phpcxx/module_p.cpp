@@ -4,6 +4,8 @@
 #include "module_p.h"
 #include "modulemap_p.h"
 
+ZEND_DECLARE_MODULE_GLOBALS(phpcxx);
+
 static void moduleNotFound(int number)
 {
     zend_error(
@@ -16,16 +18,8 @@ static void moduleNotFound(int number)
 phpcxx::ModulePrivate::ModulePrivate(phpcxx::Module* const q, const char* name, const char* version)
     : q_ptr(q)
 {
-    this->entry.name             = name;
-    this->entry.version          = version;
-    this->entry.globals_size     = sizeof(zend_phpcxx_globals);
-
-#ifdef ZTS
-    this->entry.globals_id_ptr   = &this->phpcxx_globals_id;
-#else
-    this->entry.globals_ptr      = &this->globals;
-    this->globals.phpcxx_globals = nullptr;
-#endif
+    this->entry.name    = name;
+    this->entry.version = version;
 
     ModuleMap::instance().add(this);
 }
@@ -66,11 +60,6 @@ int phpcxx::ModulePrivate::moduleStartup(INIT_FUNC_ARGS)
     phpcxx::ModulePrivate* e = ModuleMap::instance().mapIdToModule(me->name, module_number);
 
     if (EXPECTED(e)) {
-#ifdef ZTS
-        ZEND_TSRMG(e->phpcxx_globals_id, zend_phpcxx_globals*, globals) = e->q_ptr->globalsConstructor();
-#else
-        e->phpcxx_globals.globals = e->q_ptr->globalsConstructor();
-#endif
 //        e->registerIniEntries();
 //        e->registerClasses();
         e->registerConstants();
@@ -104,8 +93,6 @@ int phpcxx::ModulePrivate::moduleShutdown(SHUTDOWN_FUNC_ARGS)
         catch (const std::exception&) {
             retcode = FAILURE;
         }
-
-        e->q_ptr->globalsDestructor(e->globals());
     }
     else {
         moduleNotFound(module_number);
