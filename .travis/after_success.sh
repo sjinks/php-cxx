@@ -4,17 +4,17 @@ PREFIX=$(readlink -enq "$(dirname $0)/../")
 
 if [ "$CXX" = "g++" ]; then
 	GCOV=gcov
-	ARGS=""
+	ARGS=-s "$PREFIX" -ablpr
 else
 	GCOV=llvm-cov
-	ARGS=gcov
+	ARGS=gcov -a -b -l -p
 fi
 
 rm -rf   "$PREFIX/.gcov"
 mkdir -p "$PREFIX/.gcov"
 
-$GCOV $ARGS -s "$PREFIX" -ablpr -o .build/phpcxx phpcxx/*.cpp
-$GCOV $ARGS -s "$PREFIX" -ablpr -o .build/test   test/*.cpp
+$GCOV $ARGS -o .build/phpcxx phpcxx/*.cpp
+$GCOV $ARGS -o .build/test   test/*.cpp
 mv *.gcov "$PREFIX/.gcov"
 
 /bin/bash <(curl -s https://codecov.io/bash) -f "$PREFIX/.gcov/*.gcov" -X gcov
