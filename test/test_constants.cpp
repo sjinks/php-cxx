@@ -90,8 +90,8 @@ TEST(ConstantsTest, TestConstants)
         ASSERT_EQ(IS_STRING, Z_TYPE_P(sc1));
         ASSERT_EQ(IS_STRING, Z_TYPE_P(sc2));
 
-        EXPECT_STREQ(Z_STRVAL_P(sc1), "string");
-        EXPECT_STREQ(Z_STRVAL_P(sc2), "std::string");
+        EXPECT_STREQ("string",      Z_STRVAL_P(sc1));
+        EXPECT_STREQ("std::string", Z_STRVAL_P(sc2));
 
         // Issue #4: if we don't run php_request_startup() and php_request_shutdown() after sapi.initialize()
         // we can get memory corruption in NTS builds
