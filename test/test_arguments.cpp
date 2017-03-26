@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 #include <Zend/zend.h>
 #include "phpcxx/argument.h"
+#include "testsapi.h"
 
 TEST(ArgumentsTest, TestNative)
 {
@@ -17,222 +18,234 @@ TEST(ArgumentsTest, TestNative)
         { }
     };
 
-    std::stringstream stream;
-    std::string s;
+    std::stringstream out;
+    std::stringstream err;
+    TestSAPI sapi(out, err);
 
-    {
-        phpcxx::Argument a(args[0]);
-        EXPECT_STREQ("byval", a.name());
-        EXPECT_FALSE(a.isPassedByReference());
-        EXPECT_EQ(phpcxx::ArgumentType::Any, a.type());
-        EXPECT_EQ(nullptr, a.className());
-        EXPECT_FALSE(a.canBeNull());
-        EXPECT_FALSE(a.isVariadic());
+    sapi.run([]() {
+        std::stringstream stream;
+        std::string s;
 
-        stream << a;
-        s = stream.str(); stream.str("");
-        EXPECT_EQ("[Argument: name=byval, type=undefined, nullable=0, byref=0, variadic=0]\n", s);
-    }
+        {
+            phpcxx::Argument a(args[0]);
+            EXPECT_STREQ("byval", a.name());
+            EXPECT_FALSE(a.isPassedByReference());
+            EXPECT_EQ(phpcxx::ArgumentType::Any, a.type());
+            EXPECT_EQ(nullptr, a.className());
+            EXPECT_FALSE(a.canBeNull());
+            EXPECT_FALSE(a.isVariadic());
 
-    {
-        phpcxx::Argument a(args[1]);
-        EXPECT_STREQ("byref", a.name());
-        EXPECT_TRUE(a.isPassedByReference());
-        EXPECT_EQ(phpcxx::ArgumentType::Any, a.type());
-        EXPECT_EQ(nullptr, a.className());
-        EXPECT_FALSE(a.canBeNull());
-        EXPECT_FALSE(a.isVariadic());
+            stream << a;
+            s = stream.str(); stream.str("");
+            EXPECT_EQ("[Argument: name=byval, type=undefined, nullable=0, byref=0, variadic=0]\n", s);
+        }
 
-        stream << a;
-        s = stream.str(); stream.str("");
-        EXPECT_EQ("[Argument: name=byref, type=undefined, nullable=0, byref=1, variadic=0]\n", s);
-    }
+        {
+            phpcxx::Argument a(args[1]);
+            EXPECT_STREQ("byref", a.name());
+            EXPECT_TRUE(a.isPassedByReference());
+            EXPECT_EQ(phpcxx::ArgumentType::Any, a.type());
+            EXPECT_EQ(nullptr, a.className());
+            EXPECT_FALSE(a.canBeNull());
+            EXPECT_FALSE(a.isVariadic());
 
-    {
-        phpcxx::Argument a(args[2]);
-        EXPECT_STREQ("nullable_array", a.name());
-        EXPECT_TRUE(a.isPassedByReference());
-        EXPECT_EQ(phpcxx::ArgumentType::Array, a.type());
-        EXPECT_EQ(nullptr, a.className());
-        EXPECT_TRUE(a.canBeNull());
-        EXPECT_FALSE(a.isVariadic());
+            stream << a;
+            s = stream.str(); stream.str("");
+            EXPECT_EQ("[Argument: name=byref, type=undefined, nullable=0, byref=1, variadic=0]\n", s);
+        }
 
-        stream << a;
-        s = stream.str(); stream.str("");
-        EXPECT_EQ("[Argument: name=nullable_array, type=array, nullable=1, byref=1, variadic=0]\n", s);
-    }
+        {
+            phpcxx::Argument a(args[2]);
+            EXPECT_STREQ("nullable_array", a.name());
+            EXPECT_TRUE(a.isPassedByReference());
+            EXPECT_EQ(phpcxx::ArgumentType::Array, a.type());
+            EXPECT_EQ(nullptr, a.className());
+            EXPECT_TRUE(a.canBeNull());
+            EXPECT_FALSE(a.isVariadic());
 
-    {
-        phpcxx::Argument a(args[3]);
-        EXPECT_STREQ("stdclass", a.name());
-        EXPECT_FALSE(a.isPassedByReference());
-        EXPECT_EQ(phpcxx::ArgumentType::Object, a.type());
-        EXPECT_STREQ("stdClass", a.className());
-        EXPECT_FALSE(a.canBeNull());
-        EXPECT_FALSE(a.isVariadic());
+            stream << a;
+            s = stream.str(); stream.str("");
+            EXPECT_EQ("[Argument: name=nullable_array, type=array, nullable=1, byref=1, variadic=0]\n", s);
+        }
 
-        stream << a;
-        s = stream.str(); stream.str("");
-        EXPECT_EQ("[Argument: name=stdclass, type=object, nullable=0, byref=0, variadic=0]\n", s);
-    }
+        {
+            phpcxx::Argument a(args[3]);
+            EXPECT_STREQ("stdclass", a.name());
+            EXPECT_FALSE(a.isPassedByReference());
+            EXPECT_EQ(phpcxx::ArgumentType::Object, a.type());
+            EXPECT_STREQ("stdClass", a.className());
+            EXPECT_FALSE(a.canBeNull());
+            EXPECT_FALSE(a.isVariadic());
 
-    {
-        phpcxx::Argument a(args[4]);
-        EXPECT_STREQ("callable", a.name());
-        EXPECT_FALSE(a.isPassedByReference());
-        EXPECT_EQ(phpcxx::ArgumentType::Callable, a.type());
-        EXPECT_EQ(nullptr, a.className());
-        EXPECT_FALSE(a.canBeNull());
-        EXPECT_FALSE(a.isVariadic());
+            stream << a;
+            s = stream.str(); stream.str("");
+            EXPECT_EQ("[Argument: name=stdclass, type=object, nullable=0, byref=0, variadic=0]\n", s);
+        }
 
-        stream << a;
-        s = stream.str(); stream.str("");
-        EXPECT_EQ("[Argument: name=callable, type=callable, nullable=0, byref=0, variadic=0]\n", s);
-    }
+        {
+            phpcxx::Argument a(args[4]);
+            EXPECT_STREQ("callable", a.name());
+            EXPECT_FALSE(a.isPassedByReference());
+            EXPECT_EQ(phpcxx::ArgumentType::Callable, a.type());
+            EXPECT_EQ(nullptr, a.className());
+            EXPECT_FALSE(a.canBeNull());
+            EXPECT_FALSE(a.isVariadic());
 
-    {
-        phpcxx::Argument a(args[5]);
-        EXPECT_STREQ("boolean", a.name());
-        EXPECT_FALSE(a.isPassedByReference());
-        EXPECT_EQ(phpcxx::ArgumentType::Bool, a.type());
-        EXPECT_EQ(nullptr, a.className());
-        EXPECT_FALSE(a.canBeNull());
-        EXPECT_FALSE(a.isVariadic());
+            stream << a;
+            s = stream.str(); stream.str("");
+            EXPECT_EQ("[Argument: name=callable, type=callable, nullable=0, byref=0, variadic=0]\n", s);
+        }
 
-        stream << a;
-        s = stream.str(); stream.str("");
-        EXPECT_EQ("[Argument: name=boolean, type=boolean, nullable=0, byref=0, variadic=0]\n", s);
-    }
+        {
+            phpcxx::Argument a(args[5]);
+            EXPECT_STREQ("boolean", a.name());
+            EXPECT_FALSE(a.isPassedByReference());
+            EXPECT_EQ(phpcxx::ArgumentType::Bool, a.type());
+            EXPECT_EQ(nullptr, a.className());
+            EXPECT_FALSE(a.canBeNull());
+            EXPECT_FALSE(a.isVariadic());
 
-    {
-        phpcxx::Argument a(args[6]);
-        EXPECT_STREQ("variadic_byref", a.name());
-        EXPECT_TRUE(a.isPassedByReference());
-        EXPECT_EQ(phpcxx::ArgumentType::Any, a.type());
-        EXPECT_EQ(nullptr, a.className());
-        EXPECT_FALSE(a.canBeNull());
-        EXPECT_TRUE(a.isVariadic());
+            stream << a;
+            s = stream.str(); stream.str("");
+            EXPECT_EQ("[Argument: name=boolean, type=boolean, nullable=0, byref=0, variadic=0]\n", s);
+        }
 
-        stream << a;
-        s = stream.str(); stream.str("");
-        EXPECT_EQ("[Argument: name=variadic_byref, type=undefined, nullable=0, byref=1, variadic=1]\n", s);
-    }
+        {
+            phpcxx::Argument a(args[6]);
+            EXPECT_STREQ("variadic_byref", a.name());
+            EXPECT_TRUE(a.isPassedByReference());
+            EXPECT_EQ(phpcxx::ArgumentType::Any, a.type());
+            EXPECT_EQ(nullptr, a.className());
+            EXPECT_FALSE(a.canBeNull());
+            EXPECT_TRUE(a.isVariadic());
+
+            stream << a;
+            s = stream.str(); stream.str("");
+            EXPECT_EQ("[Argument: name=variadic_byref, type=undefined, nullable=0, byref=1, variadic=1]\n", s);
+        }
+    });
 }
 
 TEST(ArgumentsTest, TestPhpCxx)
 {
-    std::stringstream stream;
-    std::string s;
+    std::stringstream out;
+    std::stringstream err;
+    TestSAPI sapi(out, err);
 
-    {
-        phpcxx::Argument a("byval");
+    sapi.run([]() {
+        std::stringstream stream;
+        std::string s;
 
-        EXPECT_STREQ("byval", a.name());
-        EXPECT_FALSE(a.isPassedByReference());
-        EXPECT_EQ(phpcxx::ArgumentType::Any, a.type());
-        EXPECT_EQ(nullptr, a.className());
-        EXPECT_FALSE(a.canBeNull());
-        EXPECT_FALSE(a.isVariadic());
+        {
+            phpcxx::Argument a("byval");
 
-        stream << a;
-        s = stream.str(); stream.str("");
-        EXPECT_EQ("[Argument: name=byval, type=undefined, nullable=0, byref=0, variadic=0]\n", s);
-    }
+            EXPECT_STREQ("byval", a.name());
+            EXPECT_FALSE(a.isPassedByReference());
+            EXPECT_EQ(phpcxx::ArgumentType::Any, a.type());
+            EXPECT_EQ(nullptr, a.className());
+            EXPECT_FALSE(a.canBeNull());
+            EXPECT_FALSE(a.isVariadic());
 
-    {
-        phpcxx::Argument a("byref");
-        a.setByRef(true);
+            stream << a;
+            s = stream.str(); stream.str("");
+            EXPECT_EQ("[Argument: name=byval, type=undefined, nullable=0, byref=0, variadic=0]\n", s);
+        }
 
-        EXPECT_STREQ("byref", a.name());
-        EXPECT_TRUE(a.isPassedByReference());
-        EXPECT_EQ(phpcxx::ArgumentType::Any, a.type());
-        EXPECT_EQ(nullptr, a.className());
-        EXPECT_FALSE(a.canBeNull());
-        EXPECT_FALSE(a.isVariadic());
+        {
+            phpcxx::Argument a("byref");
+            a.setByRef(true);
 
-        stream << a;
-        s = stream.str(); stream.str("");
-        EXPECT_EQ("[Argument: name=byref, type=undefined, nullable=0, byref=1, variadic=0]\n", s);
-    }
+            EXPECT_STREQ("byref", a.name());
+            EXPECT_TRUE(a.isPassedByReference());
+            EXPECT_EQ(phpcxx::ArgumentType::Any, a.type());
+            EXPECT_EQ(nullptr, a.className());
+            EXPECT_FALSE(a.canBeNull());
+            EXPECT_FALSE(a.isVariadic());
 
-    {
-        phpcxx::Argument a("nullable_array");
-        a.setNullable(true).setByRef(true).setType(phpcxx::ArgumentType::Array);
+            stream << a;
+            s = stream.str(); stream.str("");
+            EXPECT_EQ("[Argument: name=byref, type=undefined, nullable=0, byref=1, variadic=0]\n", s);
+        }
 
-        EXPECT_STREQ("nullable_array", a.name());
-        EXPECT_TRUE(a.isPassedByReference());
-        EXPECT_EQ(phpcxx::ArgumentType::Array, a.type());
-        EXPECT_EQ(nullptr, a.className());
-        EXPECT_TRUE(a.canBeNull());
-        EXPECT_FALSE(a.isVariadic());
+        {
+            phpcxx::Argument a("nullable_array");
+            a.setNullable(true).setByRef(true).setType(phpcxx::ArgumentType::Array);
 
-        stream << a;
-        s = stream.str(); stream.str("");
-        EXPECT_EQ("[Argument: name=nullable_array, type=array, nullable=1, byref=1, variadic=0]\n", s);
-    }
+            EXPECT_STREQ("nullable_array", a.name());
+            EXPECT_TRUE(a.isPassedByReference());
+            EXPECT_EQ(phpcxx::ArgumentType::Array, a.type());
+            EXPECT_EQ(nullptr, a.className());
+            EXPECT_TRUE(a.canBeNull());
+            EXPECT_FALSE(a.isVariadic());
 
-    {
-        phpcxx::Argument a("stdclass");
-        a.setByRef(false).setClass("stdClass");
+            stream << a;
+            s = stream.str(); stream.str("");
+            EXPECT_EQ("[Argument: name=nullable_array, type=array, nullable=1, byref=1, variadic=0]\n", s);
+        }
 
-        EXPECT_STREQ("stdclass", a.name());
-        EXPECT_FALSE(a.isPassedByReference());
-        EXPECT_EQ(phpcxx::ArgumentType::Object, a.type());
-        EXPECT_STREQ("stdClass", a.className());
-        EXPECT_FALSE(a.canBeNull());
-        EXPECT_FALSE(a.isVariadic());
+        {
+            phpcxx::Argument a("stdclass");
+            a.setByRef(false).setClass("stdClass");
 
-        stream << a;
-        s = stream.str(); stream.str("");
-        EXPECT_EQ("[Argument: name=stdclass, type=object, nullable=0, byref=0, variadic=0]\n", s);
-    }
+            EXPECT_STREQ("stdclass", a.name());
+            EXPECT_FALSE(a.isPassedByReference());
+            EXPECT_EQ(phpcxx::ArgumentType::Object, a.type());
+            EXPECT_STREQ("stdClass", a.className());
+            EXPECT_FALSE(a.canBeNull());
+            EXPECT_FALSE(a.isVariadic());
 
-    {
-        phpcxx::Argument a("callable");
-        a.setType(phpcxx::ArgumentType::Callable);
+            stream << a;
+            s = stream.str(); stream.str("");
+            EXPECT_EQ("[Argument: name=stdclass, type=object, nullable=0, byref=0, variadic=0]\n", s);
+        }
 
-        EXPECT_STREQ("callable", a.name());
-        EXPECT_FALSE(a.isPassedByReference());
-        EXPECT_EQ(phpcxx::ArgumentType::Callable, a.type());
-        EXPECT_EQ(nullptr, a.className());
-        EXPECT_FALSE(a.canBeNull());
-        EXPECT_FALSE(a.isVariadic());
+        {
+            phpcxx::Argument a("callable");
+            a.setType(phpcxx::ArgumentType::Callable);
 
-        stream << a;
-        s = stream.str(); stream.str("");
-        EXPECT_EQ("[Argument: name=callable, type=callable, nullable=0, byref=0, variadic=0]\n", s);
-    }
+            EXPECT_STREQ("callable", a.name());
+            EXPECT_FALSE(a.isPassedByReference());
+            EXPECT_EQ(phpcxx::ArgumentType::Callable, a.type());
+            EXPECT_EQ(nullptr, a.className());
+            EXPECT_FALSE(a.canBeNull());
+            EXPECT_FALSE(a.isVariadic());
 
-    {
-        phpcxx::Argument a("boolean");
-        a.setType(phpcxx::ArgumentType::Bool);
+            stream << a;
+            s = stream.str(); stream.str("");
+            EXPECT_EQ("[Argument: name=callable, type=callable, nullable=0, byref=0, variadic=0]\n", s);
+        }
 
-        EXPECT_STREQ("boolean", a.name());
-        EXPECT_FALSE(a.isPassedByReference());
-        EXPECT_EQ(phpcxx::ArgumentType::Bool, a.type());
-        EXPECT_EQ(nullptr, a.className());
-        EXPECT_FALSE(a.canBeNull());
-        EXPECT_FALSE(a.isVariadic());
+        {
+            phpcxx::Argument a("boolean");
+            a.setType(phpcxx::ArgumentType::Bool);
 
-        stream << a;
-        s = stream.str(); stream.str("");
-        EXPECT_EQ("[Argument: name=boolean, type=boolean, nullable=0, byref=0, variadic=0]\n", s);
-    }
+            EXPECT_STREQ("boolean", a.name());
+            EXPECT_FALSE(a.isPassedByReference());
+            EXPECT_EQ(phpcxx::ArgumentType::Bool, a.type());
+            EXPECT_EQ(nullptr, a.className());
+            EXPECT_FALSE(a.canBeNull());
+            EXPECT_FALSE(a.isVariadic());
 
-    {
-        phpcxx::Argument a("variadic_byref");
-        a.setByRef(true);
-        a.setVariadic(true);
+            stream << a;
+            s = stream.str(); stream.str("");
+            EXPECT_EQ("[Argument: name=boolean, type=boolean, nullable=0, byref=0, variadic=0]\n", s);
+        }
 
-        EXPECT_STREQ("variadic_byref", a.name());
-        EXPECT_TRUE(a.isPassedByReference());
-        EXPECT_EQ(phpcxx::ArgumentType::Any, a.type());
-        EXPECT_EQ(nullptr, a.className());
-        EXPECT_FALSE(a.canBeNull());
-        EXPECT_TRUE(a.isVariadic());
+        {
+            phpcxx::Argument a("variadic_byref");
+            a.setByRef(true);
+            a.setVariadic(true);
 
-        stream << a;
-        s = stream.str(); stream.str("");
-        EXPECT_EQ("[Argument: name=variadic_byref, type=undefined, nullable=0, byref=1, variadic=1]\n", s);
-    }
+            EXPECT_STREQ("variadic_byref", a.name());
+            EXPECT_TRUE(a.isPassedByReference());
+            EXPECT_EQ(phpcxx::ArgumentType::Any, a.type());
+            EXPECT_EQ(nullptr, a.className());
+            EXPECT_FALSE(a.canBeNull());
+            EXPECT_TRUE(a.isVariadic());
+
+            stream << a;
+            s = stream.str(); stream.str("");
+            EXPECT_EQ("[Argument: name=variadic_byref, type=undefined, nullable=0, byref=1, variadic=1]\n", s);
+        }
+    });
 }
