@@ -1,3 +1,4 @@
+#include <cassert>
 #include <stdexcept>
 #include "array.h"
 #include "helpers.h"
@@ -5,16 +6,19 @@
 #include "value.h"
 #include "zendstring.h"
 
-static inline zval* derefAndCheck(zval* z)
+[[gnu::nonnull]] static inline zval* derefAndCheck(zval* z)
 {
-    if (Z_ISREF_P(z)) {
+#if 0
+    if (UNEXPECTED(Z_ISREF_P(z))) {
         z = Z_REFVAL_P(z);
     }
 
     if (UNEXPECTED(Z_TYPE_P(z) != IS_ARRAY)) {
         throw std::runtime_error("Not an array");
     }
+#endif
 
+    assert(!Z_ISREF_P(z) && Z_TYPE_P(z) == IS_ARRAY);
     return z;
 }
 
@@ -25,15 +29,14 @@ phpcxx::Array::Array()
 
 phpcxx::Array::Array(zval* z)
 {
-    if (Z_TYPE_P(z) == IS_ARRAY) {
-        ZVAL_MAKE_REF(z);
-        zend_reference* ref = Z_REF_P(z);
-        ++GC_REFCOUNT(ref);
-        ZVAL_REF(&this->m_z, ref);
+    if (Z_ISREF_P(z) && Z_TYPE_P(Z_REFVAL_P(z)) == IS_ARRAY) {
+        ZVAL_COPY(&this->m_z, Z_REFVAL_P(z));
     }
     else {
         ZVAL_COPY(&this->m_z, z);
-        convert_to_array(&this->m_z);
+        if (Z_TYPE_P(z) != IS_ARRAY) {
+            convert_to_array(&this->m_z);
+        }
     }
 }
 
@@ -89,6 +92,9 @@ phpcxx::Value& phpcxx::Array::operator[](zend_long idx)
     zval* retval = zend_hash_index_find(Z_ARRVAL_P(z), h);
     if (!retval) {
         retval = zend_hash_index_add_new(Z_ARRVAL_P(z), h, &EG(uninitialized_zval));
+        if (UNEXPECTED(!retval)) {
+            throw std::runtime_error("Cannot add element to the array as the next element is already occupied");
+        }
     }
 
     return *(new(retval) Value(placement_construct));
@@ -139,6 +145,9 @@ phpcxx::Value& phpcxx::Array::operator[](zend_string* key)
     }
     else {
         retval = zend_hash_add_new(Z_ARRVAL_P(z), key, &EG(uninitialized_zval));
+        if (UNEXPECTED(!retval)) {
+            throw std::runtime_error("Cannot add element to the array as the next element is already occupied");
+        }
     }
 
     return *(new(retval) Value(placement_construct));
