@@ -37,7 +37,7 @@ public:
     {
     }
 
-    ZendString(ZendString&& other)
+    ZendString(ZendString&& other) noexcept
         : m_s(std::move(other.m_s))
     {
         other.m_s = nullptr;
@@ -115,6 +115,11 @@ public:
         zend_string* s = this->m_s;
         this->m_s      = nullptr;
         return s;
+    }
+
+    bool operator==(const ZendString& rhs) const
+    {
+        return zend_string_equals(this->m_s, rhs.m_s);
     }
 
 private:
