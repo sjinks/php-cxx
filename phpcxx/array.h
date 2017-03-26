@@ -69,7 +69,7 @@ public:
 private:
     mutable zval m_z;
 
-    Array(std::nullptr_t) {} // for placement new
+    Array(placement_construct_t) {} // for placement new
 
     friend class Value;
 };

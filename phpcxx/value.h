@@ -177,14 +177,14 @@ public:
         return Value(*this, CopyPolicy::Reference);
     }
 
-    Value& dereference()
+    Value& dereference() &
     {
         zval* a = &this->m_z;
         if (Z_ISREF_P(a)) {
             a = Z_REFVAL_P(a);
         }
 
-        return *(new(a) Value(nullptr));
+        return *(new(a) Value(phpcxx::placement_construct));
     }
 
     static Value createReference(Value& to)
