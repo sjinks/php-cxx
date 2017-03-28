@@ -4,10 +4,10 @@ PREFIX=$(readlink -enq "$(dirname $0)/../")
 
 if [ "$CXX" = "g++" ]; then
 	GCOV=gcov
-	ARGS=-s "$PREFIX" -ablpr
+	ARGS="-s \"$PREFIX\" -ablpr"
 else
 	GCOV=llvm-cov
-	ARGS=gcov -a -b -l -p
+	ARGS="gcov -a -b -l -p"
 fi
 
 rm -rf   "$PREFIX/.gcov"
