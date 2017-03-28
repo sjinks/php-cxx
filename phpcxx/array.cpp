@@ -106,9 +106,9 @@ phpcxx::Value& phpcxx::Array::operator[](const Value& key)
 
     while (true) {
         switch (key.type()) {
-            case Type::String:    return this->operator[](Z_STR(key.m_z));
-            case Type::Integer:   return this->operator[](Z_LVAL(this->m_z));
-            case Type::Double:    return this->operator[](zend_dval_to_lval(Z_DVAL(this->m_z)));
+            case Type::String:    return this->operator[](Z_STR_P(z));
+            case Type::Integer:   return this->operator[](Z_LVAL_P(z));
+            case Type::Double:    return this->operator[](zend_dval_to_lval(Z_DVAL_P(z)));
             case Type::True:      return this->operator[](static_cast<zend_long>(1l));
             case Type::False:     return this->operator[](static_cast<zend_long>(0l));
             case Type::Resource:  return this->operator[](Z_RES_HANDLE_P(z));
@@ -159,26 +159,26 @@ std::size_t phpcxx::Array::size() const
     return zend_hash_num_elements(Z_ARRVAL_P(z));
 }
 
-bool phpcxx::Array::contains(zend_long idx) const
+bool phpcxx::Array::isset(zend_long idx) const
 {
     zval* z = derefAndCheck(&this->m_z);
     return zend_hash_index_exists(Z_ARRVAL_P(z), static_cast<zend_ulong>(idx));
 }
 
-bool phpcxx::Array::contains(const Value& key) const
+bool phpcxx::Array::isset(const Value& key) const
 {
     zval* z = &key.m_z;
 
     while (true) {
         switch (key.type()) {
-            case Type::String:    return this->contains(Z_STR(key.m_z));
-            case Type::Integer:   return this->contains(Z_LVAL(this->m_z));
-            case Type::Double:    return this->contains(zend_dval_to_lval(Z_DVAL(this->m_z)));
-            case Type::True:      return this->contains(static_cast<zend_long>(1));
-            case Type::False:     return this->contains(static_cast<zend_long>(0));
-            case Type::Resource:  return this->contains(Z_RES_HANDLE_P(z));
-            case Type::Undefined: return this->contains(ZSTR_EMPTY_ALLOC());
-            case Type::Null:      return this->contains(ZSTR_EMPTY_ALLOC());
+            case Type::String:    return this->isset(Z_STR_P(z));
+            case Type::Integer:   return this->isset(Z_LVAL_P(z));
+            case Type::Double:    return this->isset(zend_dval_to_lval(Z_DVAL_P(z)));
+            case Type::True:      return this->isset(static_cast<zend_long>(1));
+            case Type::False:     return this->isset(static_cast<zend_long>(0));
+            case Type::Resource:  return this->isset(Z_RES_HANDLE_P(z));
+            case Type::Undefined: return this->isset(ZSTR_EMPTY_ALLOC());
+            case Type::Null:      return this->isset(ZSTR_EMPTY_ALLOC());
             case Type::Reference:
                 z = Z_REFVAL_P(z);
                 break;
@@ -189,11 +189,11 @@ bool phpcxx::Array::contains(const Value& key) const
     }
 }
 
-bool phpcxx::Array::contains(zend_string* key) const
+bool phpcxx::Array::isset(zend_string* key) const
 {
     zend_ulong hval;
     if (ZEND_HANDLE_NUMERIC(key, hval)) {
-        return this->contains(static_cast<zend_long>(hval));
+        return this->isset(static_cast<zend_long>(hval));
     }
 
     zval* z = derefAndCheck(&this->m_z);
@@ -213,9 +213,9 @@ void phpcxx::Array::unset(const Value& key)
 
     while (true) {
         switch (key.type()) {
-            case Type::String:    return this->unset(Z_STR(key.m_z));
-            case Type::Integer:   return this->unset(Z_LVAL(this->m_z));
-            case Type::Double:    return this->unset(zend_dval_to_lval(Z_DVAL(this->m_z)));
+            case Type::String:    return this->unset(Z_STR_P(z));
+            case Type::Integer:   return this->unset(Z_LVAL_P(z));
+            case Type::Double:    return this->unset(zend_dval_to_lval(Z_DVAL_P(z)));
             case Type::True:      return this->unset(static_cast<zend_long>(1));
             case Type::False:     return this->unset(static_cast<zend_long>(0));
             case Type::Resource:  return this->unset(Z_RES_HANDLE_P(z));
@@ -265,19 +265,19 @@ phpcxx::Value& phpcxx::Array::operator[](const ZendString& key)
     return this->operator[](key.get());
 }
 
-bool phpcxx::Array::contains(const char* key) const
+bool phpcxx::Array::isset(const char* key) const
 {
-    return this->contains(ZendString(key).get());
+    return this->isset(ZendString(key).get());
 }
 
-bool phpcxx::Array::contains(const string& key) const
+bool phpcxx::Array::isset(const string& key) const
 {
-    return this->contains(ZendString(key).get());
+    return this->isset(ZendString(key).get());
 }
 
-bool phpcxx::Array::contains(const ZendString& key) const
+bool phpcxx::Array::isset(const ZendString& key) const
 {
-    return this->contains(key.get());
+    return this->isset(key.get());
 }
 
 void phpcxx::Array::unset(const char* key)

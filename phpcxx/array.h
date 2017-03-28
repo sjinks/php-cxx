@@ -12,6 +12,8 @@
 #include "map.h"
 #include "vector.h"
 
+#undef isset
+
 namespace phpcxx {
 
 class Value;
@@ -45,9 +47,9 @@ public:
 
     std::size_t size() const;
 
-    bool contains(zend_long idx) const;
-    bool contains(const Value& key) const;
-    [[gnu::nonnull]] bool contains(zend_string* key) const;
+    bool isset(zend_long idx) const;
+    bool isset(const Value& key) const;
+    [[gnu::nonnull]] bool isset(zend_string* key) const;
 
     void unset(zend_long idx);
     void unset(const Value& key);
@@ -57,9 +59,9 @@ public:
     Value& operator[](const string& key);
     Value& operator[](const ZendString& key);
 
-    bool contains(const char* key) const;
-    bool contains(const string& key) const;
-    bool contains(const ZendString& key) const;
+    bool isset(const char* key) const;
+    bool isset(const string& key) const;
+    bool isset(const ZendString& key) const;
 
     void unset(const char* key);
     void unset(const string& key);

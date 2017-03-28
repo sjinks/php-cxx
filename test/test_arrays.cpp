@@ -3,6 +3,7 @@
 #include "phpcxx/array.h"
 #include "phpcxx/operators.h"
 #include "phpcxx/value.h"
+#include "phpcxx/string.h"
 #include "globals.h"
 #include "testsapi.h"
 
@@ -49,6 +50,10 @@ TEST_F(ArrayFixture, InitializationNormal)
         EXPECT_EQ(3, Z_REFCOUNT_P(z2));
         EXPECT_EQ(3, Z_REFCOUNT_P(z3));
         EXPECT_EQ(Z_ARRVAL_P(z2), Z_ARRVAL_P(z3));
+
+        EXPECT_EQ(0, a1.size());
+        EXPECT_EQ(1, a2.size());
+        EXPECT_EQ(1, a3.size());
     });
     EXPECT_EQ(m_err.str(), "");
     m_err.str(std::string());
@@ -119,15 +124,68 @@ TEST_F(ArrayFixture, InitializationConversion)
         EXPECT_EQ(1, a1.size());
         EXPECT_EQ(0, a2.size());
 
-        EXPECT_TRUE(a1.contains("0"));
-        EXPECT_TRUE(a1.contains(static_cast<zend_long>(0)));
-        EXPECT_FALSE(a2.contains(static_cast<zend_long>(0)));
+        EXPECT_TRUE(a1.isset("0"));
+        EXPECT_TRUE(a1.isset(static_cast<zend_long>(0)));
+        EXPECT_FALSE(a2.isset(static_cast<zend_long>(0)));
 
         EXPECT_EQ(a1["0"], a1[static_cast<zend_long>(0)]);
         EXPECT_EQ(4, a1[static_cast<zend_long>(0)].asLong());
 
         EXPECT_EQ(phpcxx::Type::Null, a1[1].type());
     });
+    EXPECT_EQ(m_err.str(), "");
+    m_err.str(std::string());
+}
+
+TEST_F(ArrayFixture, Operations)
+{
+    m_sapi.run([this]() {
+        phpcxx::Array a;
+        phpcxx::Value zero(zend_long(0));
+        phpcxx::Value one(1);
+
+        EXPECT_EQ(phpcxx::Type::Integer, zero.type());
+        EXPECT_EQ(phpcxx::Type::Integer, one.type());
+        EXPECT_EQ(0, Z_LVAL_P(zero.pzval()));
+        EXPECT_EQ(1, Z_LVAL_P(one.pzval()));
+
+        EXPECT_EQ(0, a.size());
+
+        a[nullptr] = 1;
+        EXPECT_EQ(1, a.size());
+        EXPECT_TRUE(a.isset("0"));
+        EXPECT_TRUE(a.isset(phpcxx::string("0")));
+        EXPECT_TRUE(a.isset(zend_long(0)));
+        EXPECT_TRUE(a.isset(zero));
+
+        EXPECT_EQ(a[zero], a["0"]);
+        EXPECT_EQ(a[phpcxx::string("0")], a["0"]);
+        EXPECT_EQ(a[zend_long(0)], a["0"]);
+        EXPECT_EQ(one, a["0"]);
+
+        EXPECT_FALSE(a.isset("1"));
+        EXPECT_FALSE(a.isset(phpcxx::string("1")));
+        EXPECT_FALSE(a.isset(1));
+        EXPECT_FALSE(a.isset(one));
+
+        phpcxx::Array b(a);
+        b.unset(zero);
+
+        EXPECT_EQ(0, b.size());
+        EXPECT_EQ(1, a.size());
+
+        b = a;
+
+        EXPECT_EQ(1, b.size());
+        EXPECT_TRUE(b.isset(zero));
+        EXPECT_EQ(a["0"], b["0"]);
+
+        b.unset("0");
+
+        EXPECT_EQ(0, b.size());
+        EXPECT_EQ(1, a.size());
+    });
+
     EXPECT_EQ(m_err.str(), "");
     m_err.str(std::string());
 }
@@ -198,21 +256,21 @@ TEST_F(ArrayFixture, Arrays)
         phpcxx::Value func("var_export");
         func(a);
 
-        EXPECT_TRUE(a.contains("a"));
-        EXPECT_FALSE(a.contains("b"));
+        EXPECT_TRUE(a.isset("a"));
+        EXPECT_FALSE(a.isset("b"));
         EXPECT_EQ(1, a.size());
 
         phpcxx::Array aa(a["a"]);
         phpcxx::Value e("e");
-        EXPECT_TRUE(aa.contains(phpcxx::string("b")));
-        EXPECT_TRUE(aa.contains(e));
+        EXPECT_TRUE(aa.isset(phpcxx::string("b")));
+        EXPECT_TRUE(aa.isset(e));
         EXPECT_EQ(2, aa.size());
 
         a["f"] = "smth";
-        EXPECT_TRUE(a.contains("f"));
+        EXPECT_TRUE(a.isset("f"));
         EXPECT_EQ(2, a.size());
         a.unset("f");
-        EXPECT_FALSE(a.contains("f"));
+        EXPECT_FALSE(a.isset("f"));
         EXPECT_EQ(1, a.size());
 
         std::string expected = "array (\n  'a' => \n  array (\n    'b' => \n    array (\n      'c' => 1,\n      'd' => 2,\n    ),\n    'e' => 3,\n  ),\n)";
