@@ -1,9 +1,12 @@
 #include <sstream>
+#include <string>
 #include <gtest/gtest.h>
 #include "phpcxx/array.h"
 #include "phpcxx/operators.h"
 #include "phpcxx/value.h"
 #include "phpcxx/string.h"
+#include "phpcxx/map.h"
+#include "phpcxx/vector.h"
 #include "globals.h"
 #include "testsapi.h"
 
@@ -137,6 +140,42 @@ TEST_F(ArrayFixture, InitializationConversion)
     m_err.str(std::string());
 }
 
+TEST_F(ArrayFixture, InitializationVectorMap)
+{
+    m_sapi.run([this]() {
+        phpcxx::vector<int> v = {0, 1, 2, 3, 4};
+        phpcxx::map<int, double> m = { { 0, 0.0 }, { 1, 1.1 }, { 2, 2.2 }, { 3, 3.3 }, { 4, 4.4 } };
+        phpcxx::map<const char*, double> n = { { "k5", 5.5 }, { "k6", 6.6 }, { "k7", 7.7 }, { "k8", 8.8 }, { "k9", 9.9 } };
+        phpcxx::Array a;
+
+        a = v;
+
+        EXPECT_EQ(5, a.size());
+        for (int i=0; i<5; ++i) {
+            EXPECT_EQ(phpcxx::Type::Integer, a[i].type());
+            EXPECT_EQ(i, a[i].asLong());
+        }
+
+        a = m;
+        EXPECT_EQ(5, a.size());
+        for (int i=0; i<5; ++i) {
+            EXPECT_EQ(phpcxx::Type::Double, a[i].type());
+            EXPECT_EQ(i + i/10.0, a[i].asDouble());
+        }
+
+        a = n;
+        EXPECT_EQ(5, a.size());
+        for (int i=5; i<10; ++i) {
+            phpcxx::string key = "k" + phpcxx::string(std::to_string(i).c_str());
+            EXPECT_EQ(phpcxx::Type::Double, a[key].type());
+            EXPECT_EQ(i + i/10.0, a[key].asDouble());
+        }
+    });
+
+    EXPECT_EQ(m_err.str(), "");
+    m_err.str(std::string());
+}
+
 TEST_F(ArrayFixture, Operations)
 {
     m_sapi.run([this]() {
@@ -184,6 +223,25 @@ TEST_F(ArrayFixture, Operations)
 
         EXPECT_EQ(0, b.size());
         EXPECT_EQ(1, a.size());
+
+        b = a;
+
+        EXPECT_EQ(1, b.size());
+        EXPECT_TRUE(b.isset(zero));
+        EXPECT_EQ(a["0"], b["0"]);
+
+        b.unset(phpcxx::string("0"));
+
+        EXPECT_EQ(0, b.size());
+        EXPECT_EQ(1, a.size());
+
+        zero *= 1.0;
+        EXPECT_EQ(phpcxx::Type::Double, zero.type());
+        EXPECT_TRUE(a.isset(zero));
+
+        zero = false;
+        EXPECT_EQ(phpcxx::Type::False, zero.type());
+        EXPECT_TRUE(a.isset(zero));
     });
 
     EXPECT_EQ(m_err.str(), "");
