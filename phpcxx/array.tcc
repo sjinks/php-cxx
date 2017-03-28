@@ -53,7 +53,7 @@ Array& Array::operator=(const map<K, V>& v)
         zval x;
         construct_zval(x, it.second);
         ZendString key(it.first);
-        zend_hash_add(Z_ARR_P(z), key.release(), &x);
+        zend_hash_add(Z_ARR_P(z), key.get(), &x);
     }
 
     return *this;
