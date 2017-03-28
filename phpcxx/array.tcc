@@ -31,7 +31,7 @@ Array& Array::operator=(const map<K, V>& v)
     ZVAL_DEREF(z);
 
     zval_ptr_dtor(z);
-    _array_init(z, 8 ZEND_FILE_LINE_CC);
+    _array_init(z, v.size() ZEND_FILE_LINE_CC);
     for (auto const& it : v) {
         zval x;
         construct_zval(x, it.second);
@@ -48,7 +48,7 @@ Array& Array::operator=(const map<K, V>& v)
     ZVAL_DEREF(z);
 
     zval_ptr_dtor(z);
-    _array_init(z, 8 ZEND_FILE_LINE_CC);
+    _array_init(z, v.size() ZEND_FILE_LINE_CC);
     for (auto const& it : v) {
         zval x;
         construct_zval(x, it.second);
