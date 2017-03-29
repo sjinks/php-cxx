@@ -3,6 +3,7 @@
 #include <sstream>
 #include <gtest/gtest.h>
 #include <Zend/zend.h>
+#include <Zend/zend_API.h>
 #include "phpcxx/module.h"
 #include "testsapi.h"
 
@@ -241,37 +242,37 @@ TEST(LifecycleTest, AdditionalModule)
         EXPECT_EQ(1, ext2.module_shutdown_called);
     }
 
-//    {
-//        MyModule ext1("LifeCycle1", "0.0");
-//        MyModule ext2("LifeCycle2", "0.0");
-//
-//        {
-//            TestSAPI sapi(std::cout, std::cerr);
-//            sapi.addModule(ext1);
-//
-//            sapi.initialize();
-//            ext1.registerExtension(ext2);
-//            EXPECT_EQ(1, ext1.module_startup_called);
-//            EXPECT_EQ(1, ext2.module_startup_called);
-//
-//            sapi.run([&ext1, &ext2]() {
-//                EXPECT_EQ(1, ext1.request_startup_called);
-//                // When a module is loaded after MINIT phase,
-//                // its request startup / shutdown functions
-//                // do not get registered
-//                // However, I would prefer not to rely upon
-//                // this behavior
-//                // EXPECT_EQ(0, ext2.request_startup_called);
-//            });
-//
-//            sapi.run([&ext1, &ext2]() {
-//                EXPECT_EQ(2, ext1.request_startup_called);
-//                // See above
-//                // EXPECT_EQ(0, ext2.request_startup_called);
-//            });
-//        }
-//
-//        EXPECT_EQ(1, ext1.module_shutdown_called);
-//        EXPECT_EQ(1, ext2.module_shutdown_called);
-//    }
+    {
+        MyModule ext1("LifeCycle1", "0.0");
+        MyModule ext2("LifeCycle2", "0.0");
+
+        {
+            TestSAPI sapi(std::cout, std::cerr);
+            sapi.addModule(ext1);
+
+            sapi.initialize();
+            zend_startup_module(ext2.module());
+            EXPECT_EQ(1, ext1.module_startup_called);
+            EXPECT_EQ(1, ext2.module_startup_called);
+
+            sapi.run([&ext1, &ext2]() {
+                EXPECT_EQ(1, ext1.request_startup_called);
+                // When a module is loaded after MINIT phase,
+                // its request startup / shutdown functions
+                // do not get registered
+                // However, I would prefer not to rely upon
+                // this behavior
+                // EXPECT_EQ(0, ext2.request_startup_called);
+            });
+
+            sapi.run([&ext1, &ext2]() {
+                EXPECT_EQ(2, ext1.request_startup_called);
+                // See above
+                // EXPECT_EQ(0, ext2.request_startup_called);
+            });
+        }
+
+        EXPECT_EQ(1, ext1.module_shutdown_called);
+        EXPECT_EQ(1, ext2.module_shutdown_called);
+    }
 }

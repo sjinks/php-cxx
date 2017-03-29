@@ -5,8 +5,6 @@
 #include "phpcxx/module.h"
 #include "testsapi.h"
 
-#if 0
-
 namespace {
 
 class MyModuleGlobals : public phpcxx::ModuleGlobals {
@@ -27,19 +25,24 @@ private:
 
 class MyModule : public phpcxx::Module {
 public:
-    using phpcxx::Module::Module;
-
-protected:
-    virtual phpcxx::ModuleGlobals* globalsConstructor() override
+    MyModule(const char* name, const char* version)
+        : phpcxx::Module(name, version)
     {
-        sapi_module.ub_write(ZEND_STRL("globalsConstructor\n"));
-        return new MyModuleGlobals();
+        this->setGlobalsConstructor(MyModule::globals_ctor);
+        this->setGlobalsDestructor(MyModule::globals_dtor);
     }
 
-    virtual void globalsDestructor(phpcxx::ModuleGlobals* g) override
+protected:
+    static void globals_ctor(zend_phpcxx_globals* g)
+    {
+        sapi_module.ub_write(ZEND_STRL("globalsConstructor\n"));
+        g->globals = new MyModuleGlobals();
+    }
+
+    static void globals_dtor(zend_phpcxx_globals* g)
     {
         sapi_module.ub_write(ZEND_STRL("globalsDestructor\n"));
-        phpcxx::Module::globalsDestructor(g);
+        delete g->globals;
     }
 
     virtual bool moduleStartup() override
@@ -88,4 +91,3 @@ TEST(ModuleGlobalsTest, TestModuleGlobals)
     EXPECT_EQ("globalsDestructor\n~MyModuleGlobals\n", o);
 }
 
-#endif

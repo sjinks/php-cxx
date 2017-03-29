@@ -1,10 +1,15 @@
+#include <cassert>
 #include "constant.h"
 #include "function.h"
 #include "module.h"
 #include "module_p.h"
 #include "modulemap_p.h"
 
-ZEND_DECLARE_MODULE_GLOBALS(phpcxx);
+#ifdef ZTS
+    ts_rsrc_id phpcxx::ModulePrivate::phpcxx_globals_id;
+#else
+    static zend_phpcxx_globals phpcxx::ModulePrivate::phpcxx_globals;
+#endif
 
 static void moduleNotFound(int number)
 {
@@ -52,8 +57,6 @@ zend_module_entry* phpcxx::ModulePrivate::module()
 
 int phpcxx::ModulePrivate::moduleStartup(INIT_FUNC_ARGS)
 {
-    ModuleMap::instance().onGINIT();
-
     zend_module_entry* me = EG(current_module);
     assert(me != nullptr);
 
@@ -99,7 +102,6 @@ int phpcxx::ModulePrivate::moduleShutdown(SHUTDOWN_FUNC_ARGS)
         retcode = SUCCESS;
     }
 
-    ModuleMap::instance().onGSHUTDOWN();
     return retcode;
 }
 
@@ -170,4 +172,21 @@ void phpcxx::ModulePrivate::registerConstants()
             zval_ptr_dtor(&zc.value);
         }
     }
+}
+
+void phpcxx::ModulePrivate::globalsInit(void* g)
+{
+    assert(g != nullptr);
+
+    zend_phpcxx_globals* mg = reinterpret_cast<zend_phpcxx_globals*>(g);
+    mg->globals = new ModuleGlobals();
+}
+
+void phpcxx::ModulePrivate::globalsShutdown(void* g)
+{
+    assert(g != nullptr);
+
+    zend_phpcxx_globals* mg = reinterpret_cast<zend_phpcxx_globals*>(g);
+    delete mg->globals;
+    mg->globals = nullptr;
 }

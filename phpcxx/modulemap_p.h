@@ -27,7 +27,7 @@ public:
         return it != this->m_i2e.end() ? it->second : nullptr;
     }
 
-    void add(ModulePrivate* m)
+    [[gnu::nonnull]] void add(ModulePrivate* m)
     {
         std::unique_lock<std::mutex> locker(this->m_mutex);
         this->m_n2e.emplace(m->entry.name, m);
@@ -44,7 +44,7 @@ public:
         }
     }
 
-    ModulePrivate* mapIdToModule(const char* name, int module)
+    [[gnu::nonnull]] ModulePrivate* mapIdToModule(const char* name, int module)
     {
         std::unique_lock<std::mutex> locker(this->m_mutex);
         auto it = this->m_n2e.find(std::string(name));
