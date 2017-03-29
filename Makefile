@@ -22,6 +22,7 @@ LIBRARY_CXX_SOURCES = \
 	phpcxx/argument.cpp \
 	phpcxx/array.cpp \
 	phpcxx/constant.cpp \
+	phpcxx/exception.cpp \
 	phpcxx/function.cpp \
 	phpcxx/module.cpp \
 	phpcxx/module_p.cpp \

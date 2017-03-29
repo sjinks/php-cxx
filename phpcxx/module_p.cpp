@@ -1,5 +1,6 @@
 #include <cassert>
 #include "constant.h"
+#include "exception_p.h"
 #include "function.h"
 #include "module.h"
 #include "module_p.h"
@@ -63,6 +64,10 @@ int phpcxx::ModulePrivate::moduleStartup(INIT_FUNC_ARGS)
     phpcxx::ModulePrivate* e = ModuleMap::instance().mapIdToModule(me->name, module_number);
 
     if (EXPECTED(e)) {
+        if (FAILURE == setup_phpcxx_exception()) {
+            return FAILURE;
+        }
+
 //        e->registerIniEntries();
 //        e->registerClasses();
         e->registerConstants();
