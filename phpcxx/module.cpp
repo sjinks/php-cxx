@@ -2,9 +2,16 @@
 #include "function.h"
 #include "module.h"
 #include "module_p.h"
+#include "modulemap_p.h"
+
+phpcxx::ModuleGlobals::ModuleGlobals()
+{
+    ModuleMap::instance().onGINIT();
+}
 
 phpcxx::ModuleGlobals::~ModuleGlobals()
 {
+    ModuleMap::instance().onGSHUTDOWN();
 }
 
 phpcxx::Module::Module(const char* name, const char* version)
@@ -24,16 +31,6 @@ struct _zend_module_entry* phpcxx::Module::module()
 phpcxx::ModuleGlobals* phpcxx::Module::globals()
 {
     return this->d_ptr->globals();
-}
-
-phpcxx::ModuleGlobals* phpcxx::Module::globalsConstructor()
-{
-    return nullptr;
-}
-
-void phpcxx::Module::globalsDestructor(phpcxx::ModuleGlobals* g)
-{
-    delete g;
 }
 
 bool phpcxx::Module::moduleStartup()
@@ -85,6 +82,24 @@ std::vector<phpcxx::Module*> phpcxx::Module::otherModules()
 std::vector<phpcxx::Function> phpcxx::Module::functions()
 {
     return std::vector<phpcxx::Function>();
+}
+
+void phpcxx::Module::setGlobalsConstructor(globals_ctor_t f)
+{
+    if (UNEXPECTED(f == nullptr)) {
+        throw std::logic_error("phpcxx::Module::setGlobalsConstructor: f cannot be nullptr");
+    }
+
+    this->d_ptr->module()->globals_ctor = reinterpret_cast<internal_globals_ctor_t>(f);
+}
+
+void phpcxx::Module::setGlobalsDestructor(globals_dtor_t f)
+{
+    if (UNEXPECTED(f == nullptr)) {
+        throw std::logic_error("phpcxx::Module::setGlobalsDestructor: f cannot be nullptr");
+    }
+
+    this->d_ptr->module()->globals_dtor = reinterpret_cast<internal_globals_dtor_t>(f);
 }
 
 std::vector<phpcxx::Constant> phpcxx::Module::constants()

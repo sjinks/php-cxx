@@ -8,6 +8,12 @@
 
 struct _zend_module_entry;
 
+namespace phpcxx { class ModuleGlobals; }
+
+typedef struct _zend_phpcxx_globals {
+    phpcxx::ModuleGlobals* globals;
+} zend_phpcxx_globals;
+
 namespace phpcxx {
 
 class Constant;
@@ -23,14 +29,18 @@ public:
     struct _zend_module_entry* module();
     ModuleGlobals* globals();
 
+    typedef void(*globals_ctor_t)(struct ::_zend_phpcxx_globals*);
+    typedef void(*globals_dtor_t)(struct ::_zend_phpcxx_globals*);
+
 protected:
-    virtual ModuleGlobals* globalsConstructor();
-    virtual void globalsDestructor(ModuleGlobals* g);
     virtual bool moduleStartup();
     virtual bool moduleShutdown();
     virtual bool requestStartup();
     virtual bool requestShutdown();
     virtual void moduleInfo();
+
+    [[gnu::nonnull]] void setGlobalsConstructor(globals_ctor_t f);
+    [[gnu::nonnull]] void setGlobalsDestructor(globals_dtor_t f);
 
     void registerModuleDependencies();
     void registerClasses();
@@ -44,10 +54,14 @@ protected:
 private:
     friend class ModulePrivate;
     std::unique_ptr<ModulePrivate> d_ptr;
+
+    typedef void(*internal_globals_ctor_t)(void*);
+    typedef void(*internal_globals_dtor_t)(void*);
 };
 
 class PHPCXX_EXPORT ModuleGlobals {
 public:
+    ModuleGlobals();
     virtual ~ModuleGlobals();
 };
 

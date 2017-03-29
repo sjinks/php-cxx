@@ -7,18 +7,13 @@
 #include <Zend/zend.h>
 #include <Zend/zend_modules.h>
 #include <vector>
-
-namespace phpcxx { class ModuleGlobals; }
-
-ZEND_BEGIN_MODULE_GLOBALS(phpcxx)
-    phpcxx::ModuleGlobals* globals;
-ZEND_END_MODULE_GLOBALS(phpcxx)
-extern ZEND_DECLARE_MODULE_GLOBALS(phpcxx);
+#include "module.h"
 
 namespace phpcxx {
 
 class Function;
 class Module;
+class ModuleGlobals;
 
 class PHPCXX_HIDDEN ModulePrivate {
 public:
@@ -49,8 +44,8 @@ public:
         &ModulePrivate::moduleInfo,
         NO_VERSION_YET,
         PHP_MODULE_GLOBALS(phpcxx),
-        nullptr,    // globalsInit,
-        nullptr,    // globalsShutdown,
+        &ModulePrivate::globalsInit,
+        &ModulePrivate::globalsShutdown,
         nullptr,    // ZEND_MODULE_POST_ZEND_DEACTIVATE_N(phpcxx),
         STANDARD_MODULE_PROPERTIES_EX
     };
@@ -59,13 +54,15 @@ private:
     Module* const q_ptr;
     std::vector<Function> m_funcs;
     std::unique_ptr<zend_function_entry[]> m_zf;
-/*
+
 #ifdef ZTS
-    ts_rsrc_id phpcxx_globals_id;
+    static ts_rsrc_id phpcxx_globals_id;
 #else
-    zend_phpcxx_globals phpcxx_globals;
+    static zend_phpcxx_globals phpcxx_globals;
 #endif
-*/
+
+    static void globalsInit(void* g);
+    static void globalsShutdown(void* g);
     static int moduleStartup(INIT_FUNC_ARGS);
     static int moduleShutdown(SHUTDOWN_FUNC_ARGS);
     static int requestStartup(INIT_FUNC_ARGS);
