@@ -234,7 +234,7 @@ void TestSAPI::run(std::function<void(void)> callback)
     }
     zend_end_try();
 
-    if (EG(current_execute_data) && EG(current_execute_data)->opline) {
+    if (EG(exception) && EG(current_execute_data) && EG(current_execute_data)->opline) {
         zend_clear_exception();
     }
     else {
