@@ -8,7 +8,7 @@
 #ifdef ZTS
     ts_rsrc_id phpcxx::ModulePrivate::phpcxx_globals_id;
 #else
-    static zend_phpcxx_globals phpcxx::ModulePrivate::phpcxx_globals;
+    zend_phpcxx_globals phpcxx::ModulePrivate::phpcxx_globals;
 #endif
 
 static void moduleNotFound(int number)
