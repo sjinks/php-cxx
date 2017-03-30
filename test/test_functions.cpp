@@ -59,7 +59,9 @@ protected:
             phpcxx::createFunction<&MyModule::func_throwing2>("func_throwing2"),
             phpcxx::createFunction<&MyModule::call_func_throwing2>("call_func_throwing2"),
             phpcxx::createFunction<&MyModule::func_throwing3>("func_throwing3"),
-            phpcxx::createFunction<&MyModule::call_func_throwing3>("call_func_throwing3")
+            phpcxx::createFunction<&MyModule::call_func_throwing3>("call_func_throwing3"),
+            phpcxx::createFunction<&MyModule::func_bailingout>("func_bailingout"),
+            phpcxx::createFunction<&MyModule::call_func_bailingout>("call_func_bailingout")
         };
     }
 
@@ -171,6 +173,29 @@ private:
         }
 
         EXPECT_TRUE(EG(exception) == nullptr);
+    }
+
+    static void func_bailingout()
+    {
+        php_printf("+ %s\n", "func_bailingout");
+        zend_error(E_ERROR, "Bailing out");
+    }
+
+    static void call_func_bailingout()
+    {
+        bool bailed_out = false;
+        zend_try {
+            phpcxx::call("func_bailingout");
+            // Should not happen
+            EXPECT_TRUE(0);
+        }
+        zend_catch {
+            bailed_out = 1;
+            EXPECT_TRUE(1);
+        }
+        zend_end_try()
+
+        EXPECT_TRUE(bailed_out);
     }
 };
 
@@ -365,6 +390,16 @@ TEST(FunctionsTest, SimpleCalls)
         e = err.str(); err.str(std::string());
         EXPECT_EQ("+ func_throwing3\n+ func_throwing3\n", o);
         EXPECT_EQ("", e);
+
+        sapi.run([]() {
+            runPhpCode("call_func_bailingout();");
+        });
+
+        o = out.str(); out.str(std::string());
+        e = err.str(); err.str(std::string());
+        EXPECT_EQ("+ func_bailingout\n", o);
+        EXPECT_NE(std::string::npos, e.find("Bailing out"));
+        EXPECT_NE(std::string::npos, e.find("Fatal error"));
 
         out << "Done";
     }
