@@ -4,6 +4,7 @@
 #include <vector>
 #include <gtest/gtest.h>
 #include <Zend/zend.h>
+#include <Zend/zend_exceptions.h>
 #include "phpcxx/module.h"
 #include "phpcxx/function.h"
 #include "phpcxx/call.h"
@@ -52,7 +53,15 @@ protected:
                 ),
             phpcxx::createFunction<&MyModule::swap>("swap")
                 .addRequiredArgument(phpcxx::byReference("a"))
-                .addRequiredArgument(phpcxx::byReference("b"))
+                .addRequiredArgument(phpcxx::byReference("b")),
+            phpcxx::createFunction<&MyModule::func_throwing>("func_throwing"),
+            phpcxx::createFunction<&MyModule::call_func_throwing>("call_func_throwing"),
+            phpcxx::createFunction<&MyModule::func_throwing2>("func_throwing2"),
+            phpcxx::createFunction<&MyModule::call_func_throwing2>("call_func_throwing2"),
+            phpcxx::createFunction<&MyModule::func_throwing3>("func_throwing3"),
+            phpcxx::createFunction<&MyModule::call_func_throwing3>("call_func_throwing3"),
+            phpcxx::createFunction<&MyModule::func_bailingout>("func_bailingout"),
+            phpcxx::createFunction<&MyModule::call_func_bailingout>("call_func_bailingout")
         };
     }
 
@@ -82,7 +91,111 @@ private:
 
     static void func5(zend_execute_data* execute_data, zval* return_value)
     {
+    }
 
+    static void func_throwing()
+    {
+        EXPECT_TRUE(EG(exception) == nullptr);
+        php_printf("> %s\n", "func_throwing");
+        zend_throw_exception(zend_exception_get_default(), "Message", 1);
+        EXPECT_TRUE(EG(exception) != nullptr);
+        php_printf("< %s\n", "func_throwing");
+    }
+
+    static void call_func_throwing()
+    {
+        EXPECT_THROW(phpcxx::call("func_throwing"), phpcxx::PhpException);
+        EXPECT_TRUE(EG(exception) != nullptr);
+        zend_clear_exception();
+        EXPECT_TRUE(EG(exception) == nullptr);
+
+        try {
+            phpcxx::call("func_throwing");
+            EXPECT_TRUE(0);
+        }
+        catch (const phpcxx::PhpException& e) {
+            EXPECT_EQ(1, e.code());
+            EXPECT_EQ("Message", e.message());
+            EXPECT_EQ("Exception", e.getClass());
+            e.markHandled(true);
+        }
+
+        EXPECT_TRUE(EG(exception) == nullptr);
+    }
+
+    static void func_throwing2()
+    {
+        php_printf("+ %s\n", "func_throwing2");
+        throw 55;
+    }
+
+    static void call_func_throwing2()
+    {
+        EXPECT_THROW(phpcxx::call("func_throwing2"), phpcxx::PhpException);
+        EXPECT_TRUE(EG(exception) != nullptr);
+        zend_clear_exception();
+
+        try {
+            phpcxx::call("func_throwing2");
+            // Should not happen
+            EXPECT_TRUE(0);
+        }
+        catch (phpcxx::PhpException& e) {
+            EXPECT_EQ(0, e.code());
+            EXPECT_EQ("Unhandled C++ exception", e.message());
+            e.markHandled(true);
+        }
+
+        EXPECT_TRUE(EG(exception) == nullptr);
+    }
+
+    static void func_throwing3()
+    {
+        php_printf("+ %s\n", "func_throwing3");
+        throw std::runtime_error("crash boom bang");
+    }
+
+    static void call_func_throwing3()
+    {
+        EXPECT_THROW(phpcxx::call("func_throwing3"), phpcxx::PhpException);
+        EXPECT_TRUE(EG(exception) != nullptr);
+        zend_clear_exception();
+
+        try {
+            phpcxx::call("func_throwing3");
+            // Should not happen
+            EXPECT_TRUE(0);
+        }
+        catch (phpcxx::PhpException& e) {
+            EXPECT_EQ(0, e.code());
+            EXPECT_EQ("Unhandled C++ exception: crash boom bang", e.message());
+            e.markHandled(true);
+        }
+
+        EXPECT_TRUE(EG(exception) == nullptr);
+    }
+
+    static void func_bailingout()
+    {
+        php_printf("+ %s\n", "func_bailingout");
+        zend_error(E_ERROR, "Bailing out");
+    }
+
+    static void call_func_bailingout()
+    {
+        bool bailed_out = false;
+        zend_try {
+            phpcxx::call("func_bailingout");
+            // Should not happen
+            EXPECT_TRUE(0);
+        }
+        zend_catch {
+            bailed_out = 1;
+            EXPECT_TRUE(1);
+        }
+        zend_end_try()
+
+        EXPECT_TRUE(bailed_out);
     }
 };
 
@@ -226,7 +339,7 @@ TEST(FunctionsTest, SimpleCalls)
         std::string o;
         std::string e;
 
-        sapi.run([&out, &err, &o, &e]() {
+        sapi.run([]() {
             phpcxx::call("func1");
         });
 
@@ -235,7 +348,7 @@ TEST(FunctionsTest, SimpleCalls)
         EXPECT_EQ("func1\n", o);
         EXPECT_EQ("", e);
 
-        sapi.run([&out, &err, &o, &e]() {
+        sapi.run([]() {
             phpcxx::call("func2", 44);
         });
 
@@ -243,11 +356,57 @@ TEST(FunctionsTest, SimpleCalls)
         e = err.str(); err.str(std::string());
         EXPECT_EQ("func2: a = 44\n", o);
         EXPECT_EQ("", e);
+
+        sapi.run([]() {
+            /* Dirty hack: if we invoke call_func_throwing() directly
+             * without runPhpCode(), ZE will bail out.
+             * It looks like it bails out somewhere in zend_call_function()
+             * because the function handler runs, and the code in
+             * phpcxx::call() does not, and the control is transferred to
+             * zend_catch block of TestSAPI::run()
+             */
+            runPhpCode("call_func_throwing();");
+        });
+
+        o = out.str(); out.str(std::string());
+        e = err.str(); err.str(std::string());
+        EXPECT_EQ("> func_throwing\n< func_throwing\n> func_throwing\n< func_throwing\n", o);
+        EXPECT_EQ("", e);
+
+        sapi.run([]() {
+            runPhpCode("call_func_throwing2();");
+        });
+
+        o = out.str(); out.str(std::string());
+        e = err.str(); err.str(std::string());
+        EXPECT_EQ("+ func_throwing2\n+ func_throwing2\n", o);
+        EXPECT_EQ("", e);
+
+        sapi.run([]() {
+            runPhpCode("call_func_throwing3();");
+        });
+
+        o = out.str(); out.str(std::string());
+        e = err.str(); err.str(std::string());
+        EXPECT_EQ("+ func_throwing3\n+ func_throwing3\n", o);
+        EXPECT_EQ("", e);
+
+        sapi.run([]() {
+            runPhpCode("call_func_bailingout();");
+        });
+
+        o = out.str(); out.str(std::string());
+        e = err.str(); err.str(std::string());
+        EXPECT_EQ("+ func_bailingout\n", o);
+        EXPECT_NE(std::string::npos, e.find("Bailing out"));
+        EXPECT_NE(std::string::npos, e.find("Fatal error"));
+
+        out << "Done";
     }
 
     o = out.str(); out.str(std::string());
     e = err.str(); err.str(std::string());
-    EXPECT_EQ("", o);
+    EXPECT_EQ("Done", o);
     EXPECT_EQ("", e);
 }
 

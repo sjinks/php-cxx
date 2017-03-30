@@ -106,7 +106,7 @@ const char* phpcxx::PhpException::what() const noexcept
     return this->d_ptr->message().c_str();
 }
 
-void phpcxx::PhpException::markHandled(bool handled)
+void phpcxx::PhpException::markHandled(bool handled) const
 {
     this->d_ptr->markHandled(handled);
 }

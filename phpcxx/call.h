@@ -31,12 +31,13 @@ Value call(zval* object, zval* callable, indices<Is...>, Args&&... args)
 #endif
 
     if (zend_call_function(&fci, nullptr) == SUCCESS) {
-        if (throwable && UNEXPECTED(EG(exception))) {
-            i_zval_ptr_dtor(&retval ZEND_FILE_LINE_CC);
-            throw PhpException();
+        if (EXPECTED(!EG(exception))) {
+            return phpcxx::Value(&retval, CopyPolicy::Wrap);
         }
 
-        return phpcxx::Value(&retval, CopyPolicy::Wrap);
+        if (throwable) {
+            throw PhpException();
+        }
     }
 
     return phpcxx::Value();

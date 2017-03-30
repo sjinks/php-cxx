@@ -33,7 +33,7 @@ public:
     Value trace() const;
     const PhpException* previous() const;
 
-    void markHandled(bool handled);
+    void markHandled(bool handled) const;
     bool isHandled() const;
 
 private:
