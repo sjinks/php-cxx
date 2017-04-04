@@ -394,8 +394,6 @@ private:
     friend bool operator>(const phpcxx::Value& lhs, const phpcxx::Value& rhs);
     friend bool operator>=(const phpcxx::Value& lhs, const phpcxx::Value& rhs);
 
-    friend class Array;
-
     friend void construct_zval(zval& z, const Value& v) { ZVAL_COPY(&z, &v.m_z); }
 };
 

@@ -41,7 +41,7 @@ phpcxx::Array::Array(zval* z)
 }
 
 phpcxx::Array::Array(Value& v)
-    : Array(&v.m_z)
+    : Array(v.pzval())
 {
 }
 
@@ -102,7 +102,7 @@ phpcxx::Value& phpcxx::Array::operator[](zend_long idx)
 
 phpcxx::Value& phpcxx::Array::operator[](const Value& key)
 {
-    zval* z = &key.m_z;
+    zval* z = key.pzval();
 
     while (true) {
         switch (key.type()) {
@@ -167,7 +167,7 @@ bool phpcxx::Array::isset(zend_long idx) const
 
 bool phpcxx::Array::isset(const Value& key) const
 {
-    zval* z = &key.m_z;
+    zval* z = key.pzval();
 
     while (true) {
         switch (key.type()) {
@@ -209,7 +209,7 @@ void phpcxx::Array::unset(zend_long idx)
 
 void phpcxx::Array::unset(const Value& key)
 {
-    zval* z = &key.m_z;
+    zval* z = key.pzval();
 
     while (true) {
         switch (key.type()) {
