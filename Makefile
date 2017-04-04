@@ -31,6 +31,7 @@ LIBRARY_CXX_SOURCES = \
 	phpcxx/operators.cpp \
 	phpcxx/parameters.cpp \
 	phpcxx/phpexception.cpp \
+	phpcxx/superglobal.cpp \
 	phpcxx/value.cpp \
 	phpcxx/variables.cpp
 
@@ -43,6 +44,7 @@ TESTER_CXX_SOURCES = \
 	test/test_constants.cpp \
 	test/test_value.cpp \
 	test/test_arrays.cpp \
+	test/test_superglobals.cpp \
 	test/test_functions.cpp
 
 
