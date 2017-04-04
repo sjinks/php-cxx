@@ -58,7 +58,7 @@ TEST_F(ArrayFixture, InitializationNormal)
         EXPECT_EQ(1, a2.size());
         EXPECT_EQ(1, a3.size());
     });
-    EXPECT_EQ(m_err.str(), "");
+    EXPECT_EQ("", m_err.str());
     m_err.str(std::string());
 }
 
@@ -100,7 +100,7 @@ TEST_F(ArrayFixture, InitializationReferences)
         EXPECT_EQ(phpcxx::Type::Array, r1.type());
         EXPECT_EQ(phpcxx::Type::Array, r2.type());
     });
-    EXPECT_EQ(m_err.str(), "");
+    EXPECT_EQ("", m_err.str());
     m_err.str(std::string());
 }
 
@@ -136,7 +136,7 @@ TEST_F(ArrayFixture, InitializationConversion)
 
         EXPECT_EQ(phpcxx::Type::Null, a1[1].type());
     });
-    EXPECT_EQ(m_err.str(), "");
+    EXPECT_EQ("", m_err.str());
     m_err.str(std::string());
 }
 
@@ -172,7 +172,7 @@ TEST_F(ArrayFixture, InitializationVectorMap)
         }
     });
 
-    EXPECT_EQ(m_err.str(), "");
+    EXPECT_EQ("", m_err.str());
     m_err.str(std::string());
 }
 
@@ -244,7 +244,7 @@ TEST_F(ArrayFixture, Operations)
         EXPECT_TRUE(a.isset(zero));
     });
 
-    EXPECT_EQ(m_err.str(), "");
+    EXPECT_EQ("", m_err.str());
     m_err.str(std::string());
 }
 
@@ -263,7 +263,7 @@ TEST_F(ArrayFixture, Arrays)
         m_out.str(std::string());
         EXPECT_EQ(expected, actual);
     });
-    EXPECT_EQ(m_err.str(), "");
+    EXPECT_EQ("", m_err.str());
     m_err.str(std::string());
 
     m_sapi.run([]() {
@@ -281,7 +281,7 @@ TEST_F(ArrayFixture, Arrays)
         EXPECT_EQ(1, b.asLong());
         EXPECT_EQ(2, a["a"].asLong());
     });
-    EXPECT_EQ(m_err.str(), "");
+    EXPECT_EQ("", m_err.str());
     m_err.str(std::string());
 
     m_sapi.run([]() {
@@ -302,7 +302,7 @@ TEST_F(ArrayFixture, Arrays)
         phpcxx::Value server(&PG(http_globals)[TRACK_VARS_SERVER]);
         EXPECT_EQ(phpcxx::Type::Array, server.type());
     });
-    EXPECT_EQ(m_err.str(), "");
+    EXPECT_EQ("", m_err.str());
     m_err.str(std::string());
 
     /**/
@@ -337,7 +337,7 @@ TEST_F(ArrayFixture, Arrays)
 
         EXPECT_EQ(expected, actual);
     });
-    EXPECT_EQ(m_err.str(), "");
+    EXPECT_EQ("", m_err.str());
     m_err.str(std::string());
 
     m_sapi.run([]() {
@@ -355,7 +355,7 @@ TEST_F(ArrayFixture, Arrays)
         EXPECT_EQ(1, b.asLong());
         EXPECT_EQ(2, a["a"].asLong());
     });
-    EXPECT_EQ(m_err.str(), "");
+    EXPECT_EQ("", m_err.str());
     m_err.str(std::string());
 
     m_sapi.run([]() {
@@ -372,6 +372,6 @@ TEST_F(ArrayFixture, Arrays)
         phpcxx::Value& a = globals["a"];
         EXPECT_EQ(14, a.asLong());
     });
-    EXPECT_EQ(m_err.str(), "");
+    EXPECT_EQ("", m_err.str());
     m_err.str(std::string());
 }
