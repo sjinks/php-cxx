@@ -80,7 +80,7 @@ LIBRARY_CXX_OBJS   = $(patsubst %.cpp,.build/%.o,$(LIBRARY_CXX_SOURCES))
 
 CXX_OBJS    = $(LIBRARY_CXX_OBJS) $(TESTER_CXX_OBJS)
 OBJS        = $(CXX_OBJS)
-DEPS        = $(patsubst %.o,%.d,$(OBJS))
+DEPS        = $(patsubst %.o,%.d,$(OBJS)) $(patsubst %.gch,%.d,$(TESTER_GCH)) $(patsubst %.gch,%.d,$(LIBRARY_GCH))
 COV_GCDA    = $(patsubst %.o,%.gcda,$(OBJS))
 COV_GCNO    = $(patsubst %.o,%.gcno,$(OBJS))
 
@@ -95,10 +95,10 @@ output_directory: .lib
 	mkdir -p "$@"
 
 $(LIBRARY_GCH): $(LIBRARY_PCH) | build_directory
-	$(CXX) $(CPPFLAGS) $(PHPCXX_CPPFLAGS) $(CPPFLAGS_EXTRA) $(CXXFLAGS) $(CXXFLAGS_EXTRA) -o "$@" "$<"
+	$(CXX) $(CPPFLAGS) $(PHPCXX_CPPFLAGS) $(CPPFLAGS_EXTRA) $(CXXFLAGS) $(CXXFLAGS_EXTRA) -MMD -MP -MF"$(@:%.gch=%.d)" -MT"$(@:%.gch=%.d)" -MT"$@" -o "$@" "$<"
 
 $(TESTER_GCH): $(TESTER_PCH) | build_directory
-	$(CXX) $(CPPFLAGS) $(TESTER_CPPFLAGS) $(CPPFLAGS_EXTRA) $(CXXFLAGS) $(CXXFLAGS_EXTRA) -o "$@" "$<"
+	$(CXX) $(CPPFLAGS) $(TESTER_CPPFLAGS) $(CPPFLAGS_EXTRA) $(CXXFLAGS) $(CXXFLAGS_EXTRA) -MMD -MP -MF"$(@:%.gch=%.d)" -MT"$(@:%.gch=%.d)" -MT"$@" -o "$@" "$<"
 
 $(LIBRARY_CXX_OBJS): $(LIBRARY_GCH)
 $(TESTER_CXX_OBJS): $(TESTER_GCH)
