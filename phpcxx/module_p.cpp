@@ -184,7 +184,7 @@ void phpcxx::ModulePrivate::globalsInit(void* g)
     assert(g != nullptr);
 
     zend_phpcxx_globals* mg = reinterpret_cast<zend_phpcxx_globals*>(g);
-    mg->globals = new ModuleGlobals();
+    mg->globals = nullptr;
 }
 
 void phpcxx::ModulePrivate::globalsShutdown(void* g)
