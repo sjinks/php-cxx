@@ -52,5 +52,6 @@ extern "C" {
 #include "testsapi.h"
 
 #include "valgrind/valgrind.h"
+#include "valgrind/memcheck.h"
 
 #endif /* TEST_PRECOMPILED_H */
