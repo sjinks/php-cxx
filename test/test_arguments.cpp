@@ -1,9 +1,12 @@
 #include <sstream>
 #include <string>
 #include <gtest/gtest.h>
-#include <Zend/zend.h>
 #include "phpcxx/argument.h"
 #include "testsapi.h"
+
+extern "C" {
+#include <Zend/zend.h>
+}
 
 TEST(ArgumentsTest, TestNative)
 {

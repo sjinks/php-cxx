@@ -1,14 +1,16 @@
 #include <cstring>
 #include <sstream>
 #include <gtest/gtest.h>
-#include <Zend/zend_compile.h>
 #include "phpcxx/array.h"
 #include "phpcxx/superglobal.h"
 #include "phpcxx/module.h"
 #include "phpcxx/value.h"
-
 #include "globals.h"
 #include "testsapi.h"
+
+extern "C" {
+#include <Zend/zend_compile.h>
+}
 
 namespace {
 

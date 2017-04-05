@@ -3,10 +3,6 @@
 
 #include "phpcxx.h"
 
-extern "C" {
-#include <Zend/zend_API.h>
-}
-
 #include <initializer_list>
 #include <memory>
 #include "phpexception.h"

@@ -1,9 +1,4 @@
 #include <cassert>
-
-extern "C" {
-#include <Zend/zend_API.h>
-}
-
 #include "object.h"
 #include "objectdimension.h"
 #include "value.h"

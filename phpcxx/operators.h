@@ -1,6 +1,8 @@
 #ifndef PHPCXX_OPERATORS_H
 #define PHPCXX_OPERATORS_H
 
+#include "phpcxx.h"
+
 namespace phpcxx {
 class Value;
 

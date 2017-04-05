@@ -3,9 +3,7 @@
 #include "phpcxx/array.h"
 #include "phpcxx/operators.h"
 #include "phpcxx/value.h"
-
 #include "phpcxx/objectdimension.h"
-
 #include "globals.h"
 #include "testsapi.h"
 

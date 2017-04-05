@@ -2,7 +2,10 @@
 #include <iostream>
 #include <string>
 #include <gtest/gtest.h>
+
+extern "C" {
 #include <Zend/zend.h>
+}
 
 #include "valgrind/valgrind.h"
 #include "globals.h"

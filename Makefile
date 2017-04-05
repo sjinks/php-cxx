@@ -1,22 +1,24 @@
-PHP_CONFIG      = php-config
-SRCDIR          = $(realpath $(dir $(lastword $(filter Makefile,$(MAKEFILE_LIST)))))
+PHP_CONFIG          = php-config
+SRCDIR              = $(realpath $(dir $(lastword $(filter Makefile,$(MAKEFILE_LIST)))))
 
-CPPFLAGS_EXTRA  = $(shell $(PHP_CONFIG) --includes)
-CXXFLAGS_EXTRA  = -Wall -Wextra -Wno-unused-parameter -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -fPIC
-LDFLAGS_EXTRA   = -pthread
+CPPFLAGS_EXTRA      = $(shell $(PHP_CONFIG) --includes)
+CXXFLAGS_EXTRA      = -Wall -Wextra -Wno-unused-parameter -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -fPIC
+LDFLAGS_EXTRA       = -pthread
 
-SHARED_LIBRARY  = .lib/php-cxx.so
-STATIC_LIBRARY  = .lib/php-cxx.a
-TESTER          = .lib/php-cxx-test
+SHARED_LIBRARY      = .lib/php-cxx.so
+STATIC_LIBRARY      = .lib/php-cxx.a
+TESTER              = .lib/php-cxx-test
 
-PHPCXX_CPPFLAGS = -DBUILDING_PHPCXX -DPHPCXX_DEBUG
-PHPCXX_LDFLAGS  = -shared $(shell $(PHP_CONFIG) --ldflags)
+PHPCXX_CPPFLAGS     = -DBUILDING_PHPCXX -DPHPCXX_DEBUG
+PHPCXX_CPPFLAGS_PCH = -include .build/phpcxx/precompiled.h -Winvalid-pch
+PHPCXX_LDFLAGS      = -shared $(shell $(PHP_CONFIG) --ldflags)
 
-TESTER_CPPFLAGS = -I$(SRCDIR) -DPHPCXX_DEBUG
-TESTER_LDFLAGS  = 
-TESTER_LDLIBS   = -lphp7
+TESTER_CPPFLAGS     = -I$(SRCDIR) -DPHPCXX_DEBUG
+TESTER_CPPFLAGS_PCH = -include .build/test/precompiled.h -Winvalid-pch
+TESTER_LDFLAGS      = 
+TESTER_LDLIBS       = -lphp7
 
-TARGET          = $(SHARED_LIBRARY) $(STATIC_LIBRARY) $(TESTER)
+TARGET              = $(SHARED_LIBRARY) $(STATIC_LIBRARY) $(TESTER)
 
 LIBRARY_CXX_SOURCES = \
 	phpcxx/argument.cpp \
@@ -34,6 +36,9 @@ LIBRARY_CXX_SOURCES = \
 	phpcxx/superglobal.cpp \
 	phpcxx/value.cpp \
 	phpcxx/variables.cpp
+	
+LIBRARY_GCH = .build/phpcxx/precompiled.h.gch
+LIBRARY_PCH = phpcxx/precompiled.h
 
 TESTER_CXX_SOURCES = \
 	test/tester.cpp \
@@ -47,6 +52,8 @@ TESTER_CXX_SOURCES = \
 	test/test_superglobals.cpp \
 	test/test_functions.cpp
 
+TESTER_GCH = .build/test/precompiled.h.gch
+TESTER_PCH = test/precompiled.h
 
 ### Google Test
 GTEST_DIR  = /usr/src/gtest
@@ -87,6 +94,15 @@ output_directory: .lib
 .lib:
 	mkdir -p "$@"
 
+$(LIBRARY_GCH): $(LIBRARY_PCH) | build_directory
+	$(CXX) $(CPPFLAGS) $(PHPCXX_CPPFLAGS) $(CPPFLAGS_EXTRA) $(CXXFLAGS) $(CXXFLAGS_EXTRA) -o "$@" "$<"
+
+$(TESTER_GCH): $(TESTER_PCH) | build_directory
+	$(CXX) $(CPPFLAGS) $(TESTER_CPPFLAGS) $(CPPFLAGS_EXTRA) $(CXXFLAGS) $(CXXFLAGS_EXTRA) -o "$@" "$<"
+
+$(LIBRARY_CXX_OBJS): $(LIBRARY_GCH)
+$(TESTER_CXX_OBJS): $(TESTER_GCH)
+
 $(TESTER): $(TESTER_CXX_OBJS) $(STATIC_LIBRARY) .build/gtest-all.o | output_directory
 	$(CXX) $(LDFLAGS) $(TESTER_LDFLAGS) $(LDFLAGS_EXTRA) $^ $(TESTER_LDLIBS) $(LDLIBS) -o "$@"
 
@@ -98,17 +114,17 @@ $(STATIC_LIBRARY): $(LIBRARY_CXX_OBJS) | output_directory
 
 ifeq ($(CXX),clang++)
 .build/gtest-all.o: $(GTEST_SRCS) | output_directory
-	$(CXX) -isystem $(GTEST_DIR) $(CXXFLAGS) -O2 -c $(GTEST_DIR)/src/gtest-all.cc -o $@
+	$(CXX) -isystem $(GTEST_DIR) $(CXXFLAGS) -g -O2 -c $(GTEST_DIR)/src/gtest-all.cc -o "$@"
 else
 .build/gtest-all.o: $(GTEST_SRCS) | output_directory
-	$(CXX) -I$(GTEST_DIR) $(CXXFLAGS) -O2 -c $(GTEST_DIR)/src/gtest-all.cc -o $@
+	$(CXX) -I$(GTEST_DIR) $(CXXFLAGS) -g -O2 -c $(GTEST_DIR)/src/gtest-all.cc -o "$@"
 endif
 
 .build/phpcxx/%.o: phpcxx/%.cpp | build_directory
-	$(CXX) $(CPPFLAGS) $(PHPCXX_CPPFLAGS) $(CPPFLAGS_EXTRA) $(CXXFLAGS) $(CXXFLAGS_EXTRA) -c "$<" -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$@" -o "$@"
+	$(CXX) $(CPPFLAGS) $(PHPCXX_CPPFLAGS) $(PHPCXX_CPPFLAGS_PCH) $(CPPFLAGS_EXTRA) $(CXXFLAGS) $(CXXFLAGS_EXTRA) -c "$<" -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$@" -o "$@"
 
 .build/test/%.o: test/%.cpp | build_directory
-	$(CXX) $(CPPFLAGS) $(TESTER_CPPFLAGS) $(CPPFLAGS_EXTRA) $(CXXFLAGS) $(CXXFLAGS_EXTRA) -c "$<" -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$@" -o "$@"
+	$(CXX) $(CPPFLAGS) $(TESTER_CPPFLAGS) $(TESTER_CPPFLAGS_PCH) $(CPPFLAGS_EXTRA) $(CXXFLAGS) $(CXXFLAGS_EXTRA) -c "$<" -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$@" -o "$@"
 
 clean-deps:
 	-rm -f $(DEPS)
@@ -122,6 +138,7 @@ clean:
 	-rm -f $(OBJS)
 	-rm -f $(DEPS)
 	-rm -f $(COV_GCDA) $(COV_GCNO)
+	-rm -f $(LIBRARY_GCH) $(TESTER_GCH)
 
 clean-coverage:
 	-rm -rf .tracefile coverage $(COV_GCDA)
