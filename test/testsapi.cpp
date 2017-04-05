@@ -23,6 +23,7 @@ static const char hardcoded_ini[] =
     "implicit_flush=1\n"
     "output_buffering=0\n"
     "max_execution_time=0\n"
+    "extension_dir=\n"
     "max_input_time=-1\n\0"
 ;
 
