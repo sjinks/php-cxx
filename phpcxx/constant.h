@@ -3,10 +3,6 @@
 
 #include "phpcxx.h"
 
-extern "C" {
-#include <Zend/zend_long.h>
-}
-
 #include <memory>
 #include <type_traits>
 

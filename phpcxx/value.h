@@ -3,12 +3,6 @@
 
 #include "phpcxx.h"
 
-extern "C" {
-#include <Zend/zend.h>
-#include <Zend/zend_API.h>
-#include <Zend/zend_operators.h>
-}
-
 #include <array>
 #include <string>
 #include "array.h"

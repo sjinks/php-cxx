@@ -3,11 +3,6 @@
 
 #include "phpcxx.h"
 
-extern "C" {
-#include <main/SAPI.h>
-#include <Zend/zend_alloc.h>
-}
-
 #include <cassert>
 #include <cstddef>
 #include <memory>
@@ -38,7 +33,9 @@ public:
 
     T* allocate(std::size_t cnt)
     {
+#ifdef PHPCXX_DEBUG
         assert(SG(sapi_started));
+#endif
         return static_cast<T*>(safe_emalloc(cnt, sizeof(T), 0)); // Zend throws a fatal error on OOM
     }
 

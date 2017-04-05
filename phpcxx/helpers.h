@@ -1,9 +1,7 @@
 #ifndef PHPCXX_HELPERS_H
 #define PHPCXX_HELPERS_H
 
-extern "C" {
-#include <Zend/zend.h>
-}
+#include "phpcxx.h"
 
 #include <cstring>
 #include <type_traits>

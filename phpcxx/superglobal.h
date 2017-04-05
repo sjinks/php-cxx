@@ -2,11 +2,8 @@
 #define PHPCXX_SUPERGLOBAL_H
 
 #include "phpcxx.h"
-#include "value.h"
 
-extern "C" {
-#include <Zend/zend.h>
-}
+#include "value.h"
 
 #undef isset
 

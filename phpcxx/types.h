@@ -1,9 +1,7 @@
 #ifndef PHPCXX_TYPES_H
 #define PHPCXX_TYPES_H
 
-extern "C" {
-#include <Zend/zend_types.h>
-}
+#include "phpcxx.h"
 
 namespace phpcxx {
 
