@@ -1,8 +1,8 @@
 #include <cassert>
 #include <string>
-#include <main/php_variables.h>
 
 extern "C" {
+#include <main/php_variables.h>
 #include <Zend/zend_compile.h>
 }
 

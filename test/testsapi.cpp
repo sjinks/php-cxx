@@ -1,12 +1,15 @@
+#include <cstring>
+#include <vector>
+#include "phpcxx/module.h"
+#include "testsapi.h"
+
+extern "C" {
 #include <main/php.h>
 #include <main/php_main.h>
 #include <main/SAPI.h>
 #include <main/php_variables.h>
 #include <Zend/zend_exceptions.h>
-#include <cstring>
-#include <vector>
-#include "phpcxx/module.h"
-#include "testsapi.h"
+}
 
 namespace {
 

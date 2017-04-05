@@ -1,15 +1,6 @@
-#include <new>
-
-extern "C" {
-#include <Zend/zend.h>
-#include <Zend/zend_API.h>
-#include <Zend/zend_exceptions.h>
-#include <Zend/zend_operators.h>
-#include <Zend/zend_string.h>
-}
-
 #include <array>
 #include <cstdio>
+#include <new>
 #include <string>
 #include <unordered_map>
 #include "phpexception.h"

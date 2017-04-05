@@ -1,9 +1,12 @@
 #include <sstream>
 #include <string>
 #include <gtest/gtest.h>
-#include <main/SAPI.h>
 #include "phpcxx/module.h"
 #include "testsapi.h"
+
+extern "C" {
+#include <main/SAPI.h>
+}
 
 namespace {
 

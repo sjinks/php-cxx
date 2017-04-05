@@ -1,8 +1,3 @@
-extern "C" {
-#include <Zend/zend.h>
-#include <Zend/zend_API.h>
-}
-
 #include "exception.h"
 #include "exception_p.h"
 

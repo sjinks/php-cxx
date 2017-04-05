@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include <Zend/zend.h>
 #include <Zend/zend_exceptions.h>
 
 extern ZEND_DLEXPORT zend_class_entry* phpcxx_exception_ce;

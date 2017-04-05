@@ -3,11 +3,14 @@
 #include <string>
 #include <vector>
 #include <gtest/gtest.h>
-#include <Zend/zend.h>
-#include <Zend/zend_constants.h>
 #include "phpcxx/module.h"
 #include "phpcxx/constant.h"
 #include "testsapi.h"
+
+extern "C" {
+#include <Zend/zend.h>
+#include <Zend/zend_constants.h>
+}
 
 namespace {
 

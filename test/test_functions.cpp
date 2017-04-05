@@ -1,15 +1,17 @@
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
 #include <gtest/gtest.h>
-#include <Zend/zend.h>
-#include <Zend/zend_exceptions.h>
 #include "phpcxx/module.h"
 #include "phpcxx/function.h"
 #include "phpcxx/call.h"
 #include "testsapi.h"
 #include "globals.h"
+
+extern "C" {
+#include <Zend/zend.h>
+#include <Zend/zend_exceptions.h>
+}
 
 namespace {
 

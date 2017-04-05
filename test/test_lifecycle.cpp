@@ -2,10 +2,13 @@
 #include <iostream>
 #include <sstream>
 #include <gtest/gtest.h>
-#include <Zend/zend.h>
-#include <Zend/zend_API.h>
 #include "phpcxx/module.h"
 #include "testsapi.h"
+
+extern "C" {
+#include <Zend/zend.h>
+#include <Zend/zend_API.h>
+}
 
 namespace {
 
