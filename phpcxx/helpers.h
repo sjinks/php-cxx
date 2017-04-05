@@ -103,6 +103,12 @@ void construct_zval(zval& z, T s)
     ZendString zs(s);
     ZVAL_STR(&z, zs.release());
 }
+
+template<typename T, enable_if_t<std::is_same<zval, remove_cv_t<T> >::value>* = nullptr>
+void construct_zval(zval& z, T s)
+{
+    ZVAL_COPY(&z, &s);
+}
 /**
  * @}
  */
