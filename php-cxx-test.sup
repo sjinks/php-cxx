@@ -21,6 +21,19 @@
 }
 
 {
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   ...
+   fun:zend_string_alloc
+   fun:zend_string_init
+   ...
+   fun:_ZN6phpcxx4callIIEEENS_5ValueEPKcDpOT_
+   fun:_ZN12_GLOBAL__N_18MyModule20call_func_bailingoutEv
+}
+
+{
    libxml
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -28,6 +41,16 @@
    ...
    fun:php_libxml_initialize
    fun:zm_startup_libxml
+}
+
+{
+   libxml
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   ...
+   fun:php_libxml_initialize
+   obj:/*/libphp7*
 }
 
 {
