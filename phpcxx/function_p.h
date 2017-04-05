@@ -3,8 +3,11 @@
 
 #include "phpcxx.h"
 
+extern "C" {
 #include <Zend/zend_API.h>
 #include <Zend/zend_compile.h>
+}
+
 #include <vector>
 #include "argument.h"
 #include "types.h"

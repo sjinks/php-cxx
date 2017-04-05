@@ -3,8 +3,11 @@
 
 #include "phpcxx.h"
 
+extern "C" {
 #include <Zend/zend.h>
 #include <Zend/zend_constants.h>
+}
+
 #include <cstring>
 
 namespace phpcxx {

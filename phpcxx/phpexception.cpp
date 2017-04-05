@@ -1,6 +1,9 @@
+extern "C" {
 #include <Zend/zend_API.h>
 #include <Zend/zend_exceptions.h>
 #include <Zend/zend_objects.h>
+}
+
 #include "phpexception.h"
 #include "phpexception_p.h"
 #include "emallocallocator.h"

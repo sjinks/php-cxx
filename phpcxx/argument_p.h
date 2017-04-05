@@ -2,7 +2,10 @@
 #define PHPCXX_ARGUMENT_P_H
 
 #include "phpcxx.h"
+
+extern "C" {
 #include <Zend/zend_compile.h>
+}
 
 namespace phpcxx {
 

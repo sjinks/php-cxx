@@ -1,7 +1,9 @@
 #ifndef PHPCXX_EXCEPTION_H
 #define PHPCXX_EXCEPTION_H
 
+extern "C" {
 #include <Zend/zend_exceptions.h>
+}
 
 #ifdef __cplusplus
 extern "C" {

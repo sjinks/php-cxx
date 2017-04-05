@@ -1,7 +1,11 @@
 #include <cassert>
 #include <string>
 #include <main/php_variables.h>
+
+extern "C" {
 #include <Zend/zend_compile.h>
+}
+
 #include "superglobal.h"
 
 phpcxx::SuperGlobal phpcxx::orig_POST(TRACK_VARS_POST);

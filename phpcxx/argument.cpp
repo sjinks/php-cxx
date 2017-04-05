@@ -1,4 +1,7 @@
+extern "C" {
 #include <Zend/zend_types.h>
+}
+
 #include "argument.h"
 #include "argument_p.h"
 #include "value.h"

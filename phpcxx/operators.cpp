@@ -1,6 +1,9 @@
+extern "C" {
 #include <Zend/zend.h>
 #include <Zend/zend_exceptions.h>
 #include <Zend/zend_operators.h>
+}
+
 #include <cstring>
 #include "operators.h"
 #include "value.h"

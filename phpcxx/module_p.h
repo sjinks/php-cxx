@@ -3,9 +3,12 @@
 
 #include "phpcxx.h"
 
+extern "C" {
 #include <main/php.h>
 #include <Zend/zend.h>
 #include <Zend/zend_modules.h>
+}
+
 #include <vector>
 #include "module.h"
 

@@ -1,6 +1,9 @@
+extern "C" {
 #include <Zend/zend.h>
 #include <Zend/zend_compile.h>
 #include <Zend/zend_exceptions.h>
+}
+
 #include "objectdimension.h"
 #include "phpexception.h"
 #include "value.h"

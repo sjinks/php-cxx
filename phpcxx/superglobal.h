@@ -3,7 +3,10 @@
 
 #include "phpcxx.h"
 #include "value.h"
+
+extern "C" {
 #include <Zend/zend.h>
+}
 
 #undef isset
 

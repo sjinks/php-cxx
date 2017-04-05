@@ -4,9 +4,13 @@
 #include "phpcxx.h"
 
 #include <type_traits>
+
+extern "C" {
 #include <Zend/zend.h>
 #include <Zend/zend_long.h>
 #include <Zend/zend_string.h>
+}
+
 #include "helpers.h"
 #include "string.h"
 #include "map.h"

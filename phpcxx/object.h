@@ -3,9 +3,11 @@
 
 #include "phpcxx.h"
 
+extern "C" {
 #include <Zend/zend.h>
 #include <Zend/zend_long.h>
 #include <Zend/zend_string.h>
+}
 
 #include "helpers.h"
 #include "map.h"
