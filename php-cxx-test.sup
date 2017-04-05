@@ -3,11 +3,7 @@
    Memcheck:Leak
    match-leak-kinds: definite
    fun:malloc
-   fun:__zend_malloc
-   fun:zend_string_alloc
-   fun:zend_string_init
-   fun:zend_register_iterator_wrapper
-   fun:zend_register_default_classes
+   ...
    fun:zm_startup_core
 }
 
@@ -16,12 +12,89 @@
    Memcheck:Leak
    match-leak-kinds: definite
    fun:malloc
-   fun:_emalloc
+   ...
    fun:zend_string_alloc
    fun:zend_string_init
-   fun:_ZN6phpcxx10ZendStringC1EPKc
-   fun:_ZN6phpcxx14construct_zvalIPKcLPv0EEEvR12_zval_structT_
-   fun:_ZN6phpcxx5ValueC1IPKcEERKT_
+   ...
    fun:_ZN6phpcxx4callIJEEENS_5ValueEPKcDpOT_
    fun:_ZN12_GLOBAL__N_18MyModule20call_func_bailingoutEv
 }
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   ...
+   fun:zend_string_alloc
+   fun:zend_string_init
+   ...
+   fun:_ZN6phpcxx4callIIEEENS_5ValueEPKcDpOT_
+   fun:_ZN12_GLOBAL__N_18MyModule20call_func_bailingoutEv
+}
+
+{
+   libxml
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   ...
+   fun:php_libxml_initialize
+   fun:zm_startup_libxml
+}
+
+{
+   libxml
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   ...
+   fun:php_libxml_initialize
+   obj:/*/libphp7*
+}
+
+{
+   OpenSSL
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   ...
+   fun:zm_startup_openssl
+}
+
+{
+   OpenSSL
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   ...
+   fun:zm_startup_openssl
+}
+
+{
+   readline
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   ...
+   fun:zm_startup_readline
+}
+
+{
+   readline
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+    ...
+   fun:zm_shutdown_readline
+}
+
+{
+   zm_startup_core
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   ...
+   fun:zm_startup_core
+}
+

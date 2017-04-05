@@ -6,3 +6,4 @@
 /.lib
 /.settings
 /coverage
+*.gcno
