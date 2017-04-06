@@ -330,28 +330,29 @@ TEST(SuperGlobals, testBuiltInSuperGlobals)
 
     sapi.run([]() {
         zval r;
+        phpcxx::SuperGlobal _GET("_GET");
 
         runPhpCode("empty($_GET);", r);
         EXPECT_TRUE(zend_is_true(&r));
-        EXPECT_EQ(0, phpcxx::_GET.size());
-        EXPECT_EQ(0, phpcxx::orig_GET.size());
+        EXPECT_EQ(0, _GET.size());
+        EXPECT_EQ(0, phpcxx::SuperGlobal::orig_GET().size());
 
-        phpcxx::_GET[1] = 1;
+        _GET[1] = 1;
         runPhpCode("isset($_GET[1]);", r);
         EXPECT_TRUE(zend_is_true(&r));
-        EXPECT_FALSE(phpcxx::orig_GET.isset(1));
+        EXPECT_FALSE(phpcxx::SuperGlobal::orig_GET().isset(1));
 
         runPhpCode("$_GET[1];", r);
         EXPECT_EQ(1, zval_get_long(&r));
 
         runPhpCode("$_GET[2] = 2;");
-        EXPECT_TRUE(phpcxx::_GET.isset(2));
-        EXPECT_EQ(2, phpcxx::_GET[2].asLong());
+        EXPECT_TRUE(_GET.isset(2));
+        EXPECT_EQ(2, _GET[2].asLong());
 
-        phpcxx::_GET.unset(1);
+        _GET.unset(1);
         runPhpCode("isset($_GET[1]);", r);
         EXPECT_FALSE(zend_is_true(&r));
-        EXPECT_FALSE(phpcxx::_GET.isset(1));
+        EXPECT_FALSE(_GET.isset(1));
     });
 
     EXPECT_EQ("", out.str()); out.str(std::string());
@@ -359,21 +360,22 @@ TEST(SuperGlobals, testBuiltInSuperGlobals)
 
     sapi.run([]() {
         zval r;
+        phpcxx::SuperGlobal GLOBALS("GLOBALS");
 
         runPhpCode("global $a, $b, $c; $a = 1; $b = 2; $c = 3;");
-        EXPECT_TRUE(phpcxx::GLOBALS.isset("a"));
-        EXPECT_TRUE(phpcxx::GLOBALS.isset("b"));
-        EXPECT_TRUE(phpcxx::GLOBALS.isset("c"));
-        EXPECT_EQ(1, phpcxx::GLOBALS["a"].asLong());
-        EXPECT_EQ(2, phpcxx::GLOBALS["b"].asLong());
-        EXPECT_EQ(3, phpcxx::GLOBALS["c"].asLong());
+        EXPECT_TRUE(GLOBALS.isset("a"));
+        EXPECT_TRUE(GLOBALS.isset("b"));
+        EXPECT_TRUE(GLOBALS.isset("c"));
+        EXPECT_EQ(1, GLOBALS["a"].asLong());
+        EXPECT_EQ(2, GLOBALS["b"].asLong());
+        EXPECT_EQ(3, GLOBALS["c"].asLong());
 
-        phpcxx::GLOBALS["d"] = 4;
-        phpcxx::GLOBALS["e"] = 5;
-        EXPECT_TRUE(phpcxx::GLOBALS.isset("d"));
-        EXPECT_TRUE(phpcxx::GLOBALS.isset("e"));
-        EXPECT_EQ(4, phpcxx::GLOBALS["d"].asLong());
-        EXPECT_EQ(5, phpcxx::GLOBALS["e"].asLong());
+        GLOBALS["d"] = 4;
+        GLOBALS["e"] = 5;
+        EXPECT_TRUE(GLOBALS.isset("d"));
+        EXPECT_TRUE(GLOBALS.isset("e"));
+        EXPECT_EQ(4, GLOBALS["d"].asLong());
+        EXPECT_EQ(5, GLOBALS["e"].asLong());
 
         runPhpCode("isset($GLOBALS['d']);", r);
         EXPECT_TRUE(zend_is_true(&r));
@@ -385,15 +387,15 @@ TEST(SuperGlobals, testBuiltInSuperGlobals)
         EXPECT_EQ(5, zval_get_long(&r));
 
         runPhpCode("unset($GLOBALS['e']);");
-        EXPECT_FALSE(phpcxx::GLOBALS.isset("e"));
+        EXPECT_FALSE(GLOBALS.isset("e"));
 
-        phpcxx::GLOBALS.unset("d");
-        EXPECT_FALSE(phpcxx::GLOBALS.isset("d"));
+        GLOBALS.unset("d");
+        EXPECT_FALSE(GLOBALS.isset("d"));
         runPhpCode("isset($GLOBALS['d']);", r);
         EXPECT_FALSE(zend_is_true(&r));
 
-        phpcxx::GLOBALS.unset("c");
-        EXPECT_FALSE(phpcxx::GLOBALS.isset("c"));
+        GLOBALS.unset("c");
+        EXPECT_FALSE(GLOBALS.isset("c"));
         runPhpCode("isset($GLOBALS['c']);", r);
         EXPECT_FALSE(zend_is_true(&r));
     });

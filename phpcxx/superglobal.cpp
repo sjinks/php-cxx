@@ -8,22 +8,6 @@ extern "C" {
 
 #include "superglobal.h"
 
-phpcxx::SuperGlobal phpcxx::orig_POST(TRACK_VARS_POST);
-phpcxx::SuperGlobal phpcxx::orig_GET(TRACK_VARS_GET);
-phpcxx::SuperGlobal phpcxx::orig_COOKIE(TRACK_VARS_COOKIE);
-phpcxx::SuperGlobal phpcxx::orig_SERVER(TRACK_VARS_SERVER);
-phpcxx::SuperGlobal phpcxx::orig_ENV(TRACK_VARS_ENV);
-phpcxx::SuperGlobal phpcxx::orig_FILES(TRACK_VARS_FILES);
-phpcxx::SuperGlobal phpcxx::_POST("_POST");
-phpcxx::SuperGlobal phpcxx::_GET("_GET");
-phpcxx::SuperGlobal phpcxx::_COOKIE("_COOKIE");
-phpcxx::SuperGlobal phpcxx::_SERVER("_SERVER");
-phpcxx::SuperGlobal phpcxx::_ENV("_ENV");
-phpcxx::SuperGlobal phpcxx::_FILES("_FILES");
-phpcxx::SuperGlobal phpcxx::_REQUEST("_REQUEST");
-phpcxx::SuperGlobal phpcxx::_SESSION("_SESSION");
-phpcxx::SuperGlobal phpcxx::GLOBALS("GLOBALS");
-
 static const char* superglobal_idx_lookup[NUM_TRACK_VARS] = {
     "_POST",
     "_GET",
@@ -73,12 +57,12 @@ phpcxx::SuperGlobal::SuperGlobal(const char* name)
 zval* phpcxx::SuperGlobal::pzval() const
 {
     if (!this->m_z) {
-        zend_bool is_auto_global = zend_is_auto_global_str(const_cast<char*>(this->m_name), std::strlen(this->m_name));
-        if (is_auto_global) {
-            if (this->m_idx != -1) {
-                this->m_z = &PG(http_globals)[this->m_idx];
-            }
-            else {
+        if (this->m_idx != -1) {
+            this->m_z = &PG(http_globals)[this->m_idx];
+        }
+        else {
+            zend_bool is_auto_global = zend_is_auto_global_str(const_cast<char*>(this->m_name), std::strlen(this->m_name));
+            if (is_auto_global) {
                 this->m_z = zend_hash_str_find_ind(&EG(symbol_table), this->m_name, std::strlen(this->m_name));
             }
         }
@@ -327,4 +311,34 @@ void phpcxx::SuperGlobal::unset(const string& key)
 void phpcxx::SuperGlobal::unset(const ZendString& key)
 {
     this->unset(key.get());
+}
+
+phpcxx::SuperGlobal phpcxx::SuperGlobal::orig_POST()
+{
+    return SuperGlobal(TRACK_VARS_POST);
+}
+
+phpcxx::SuperGlobal phpcxx::SuperGlobal::orig_GET()
+{
+    return SuperGlobal(TRACK_VARS_GET);
+}
+
+phpcxx::SuperGlobal phpcxx::SuperGlobal::orig_COOKIE()
+{
+    return SuperGlobal(TRACK_VARS_COOKIE);
+}
+
+phpcxx::SuperGlobal phpcxx::SuperGlobal::orig_SERVER()
+{
+    return SuperGlobal(TRACK_VARS_SERVER);
+}
+
+phpcxx::SuperGlobal phpcxx::SuperGlobal::orig_ENV()
+{
+    return SuperGlobal(TRACK_VARS_ENV);
+}
+
+phpcxx::SuperGlobal phpcxx::SuperGlobal::orig_FILES()
+{
+    return SuperGlobal(TRACK_VARS_FILES);
 }

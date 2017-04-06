@@ -11,7 +11,6 @@ namespace phpcxx {
 
 class PHPCXX_EXPORT SuperGlobal {
 public:
-    explicit SuperGlobal(int idx);
     [[gnu::nonnull]] SuperGlobal(const char* name);
 
     zval* pzval() const;
@@ -44,27 +43,25 @@ public:
     void unset(const string& key);
     void unset(const ZendString& key);
 
+    void reload()
+    {
+        this->m_z = nullptr;
+    }
+
+    static SuperGlobal orig_POST();
+    static SuperGlobal orig_GET();
+    static SuperGlobal orig_COOKIE();
+    static SuperGlobal orig_SERVER();
+    static SuperGlobal orig_ENV();
+    static SuperGlobal orig_FILES();
+
 private:
     const char* m_name;
     mutable zval* m_z;
     int m_idx;
-};
 
-extern PHPCXX_EXPORT SuperGlobal orig_POST;
-extern PHPCXX_EXPORT SuperGlobal orig_GET;
-extern PHPCXX_EXPORT SuperGlobal orig_COOKIE;
-extern PHPCXX_EXPORT SuperGlobal orig_SERVER;
-extern PHPCXX_EXPORT SuperGlobal orig_ENV;
-extern PHPCXX_EXPORT SuperGlobal orig_FILES;
-extern PHPCXX_EXPORT SuperGlobal _POST;
-extern PHPCXX_EXPORT SuperGlobal _GET;
-extern PHPCXX_EXPORT SuperGlobal _COOKIE;
-extern PHPCXX_EXPORT SuperGlobal _SERVER;
-extern PHPCXX_EXPORT SuperGlobal _ENV;
-extern PHPCXX_EXPORT SuperGlobal _FILES;
-extern PHPCXX_EXPORT SuperGlobal _REQUEST;
-extern PHPCXX_EXPORT SuperGlobal _SESSION;
-extern PHPCXX_EXPORT SuperGlobal GLOBALS;
+    explicit SuperGlobal(int idx);
+};
 
 }
 
