@@ -54,6 +54,7 @@ private:
     static void free_object(zend_object* object);
 
     zend_function_entry* methods();
+    void registerConstants();
 };
 
 }

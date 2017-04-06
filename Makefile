@@ -26,6 +26,7 @@ LIBRARY_CXX_SOURCES = \
 	phpcxx/constant.cpp \
 	phpcxx/class_p.cpp \
 	phpcxx/classbase.cpp \
+	phpcxx/classconstant.cpp \
 	phpcxx/exception.cpp \
 	phpcxx/function.cpp \
 	phpcxx/method.cpp \

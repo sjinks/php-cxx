@@ -24,3 +24,13 @@ void phpcxx::ClassBase::registerClass()
 {
     this->d_ptr->initializeClass();
 }
+
+std::vector<phpcxx::Method> phpcxx::ClassBase::methods()
+{
+    return {};
+}
+
+std::vector<phpcxx::ClassConstant> phpcxx::ClassBase::constants()
+{
+    return {};
+}

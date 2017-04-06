@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <vector>
+#include "classconstant.h"
 #include "method.h"
 
 namespace phpcxx {
@@ -36,7 +37,9 @@ public:
 
 protected:
     virtual ClassImplementationBase* construct() = 0;
-    virtual std::vector<phpcxx::Method> methods() = 0;
+
+    virtual std::vector<Method> methods();
+    virtual std::vector<ClassConstant> constants();
 
     void extends(zend_class_entry* ce);
     void implements(zend_class_entry* ce);

@@ -19,6 +19,11 @@ void phpcxx::ClassPrivate::initializeClass()
     INIT_CLASS_ENTRY(ce, this->m_name, this->methods());
 
     this->m_ce = zend_register_internal_class_ex(&ce, this->m_parent_ce);
+    if (UNEXPECTED(!this->m_ce)) {
+        zend_error(E_ERROR, "Failed to register class %s", this->m_name);
+        return;
+    }
+
     for (auto&& c : this->m_interfaces) {
         zend_do_implement_interface(this->m_ce, c);
     }
@@ -37,6 +42,8 @@ void phpcxx::ClassPrivate::initializeClass()
     auto self = this;
     std::memcpy(ZSTR_VAL(this->m_this) + sizeof(this), &self, sizeof(this));
     this->m_ce->info.user.doc_comment = this->m_this;
+
+    this->registerConstants();
 }
 
 zend_object* phpcxx::ClassPrivate::create_object(zend_class_entry* ce)
@@ -109,4 +116,17 @@ zend_function_entry* phpcxx::ClassPrivate::methods()
 
     *ptr = empty;
     return this->m_zf.get();
+}
+
+void phpcxx::ClassPrivate::registerConstants()
+{
+    std::vector<ClassConstant> constants = this->q_ptr->constants();
+
+    for (auto&& c : constants) {
+        zval& z = c.value();
+        Z_TRY_ADDREF(z);
+        if (SUCCESS != zend_declare_class_constant(this->m_ce, c.name(), std::strlen(c.name()), &z)) {
+            Z_TRY_DELREF(z);
+        }
+    }
 }
