@@ -55,12 +55,20 @@ class Value;
 
 using InternalFunction    = void(*)(struct _zend_execute_data* execute_data, struct _zval_struct* return_value);
 using FunctionPrototypeNN = void(*)();
-using FunctionPrototypeNV = void(*)(phpcxx::Parameters&);
+using FunctionPrototypeNV = void(*)(Parameters&);
 using FunctionPrototypeVN = Value(*)();
-using FunctionPrototypeVV = Value(*)(phpcxx::Parameters&);
+using FunctionPrototypeVV = Value(*)(Parameters&);
+
+template<typename T> using MethodPrototypeNN       = void(T::*)(Value);
+template<typename T> using MethodPrototypeNV       = void(T::*)(Value, Parameters&);
+template<typename T> using MethodPrototypeVN       = Value(T::*)(Value);
+template<typename T> using MethodPrototypeVV       = Value(T::*)(Value, Parameters&);
+
+template<typename T> using ConstMethodPrototypeNN  = void(T::*)(Value) const;
+template<typename T> using ConstMethodPrototypeNV  = void(T::*)(Value, Parameters&) const;
+template<typename T> using ConstMethodPrototypeVN  = Value(T::*)(Value) const;
+template<typename T> using ConstMethodPrototypeVV  = Value(T::*)(Value, Parameters&) const;
 
 }
-
-
 
 #endif /* PHPCXX_TYPES_H */

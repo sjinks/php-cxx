@@ -60,6 +60,54 @@ static inline Function createFunction(const char* name, const Arguments& require
     return Function(name, &FunctionHandler::handler<Handler>, required, optional, byRef);
 }
 
+template<typename T, MethodPrototypeNN<T> Handler>
+static inline Function createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+{
+    return Function(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
+}
+
+template<typename T, ConstMethodPrototypeNN<T> Handler>
+static inline Function createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+{
+    return Function(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
+}
+
+template<typename T, MethodPrototypeNV<T> Handler>
+static inline Function createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+{
+    return Function(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
+}
+
+template<typename T, ConstMethodPrototypeNV<T> Handler>
+static inline Function createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+{
+    return Function(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
+}
+
+template<typename T, MethodPrototypeVN<T> Handler>
+static inline Function createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+{
+    return Function(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
+}
+
+template<typename T, ConstMethodPrototypeVN<T> Handler>
+static inline Function createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+{
+    return Function(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
+}
+
+template<typename T, MethodPrototypeVV<T> Handler>
+static inline Function createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+{
+    return Function(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
+}
+
+template<typename T, ConstMethodPrototypeVV<T> Handler>
+static inline Function createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+{
+    return Function(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
+}
+
 }
 
 #endif /* PHPCXX_FUNCTION_H */
