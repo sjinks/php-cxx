@@ -1,4 +1,5 @@
 #include <cassert>
+#include "classbase.h"
 #include "constant.h"
 #include "exception_p.h"
 #include "function.h"
@@ -56,6 +57,23 @@ zend_module_entry* phpcxx::ModulePrivate::module()
     return &this->entry;
 }
 
+void phpcxx::ModulePrivate::globalsInit(void* g)
+{
+    assert(g != nullptr);
+
+    zend_phpcxx_globals* mg = reinterpret_cast<zend_phpcxx_globals*>(g);
+    mg->globals = nullptr;
+}
+
+void phpcxx::ModulePrivate::globalsShutdown(void* g)
+{
+    assert(g != nullptr);
+
+    zend_phpcxx_globals* mg = reinterpret_cast<zend_phpcxx_globals*>(g);
+    delete mg->globals;
+    mg->globals = nullptr;
+}
+
 int phpcxx::ModulePrivate::moduleStartup(INIT_FUNC_ARGS)
 {
     zend_module_entry* me = EG(current_module);
@@ -69,7 +87,7 @@ int phpcxx::ModulePrivate::moduleStartup(INIT_FUNC_ARGS)
         }
 
 //        e->registerIniEntries();
-//        e->registerClasses();
+        e->registerClasses();
         e->registerConstants();
         e->registerOtherModules();
 
@@ -179,19 +197,10 @@ void phpcxx::ModulePrivate::registerConstants()
     }
 }
 
-void phpcxx::ModulePrivate::globalsInit(void* g)
+void phpcxx::ModulePrivate::registerClasses()
 {
-    assert(g != nullptr);
-
-    zend_phpcxx_globals* mg = reinterpret_cast<zend_phpcxx_globals*>(g);
-    mg->globals = nullptr;
-}
-
-void phpcxx::ModulePrivate::globalsShutdown(void* g)
-{
-    assert(g != nullptr);
-
-    zend_phpcxx_globals* mg = reinterpret_cast<zend_phpcxx_globals*>(g);
-    delete mg->globals;
-    mg->globals = nullptr;
+    std::vector<phpcxx::ClassBase*> classes = this->q_ptr->classes();
+    for (auto&& c : classes) {
+        c->registerClass();
+    }
 }

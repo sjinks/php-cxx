@@ -62,10 +62,6 @@ void phpcxx::Module::registerModuleDependencies()
 {
 }
 
-void phpcxx::Module::registerClasses()
-{
-}
-
 void phpcxx::Module::registerIniEntries()
 {
 }
@@ -84,6 +80,16 @@ std::vector<phpcxx::Function> phpcxx::Module::functions()
     return std::vector<phpcxx::Function>();
 }
 
+std::vector<phpcxx::Constant> phpcxx::Module::constants()
+{
+    return std::vector<phpcxx::Constant>();
+}
+
+std::vector<phpcxx::ClassBase*> phpcxx::Module::classes()
+{
+    return std::vector<phpcxx::ClassBase*>();
+}
+
 void phpcxx::Module::setGlobalsConstructor(globals_ctor_t f)
 {
     if (UNEXPECTED(f == nullptr)) {
@@ -100,9 +106,4 @@ void phpcxx::Module::setGlobalsDestructor(globals_dtor_t f)
     }
 
     this->d_ptr->module()->globals_dtor = reinterpret_cast<internal_globals_dtor_t>(f);
-}
-
-std::vector<phpcxx::Constant> phpcxx::Module::constants()
-{
-    return std::vector<phpcxx::Constant>();
 }

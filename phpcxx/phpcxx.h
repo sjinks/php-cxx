@@ -13,6 +13,8 @@ extern "C" {
 #   include <main/SAPI.h>
 }
 
+#include <vector>
+
 #ifdef PHPCXX_DEBUG
 #include <iostream>
 

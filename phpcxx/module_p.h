@@ -74,6 +74,7 @@ private:
 
     void registerOtherModules();
     void registerConstants();
+    void registerClasses();
 };
 
 }

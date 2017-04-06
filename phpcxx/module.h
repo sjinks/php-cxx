@@ -16,6 +16,7 @@ typedef struct _zend_phpcxx_globals {
 
 namespace phpcxx {
 
+class ClassBase;
 class Constant;
 class Function;
 class ModuleGlobals;
@@ -43,13 +44,13 @@ protected:
     [[gnu::nonnull]] void setGlobalsDestructor(globals_dtor_t f);
 
     void registerModuleDependencies();
-    void registerClasses();
     void registerIniEntries();
     void registerModules();
 
     virtual std::vector<Module*> otherModules();
     virtual std::vector<Function> functions();
     virtual std::vector<Constant> constants();
+    virtual std::vector<ClassBase*> classes();
 
 private:
     friend class ModulePrivate;
