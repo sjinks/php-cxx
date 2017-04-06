@@ -7,11 +7,18 @@ compiler:
   - gcc
 
 env:
-  matrix:
-    - PHPVER=7.0
-    - PHPVER=7.1
+  - PHPVER=7.0
+  - PHPVER=7.1
 
 matrix:
+  include:
+    - compiler: gcc
+      env: PHPCXX_CPPFLAGS_PCH= TESTER_CPPFLAGS_PCH= PHPVER=7.0
+    - compiler: gcc
+      env: PHPCXX_CPPFLAGS_PCH= TESTER_CPPFLAGS_PCH= PHPVER=7.1
+  exclude:
+    - compiler: clang
+      env: PHPVER=7.1
   allow_failures:
     - env: PHPVER=7.1
 
