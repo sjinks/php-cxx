@@ -3,6 +3,10 @@
 
 #include "phpcxx.h"
 
+extern "C" {
+#include <Zend/zend_API.h>
+}
+
 #include <array>
 #include <string>
 #include "array.h"

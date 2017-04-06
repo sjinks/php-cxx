@@ -7,6 +7,10 @@
 #include "string.h"
 #include "value.h"
 
+extern "C" {
+#include <Zend/zend_exceptions.h>
+}
+
 #define TYPE_PAIR(t1, t2) (((t1) << 4) | (t2))
 #undef snprintf
 

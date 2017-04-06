@@ -3,6 +3,10 @@
 
 #include "phpcxx.h"
 
+extern "C" {
+#include <Zend/zend.h>
+}
+
 #include <cstring>
 #include <type_traits>
 #include "string.h"

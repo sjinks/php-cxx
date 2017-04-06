@@ -1,20 +1,6 @@
 #ifndef PHPCXX_H
 #define PHPCXX_H
 
-extern "C" {
-#   include <Zend/zend.h>
-#   include <Zend/zend_API.h>
-#   include <Zend/zend_alloc.h>
-#   include <Zend/zend_exceptions.h>
-#   include <Zend/zend_long.h>
-#   include <Zend/zend_operators.h>
-#   include <Zend/zend_string.h>
-#   include <Zend/zend_types.h>
-#   include <main/SAPI.h>
-}
-
-#include <vector>
-
 #ifdef PHPCXX_DEBUG
 #include <iostream>
 

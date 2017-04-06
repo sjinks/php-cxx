@@ -10,9 +10,11 @@ extern "C" {
 #   include <Zend/zend_compile.h>
 #   include <Zend/zend_constants.h>
 #   include <Zend/zend_exceptions.h>
+#   include <Zend/zend_inheritance.h>
 #   include <Zend/zend_long.h>
 #   include <Zend/zend_modules.h>
 #   include <Zend/zend_objects.h>
+#   include <Zend/zend_objects_API.h>
 #   include <Zend/zend_operators.h>
 #   include <Zend/zend_string.h>
 #   include <Zend/zend_types.h>
@@ -44,6 +46,9 @@ extern "C" {
 #include "argument_p.h"
 #include "array.h"
 #include "call.h"
+#include "class_p.h"
+#include "classbase.h"
+#include "classinterfacebase.h"
 #include "constant.h"
 #include "constant_p.h"
 #include "emallocallocator.h"

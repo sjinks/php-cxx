@@ -1,5 +1,10 @@
 #include <cassert>
 #include <stdexcept>
+
+extern "C" {
+#include <Zend/zend_API.h>
+}
+
 #include "array.h"
 #include "helpers.h"
 #include "string.h"

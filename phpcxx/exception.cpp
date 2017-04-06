@@ -2,6 +2,10 @@
 #include "exception_p.h"
 
 extern "C" {
+#include <Zend/zend_API.h>
+}
+
+extern "C" {
 zend_class_entry* phpcxx_exception_ce = nullptr;
 }
 

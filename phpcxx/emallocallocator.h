@@ -3,6 +3,11 @@
 
 #include "phpcxx.h"
 
+extern "C" {
+#include <Zend/zend.h>
+#include <main/SAPI.h>
+}
+
 #include <cassert>
 #include <cstddef>
 #include <memory>

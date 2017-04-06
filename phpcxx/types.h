@@ -3,6 +3,10 @@
 
 #include "phpcxx.h"
 
+extern "C" {
+#include <Zend/zend_types.h>
+}
+
 namespace phpcxx {
 
 enum class Type : zend_uchar {
