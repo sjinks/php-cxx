@@ -27,11 +27,12 @@ public:
     Function&& setAllowNull(bool allow);
     Function&& setTypeHint(ArgumentType t);
     Function&& setTypeHint(const char* className);
+    Function&& setDeprecated(bool v);
 
     const struct _zend_function_entry& getFE() const;
     const std::vector<struct _zend_internal_arg_info>& getArgInfo() const;
 
-private:
+protected:
     friend class FunctionPrivate;
     std::shared_ptr<FunctionPrivate> d_ptr;
 };
@@ -58,54 +59,6 @@ template<FunctionPrototypeVV Handler>
 static inline Function createFunction(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
 {
     return Function(name, &FunctionHandler::handler<Handler>, required, optional, byRef);
-}
-
-template<typename T, MethodPrototypeNN<T> Handler>
-static inline Function createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
-{
-    return Function(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
-}
-
-template<typename T, ConstMethodPrototypeNN<T> Handler>
-static inline Function createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
-{
-    return Function(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
-}
-
-template<typename T, MethodPrototypeNV<T> Handler>
-static inline Function createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
-{
-    return Function(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
-}
-
-template<typename T, ConstMethodPrototypeNV<T> Handler>
-static inline Function createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
-{
-    return Function(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
-}
-
-template<typename T, MethodPrototypeVN<T> Handler>
-static inline Function createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
-{
-    return Function(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
-}
-
-template<typename T, ConstMethodPrototypeVN<T> Handler>
-static inline Function createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
-{
-    return Function(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
-}
-
-template<typename T, MethodPrototypeVV<T> Handler>
-static inline Function createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
-{
-    return Function(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
-}
-
-template<typename T, ConstMethodPrototypeVV<T> Handler>
-static inline Function createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
-{
-    return Function(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
 }
 
 }

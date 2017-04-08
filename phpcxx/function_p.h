@@ -16,6 +16,7 @@ namespace phpcxx {
 
 class PHPCXX_HIDDEN FunctionPrivate {
     friend class Function;
+    friend class Method;
 public:
     FunctionPrivate(const char* name, InternalFunction c, zend_internal_arg_info* ai, uint32_t size)
     {

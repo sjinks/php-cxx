@@ -62,6 +62,18 @@ phpcxx::Function&& phpcxx::Function::setTypeHint(const char* className)
     return std::move(*this);
 }
 
+phpcxx::Function&& phpcxx::Function::setDeprecated(bool v)
+{
+    if (v) {
+        this->d_ptr->m_fe.flags |= ZEND_ACC_DEPRECATED;
+    }
+    else {
+        this->d_ptr->m_fe.flags &= ~ZEND_ACC_DEPRECATED;
+    }
+
+    return std::move(*this);
+}
+
 const struct _zend_function_entry& phpcxx::Function::getFE() const
 {
     return this->d_ptr->m_fe;

@@ -5,7 +5,7 @@
 
 #include <memory>
 #include <vector>
-#include "function.h"
+#include "method.h"
 
 namespace phpcxx {
 
@@ -46,7 +46,7 @@ private:
     zend_class_entry* m_ce;
     zend_class_entry* m_parent_ce;
     std::vector<zend_class_entry*> m_interfaces;
-    std::vector<phpcxx::Function> m_funcs;
+    std::vector<phpcxx::Method> m_funcs;
     std::unique_ptr<zend_function_entry[]> m_zf;
     int m_flags;
 
