@@ -13,6 +13,10 @@ extern "C" {
 #include <memory>
 #include <new>
 
+#ifdef PHPCXX_DEBUG
+#include "valgrind/memcheck.h"
+#endif
+
 namespace phpcxx {
 
 template<typename T>
@@ -40,12 +44,22 @@ public:
     {
 #ifdef PHPCXX_DEBUG
         assert(SG(sapi_started));
+        T* res = static_cast<T*>(safe_emalloc(cnt, sizeof(T), 0));
+        if (res) {
+            VALGRIND_MAKE_MEM_UNDEFINED(res, cnt * sizeof(T));
+        }
+
+        return res;
 #endif
         return static_cast<T*>(safe_emalloc(cnt, sizeof(T), 0)); // Zend throws a fatal error on OOM
     }
 
-    void deallocate(T* p, std::size_t)
+    void deallocate(T* p, std::size_t cnt)
     {
+#ifdef PHPCXX_DEBUG
+        VALGRIND_MAKE_MEM_NOACCESS(p, cnt * sizeof(T));
+#endif
+        static_cast<void>(cnt);
         efree(p);
     }
 
