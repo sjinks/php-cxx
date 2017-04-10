@@ -1,5 +1,16 @@
 #include "method.h"
 
+phpcxx::Method::Method(const char* name, InternalFunction c, const Arguments& required, const Arguments& optional, bool byref)
+    : Function(name, c, required, optional, byref)
+{
+    this->setAccess(Method::Public);
+}
+
+phpcxx::Method::Method(const Method& other)
+    : Function(other)
+{
+}
+
 phpcxx::Method&& phpcxx::Method::setAccess(Method::Access access)
 {
     unsigned int flag       = static_cast<unsigned int>(access);
@@ -32,7 +43,6 @@ phpcxx::Method&& phpcxx::Method::setAbstract(bool v)
 
     return std::move(*this);
 }
-
 
 phpcxx::Method&& phpcxx::Method::setFinal(bool v)
 {

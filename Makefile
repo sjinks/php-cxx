@@ -54,7 +54,8 @@ TESTER_CXX_SOURCES = \
 	test/test_value.cpp \
 	test/test_arrays.cpp \
 	test/test_superglobals.cpp \
-	test/test_functions.cpp
+	test/test_functions.cpp \
+	test/test_hotp.cpp
 
 TESTER_GCH = .build/test/precompiled.h.gch
 TESTER_PCH = test/precompiled.h

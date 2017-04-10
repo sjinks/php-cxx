@@ -44,6 +44,8 @@ protected:
     void extends(zend_class_entry* ce);
     void implements(zend_class_entry* ce);
 
+    struct _zend_class_entry* pce();
+
 private:
     friend class ClassPrivate;
     friend class ModulePrivate;

@@ -39,6 +39,11 @@ public:
 
     void initializeClass();
 
+    zend_class_entry* pce()
+    {
+        return this->m_ce;
+    }
+
 private:
     ClassBase* const q_ptr;
     const char* m_name;

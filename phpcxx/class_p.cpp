@@ -16,7 +16,7 @@ static zend_object_handlers ce_handlers;
 void phpcxx::ClassPrivate::initializeClass()
 {
     zend_class_entry ce;
-    INIT_CLASS_ENTRY(ce, this->m_name, this->methods());
+    INIT_OVERLOADED_CLASS_ENTRY_EX(ce, this->m_name, std::strlen(this->m_name), this->methods(), nullptr, nullptr, nullptr, nullptr, nullptr);
 
     this->m_ce = zend_register_internal_class_ex(&ce, this->m_parent_ce);
     if (UNEXPECTED(!this->m_ce)) {

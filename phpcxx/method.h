@@ -8,7 +8,8 @@ namespace phpcxx {
 
 class PHPCXX_EXPORT Method : public Function {
 public:
-    using Function::Function;
+    Method(const char* name, InternalFunction c, const Arguments& required = {}, const Arguments& optional = {}, bool byref = false);
+    Method(const Method& other);
 
     enum Access {
         Public    = ZEND_ACC_PUBLIC,
@@ -68,6 +69,30 @@ template<typename T, ConstMethodPrototypeVV<T> Handler>
 static inline Method createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
 {
     return Method(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
+}
+
+template<FunctionPrototypeNN Handler>
+static inline Method createStaticMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+{
+    return Method(name, &FunctionHandler::handler<Handler>, required, optional, byRef).setStatic(true);
+}
+
+template<FunctionPrototypeNV Handler>
+static inline Method createStaticMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+{
+    return Method(name, &FunctionHandler::handler<Handler>, required, optional, byRef).setStatic(true);
+}
+
+template<FunctionPrototypeVN Handler>
+static inline Method createStaticMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+{
+    return Method(name, &FunctionHandler::handler<Handler>, required, optional, byRef).setStatic(true);
+}
+
+template<FunctionPrototypeVV Handler>
+static inline Method createStaticMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+{
+    return Method(name, &FunctionHandler::handler<Handler>, required, optional, byRef).setStatic(true);
 }
 
 }

@@ -20,6 +20,11 @@ void phpcxx::ClassBase::implements(zend_class_entry* ce)
     this->d_ptr->implements(ce);
 }
 
+struct _zend_class_entry* phpcxx::ClassBase::pce()
+{
+    return this->d_ptr->pce();
+}
+
 void phpcxx::ClassBase::registerClass()
 {
     this->d_ptr->initializeClass();
