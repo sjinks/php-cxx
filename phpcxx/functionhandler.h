@@ -34,9 +34,6 @@ public:
         catch (const std::exception& e) {
             zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
         }
-        catch (...) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception");
-        }
 
         EG(bailout) = orig_bailout;
         if (UNEXPECTED(bailed_out)) {
@@ -67,9 +64,6 @@ public:
         catch (const std::exception& e) {
             zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
         }
-        catch (...) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception");
-        }
 
         EG(bailout) = orig_bailout;
         if (UNEXPECTED(bailed_out)) {
@@ -98,9 +92,6 @@ public:
         }
         catch (const std::exception& e) {
             zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
-        }
-        catch (...) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception");
         }
 
         EG(bailout) = orig_bailout;
@@ -131,9 +122,6 @@ public:
         }
         catch (const std::exception& e) {
             zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
-        }
-        catch (...) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception");
         }
 
         EG(bailout) = orig_bailout;
@@ -172,9 +160,6 @@ public:
         catch (const std::exception& e) {
             zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
         }
-        catch (...) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception");
-        }
 
         EG(bailout) = orig_bailout;
         if (UNEXPECTED(bailed_out)) {
@@ -207,9 +192,6 @@ public:
         }
         catch (const std::exception& e) {
             zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
-        }
-        catch (...) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception");
         }
 
         EG(bailout) = orig_bailout;
@@ -244,9 +226,6 @@ public:
         catch (const std::exception& e) {
             zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
         }
-        catch (...) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception");
-        }
 
         EG(bailout) = orig_bailout;
         if (UNEXPECTED(bailed_out)) {
@@ -279,9 +258,6 @@ public:
         }
         catch (const std::exception& e) {
             zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
-        }
-        catch (...) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception");
         }
 
         EG(bailout) = orig_bailout;
@@ -317,9 +293,6 @@ public:
         catch (const std::exception& e) {
             zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
         }
-        catch (...) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception");
-        }
 
         EG(bailout) = orig_bailout;
         if (UNEXPECTED(bailed_out)) {
@@ -353,9 +326,6 @@ public:
         }
         catch (const std::exception& e) {
             zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
-        }
-        catch (...) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception");
         }
 
         EG(bailout) = orig_bailout;
@@ -391,9 +361,6 @@ public:
         catch (const std::exception& e) {
             zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
         }
-        catch (...) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception");
-        }
 
         EG(bailout) = orig_bailout;
         if (UNEXPECTED(bailed_out)) {
@@ -427,9 +394,6 @@ public:
         }
         catch (const std::exception& e) {
             zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
-        }
-        catch (...) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception");
         }
 
         EG(bailout) = orig_bailout;

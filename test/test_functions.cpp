@@ -58,8 +58,6 @@ protected:
                 .addRequiredArgument(phpcxx::byReference("b")),
             phpcxx::createFunction<&MyModule::func_throwing>("func_throwing"),
             phpcxx::createFunction<&MyModule::call_func_throwing>("call_func_throwing"),
-            phpcxx::createFunction<&MyModule::func_throwing2>("func_throwing2"),
-            phpcxx::createFunction<&MyModule::call_func_throwing2>("call_func_throwing2"),
             phpcxx::createFunction<&MyModule::func_throwing3>("func_throwing3"),
             phpcxx::createFunction<&MyModule::call_func_throwing3>("call_func_throwing3"),
             phpcxx::createFunction<&MyModule::func_bailingout>("func_bailingout"),
@@ -119,32 +117,6 @@ private:
             EXPECT_EQ(1, e.code());
             EXPECT_EQ("Message", e.message());
             EXPECT_EQ("Exception", e.getClass());
-            e.markHandled(true);
-        }
-
-        EXPECT_TRUE(EG(exception) == nullptr);
-    }
-
-    static void func_throwing2()
-    {
-        php_printf("+ %s\n", "func_throwing2");
-        throw 55;
-    }
-
-    static void call_func_throwing2()
-    {
-        EXPECT_THROW(phpcxx::call("func_throwing2"), phpcxx::PhpException);
-        EXPECT_TRUE(EG(exception) != nullptr);
-        zend_clear_exception();
-
-        try {
-            phpcxx::call("func_throwing2");
-            // Should not happen
-            EXPECT_TRUE(0);
-        }
-        catch (phpcxx::PhpException& e) {
-            EXPECT_EQ(0, e.code());
-            EXPECT_EQ("Unhandled C++ exception", e.message());
             e.markHandled(true);
         }
 
@@ -373,15 +345,6 @@ TEST(FunctionsTest, SimpleCalls)
         o = out.str(); out.str(std::string());
         e = err.str(); err.str(std::string());
         EXPECT_EQ("> func_throwing\n< func_throwing\n> func_throwing\n< func_throwing\n", o);
-        EXPECT_EQ("", e);
-
-        sapi.run([]() {
-            runPhpCode("call_func_throwing2();");
-        });
-
-        o = out.str(); out.str(std::string());
-        e = err.str(); err.str(std::string());
-        EXPECT_EQ("+ func_throwing2\n+ func_throwing2\n", o);
         EXPECT_EQ("", e);
 
         sapi.run([]() {
