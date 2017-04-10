@@ -89,6 +89,13 @@ public:
         return *this;
     }
 
+    void makeInterned()
+    {
+        if (this->m_s) {
+            this->m_s = zend_new_interned_string(this->m_s);
+        }
+    }
+
     zend_string* get()
     {
         return this->m_s;
