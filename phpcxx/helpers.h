@@ -90,26 +90,26 @@ struct is_pchar : public
  * @{
  */
 template<typename T, enable_if_t<is_null_pointer<T>::value>* = nullptr>
-void construct_zval(zval& z, T)   { ZVAL_NULL(&z); }
+static inline void construct_zval(zval& z, T)   { ZVAL_NULL(&z); }
 
 template<typename T, enable_if_t<is_bool<T>::value>* = nullptr>
-void construct_zval(zval& z, T v) { ZVAL_BOOL(&z, v); }
+static inline void construct_zval(zval& z, T v) { ZVAL_BOOL(&z, v); }
 
 template<typename T, enable_if_t<is_integer<T>::value>* = nullptr>
-void construct_zval(zval& z, T v) { ZVAL_LONG(&z, v); }
+static inline void construct_zval(zval& z, T v) { ZVAL_LONG(&z, v); }
 
 template<typename T, enable_if_t<std::is_floating_point<T>::value>* = nullptr>
-void construct_zval(zval& z, T v) { ZVAL_DOUBLE(&z, v); }
+static inline void construct_zval(zval& z, T v) { ZVAL_DOUBLE(&z, v); }
 
 template<typename T, enable_if_t<is_pchar<T>::value || is_string<T>::value>* = nullptr>
-void construct_zval(zval& z, T s)
+static inline void construct_zval(zval& z, T s)
 {
     ZendString zs(s);
     ZVAL_STR(&z, zs.release());
 }
 
 template<typename T, enable_if_t<std::is_same<zval, remove_cv_t<T> >::value>* = nullptr>
-void construct_zval(zval& z, T s)
+static inline void construct_zval(zval& z, T s)
 {
     ZVAL_COPY(&z, &s);
 }
@@ -128,7 +128,7 @@ void construct_zval(zval& z, T s)
  * @param b
  */
 template<typename T, enable_if_t<std::is_arithmetic<T>::value || is_null_pointer<T>::value>* = nullptr>
-void assign(zval* a, T b)
+static void assign(zval* a, T b)
 {
     if (Z_ISREF_P(a)) {
         a = Z_REFVAL_P(a);
@@ -172,7 +172,7 @@ void assign(zval* a, T b)
  * @param b
  */
 template<typename T, enable_if_t<is_string<T>::value || is_pchar<T>::value>* = nullptr>
-void assign(zval* a, const T& b)
+static void assign(zval* a, const T& b)
 {
     if (Z_ISREF_P(a)) {
         a = Z_REFVAL_P(a);

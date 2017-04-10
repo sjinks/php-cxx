@@ -60,8 +60,8 @@ private:
 
 };
 
-template<typename... Params> phpcxx::Value call(const char* name, Params&&... p);
-template<typename... Params> phpcxx::Value call(const phpcxx::Value& v, Params&&... p);
+template<typename... Params> static phpcxx::Value call(const char* name, Params&&... p);
+template<typename... Params> static phpcxx::Value call(const phpcxx::Value& v, Params&&... p);
 
 }
 

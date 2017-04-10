@@ -102,6 +102,4 @@ private:
 
 }
 
-
-
 #endif /* PHPCXX_CALLABLE_H */
