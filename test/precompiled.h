@@ -2,13 +2,13 @@
 #define TEST_PRECOMPILED_H
 
 #include "phpcxx/phpcxx.h"
-#include "phpcxx/value.h"
 #include "phpcxx/argument.h"
 #include "phpcxx/array.h"
-#include "phpcxx/call.h"
+#include "phpcxx/callable.h"
 #include "phpcxx/constant.h"
 #include "phpcxx/emallocallocator.h"
 #include "phpcxx/exception.h"
+#include "phpcxx/fcall.h"
 #include "phpcxx/function.h"
 #include "phpcxx/functionhandler.h"
 #include "phpcxx/helpers.h"
@@ -22,6 +22,7 @@
 #include "phpcxx/string.h"
 #include "phpcxx/superglobal.h"
 #include "phpcxx/types.h"
+#include "phpcxx/value.h"
 #include "phpcxx/vector.h"
 #include "phpcxx/zendstring.h"
 

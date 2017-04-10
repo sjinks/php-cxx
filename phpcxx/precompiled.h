@@ -41,11 +41,10 @@ extern "C" {
 #include <unordered_map>
 #include <vector>
 
-#include "value.h"
 #include "argument.h"
 #include "argument_p.h"
 #include "array.h"
-#include "call.h"
+#include "callable.h"
 #include "class_p.h"
 #include "classbase.h"
 #include "classinterfacebase.h"
@@ -54,6 +53,7 @@ extern "C" {
 #include "emallocallocator.h"
 #include "exception.h"
 #include "exception_p.h"
+#include "fcall.h"
 #include "function.h"
 #include "functionhandler.h"
 #include "function_p.h"
@@ -72,6 +72,7 @@ extern "C" {
 #include "string.h"
 #include "superglobal.h"
 #include "types.h"
+#include "value.h"
 #include "vector.h"
 #include "zendstring.h"
 

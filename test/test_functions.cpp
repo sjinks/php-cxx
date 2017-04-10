@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 #include "phpcxx/module.h"
 #include "phpcxx/function.h"
-#include "phpcxx/call.h"
+#include "phpcxx/fcall.h"
 #include "testsapi.h"
 #include "globals.h"
 

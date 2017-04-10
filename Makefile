@@ -28,6 +28,7 @@ LIBRARY_CXX_SOURCES = \
 	phpcxx/classbase.cpp \
 	phpcxx/classconstant.cpp \
 	phpcxx/exception.cpp \
+	phpcxx/fcall.cpp \
 	phpcxx/function.cpp \
 	phpcxx/method.cpp \
 	phpcxx/module.cpp \

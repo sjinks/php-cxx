@@ -1,5 +1,5 @@
-#ifndef PHPCXX_VALUE_H_
-#define PHPCXX_VALUE_H_
+#ifndef PHPCXX_VALUE_H
+#define PHPCXX_VALUE_H
 
 #include "phpcxx.h"
 
@@ -402,13 +402,6 @@ extern Value ErrorValue;
 
 }
 
-#include "call.h"
+#include "value.tcc"
 
-template<typename ...Args>
-phpcxx::Value phpcxx::Value::operator()(Args&&... args)
-{
-    return phpcxx::call(*this, std::forward<Args>(args)...);
-}
-
-
-#endif /* PHPCXX */
+#endif /* PHPCXX_VALUE_H */

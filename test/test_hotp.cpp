@@ -3,9 +3,10 @@
 #include <ctime>
 #include <arpa/inet.h>
 #include <gtest/gtest.h>
-#include "phpcxx/call.h"
+#include "phpcxx/fcall.h"
 #include "phpcxx/classbase.h"
 #include "phpcxx/classinterfacebase.h"
+#include "phpcxx/callable.h"
 #include "testsapi.h"
 #include "globals.h"
 
@@ -45,8 +46,7 @@ public:
         }
 
         phpcxx::Value counter = (tstamp / window).asLong();
-        phpcxx::Parameters p1{ &counter, &key };
-        return HOTP::generateByCounter(p1);
+        return phpcxx::FCall("self::generateByCounter")(counter, key);
     }
 
     static phpcxx::Value generateByTimeWindow(phpcxx::Parameters& p)
@@ -60,9 +60,10 @@ public:
         phpcxx::Array result;
         phpcxx::Value counter = (tstamp / window).asLong() + min.asLong();
 
+        phpcxx::FCall call("self::generateByCounter");
+
         for (int i=min.asLong(); i<=max.asLong(); ++i, ++counter) {
-            phpcxx::Parameters p1{ &counter, &key };
-            result[nullptr] = HOTP::generateByCounter(p1);
+            result[nullptr] = call(counter, key);
         }
 
         return phpcxx::Value(result.pzval());
