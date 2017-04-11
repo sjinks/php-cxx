@@ -15,119 +15,111 @@ public:
     template<FunctionPrototypeNN f>
     static void handler(struct _zend_execute_data* execute_data, struct _zval_struct* return_value)
     {
-        JMP_BUF* orig_bailout = EG(bailout);
-        JMP_BUF bailout;
-        bool bailed_out = false;
+        {
+            BailoutRestorer br;
 
-        try {
-            EG(bailout) = &bailout;
-            if (EXPECTED(0 == SETJMP(bailout))) {
-                f();
-                if (EXPECTED(!EG(exception))) {
-                    ZVAL_NULL(return_value);
+            try {
+                JMP_BUF bailout;
+                EG(bailout) = &bailout;
+                if (EXPECTED(0 == SETJMP(bailout))) {
+                    f();
+                    if (EXPECTED(!EG(exception))) {
+                        ZVAL_NULL(return_value);
+                    }
+
+                    return;
                 }
             }
-            else {
-                bailed_out = true;
+            catch (const std::exception& e) {
+                zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
+                return;
             }
         }
-        catch (const std::exception& e) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
-        }
 
-        EG(bailout) = orig_bailout;
-        if (UNEXPECTED(bailed_out)) {
-            _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
-        }
+        _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
     }
 
     template<FunctionPrototypeNV f>
     static void handler(struct _zend_execute_data* execute_data, struct _zval_struct* return_value)
     {
-        JMP_BUF* orig_bailout = EG(bailout);
-        JMP_BUF bailout;
-        bool bailed_out = false;
+        {
+            BailoutRestorer br;
 
-        EG(bailout) = &bailout;
-        try {
-            Parameters p(execute_data);
-            if (EXPECTED(0 == SETJMP(bailout))) {
-                f(p);
-                if (EXPECTED(!EG(exception))) {
-                    ZVAL_NULL(return_value);
+            try {
+                JMP_BUF bailout;
+                EG(bailout) = &bailout;
+                Parameters p(execute_data);
+                if (EXPECTED(0 == SETJMP(bailout))) {
+                    f(p);
+                    if (EXPECTED(!EG(exception))) {
+                        ZVAL_NULL(return_value);
+                    }
+
+                    return;
                 }
             }
-            else {
-                bailed_out = true;
+            catch (const std::exception& e) {
+                zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
+                return;
             }
         }
-        catch (const std::exception& e) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
-        }
 
-        EG(bailout) = orig_bailout;
-        if (UNEXPECTED(bailed_out)) {
-            _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
-        }
+        _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
     }
 
     template<FunctionPrototypeVN f>
     static void handler(struct _zend_execute_data* execute_data, struct _zval_struct* return_value)
     {
-        JMP_BUF* orig_bailout = EG(bailout);
-        JMP_BUF bailout;
-        bool bailed_out = false;
+        {
+            BailoutRestorer br;
 
-        EG(bailout) = &bailout;
-        try {
-            if (EXPECTED(0 == SETJMP(bailout))) {
-                Value r = f();
-                if (EXPECTED(!EG(exception))) {
-                    r.assignTo(return_value);
+            try {
+                JMP_BUF bailout;
+                EG(bailout) = &bailout;
+                if (EXPECTED(0 == SETJMP(bailout))) {
+                    Value r = f();
+                    if (EXPECTED(!EG(exception))) {
+                        r.assignTo(return_value);
+                    }
+
+                    return;
                 }
             }
-            else {
-                bailed_out = true;
+            catch (const std::exception& e) {
+                zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
+                return;
             }
         }
-        catch (const std::exception& e) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
-        }
 
-        EG(bailout) = orig_bailout;
-        if (UNEXPECTED(bailed_out)) {
-            _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
-        }
+        _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
     }
 
     template<FunctionPrototypeVV f>
     static void handler(struct _zend_execute_data* execute_data, struct _zval_struct* return_value)
     {
-        JMP_BUF* orig_bailout = EG(bailout);
-        JMP_BUF bailout;
-        bool bailed_out = false;
+        {
+            BailoutRestorer br;
 
-        EG(bailout) = &bailout;
-        try {
-            Parameters p(execute_data);
-            if (EXPECTED(0 == SETJMP(bailout))) {
-                Value r = f(p);
-                if (EXPECTED(!EG(exception))) {
-                    r.assignTo(return_value);
+            try {
+                Parameters p(execute_data);
+                JMP_BUF bailout;
+                EG(bailout) = &bailout;
+                if (EXPECTED(0 == SETJMP(bailout))) {
+                    Value r = f(p);
+                    if (EXPECTED(!EG(exception))) {
+                        r.assignTo(return_value);
+                    }
+
+                    return;
                 }
             }
-            else {
-                bailed_out = true;
+            catch (const std::exception& e) {
+                zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
+                return;
             }
         }
-        catch (const std::exception& e) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
-        }
 
-        EG(bailout) = orig_bailout;
-        if (UNEXPECTED(bailed_out)) {
-            _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
-        }
+        _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
     }
 
 
@@ -137,269 +129,253 @@ public:
     template<typename T, MethodPrototypeNN<T> f>
     static void handler(struct _zend_execute_data* execute_data, struct _zval_struct* return_value)
     {
-        JMP_BUF* orig_bailout = EG(bailout);
-        JMP_BUF bailout;
-        bool bailed_out = false;
+        {
+            BailoutRestorer br;
 
-        EG(bailout) = &bailout;
-        try {
-            zval* this_ptr = getThis();
-            zval* z        = FunctionHandler::checkClass(this_ptr);
-            Value vthis(this_ptr);
+            try {
+                zval* this_ptr = getThis();
+                zval* z        = FunctionHandler::checkClass(this_ptr);
+                Value vthis(this_ptr);
 
-            if (EXPECTED(0 == SETJMP(bailout))) {
-                ((static_cast<T*>(Z_PTR_P(z)))->*f)(vthis);
-                if (EXPECTED(!EG(exception))) {
-                    ZVAL_NULL(return_value);
+                JMP_BUF bailout;
+                EG(bailout) = &bailout;
+                if (EXPECTED(0 == SETJMP(bailout))) {
+                    ((static_cast<T*>(Z_PTR_P(z)))->*f)(vthis);
+                    if (EXPECTED(!EG(exception))) {
+                        ZVAL_NULL(return_value);
+                    }
+
+                    return;
                 }
             }
-            else {
-                bailed_out = true;
+            catch (const std::exception& e) {
+                zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
+                return;
             }
         }
-        catch (const std::exception& e) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
-        }
 
-        EG(bailout) = orig_bailout;
-        if (UNEXPECTED(bailed_out)) {
-            _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
-        }
+        _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
     }
 
     template<typename T, ConstMethodPrototypeNN<T> f>
     static void handler(struct _zend_execute_data* execute_data, struct _zval_struct* return_value)
     {
-        JMP_BUF* orig_bailout = EG(bailout);
-        JMP_BUF bailout;
-        bool bailed_out = false;
+        {
+            BailoutRestorer br;
 
-        EG(bailout) = &bailout;
-        try {
-            zval* this_ptr = getThis();
-            zval* z        = FunctionHandler::checkClass(this_ptr);
-            Value vthis(this_ptr);
+            try {
+                zval* this_ptr = getThis();
+                zval* z        = FunctionHandler::checkClass(this_ptr);
+                Value vthis(this_ptr);
 
-            if (EXPECTED(0 == SETJMP(bailout))) {
-                ((static_cast<T*>(Z_PTR_P(z)))->*f)(vthis);
-                if (EXPECTED(!EG(exception))) {
-                    ZVAL_NULL(return_value);
+                JMP_BUF bailout;
+                EG(bailout) = &bailout;
+                if (EXPECTED(0 == SETJMP(bailout))) {
+                    ((static_cast<T*>(Z_PTR_P(z)))->*f)(vthis);
+                    if (EXPECTED(!EG(exception))) {
+                        ZVAL_NULL(return_value);
+                    }
+
+                    return;
                 }
             }
-            else {
-                bailed_out = true;
+            catch (const std::exception& e) {
+                zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
+                return;
             }
         }
-        catch (const std::exception& e) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
-        }
 
-        EG(bailout) = orig_bailout;
-        if (UNEXPECTED(bailed_out)) {
-            _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
-        }
+        _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
     }
 
     template<typename T, MethodPrototypeVN<T> f>
     static void handler(struct _zend_execute_data* execute_data, struct _zval_struct* return_value)
     {
-        JMP_BUF* orig_bailout = EG(bailout);
-        JMP_BUF bailout;
-        bool bailed_out = false;
+        {
+            BailoutRestorer br;
 
-        EG(bailout) = &bailout;
-        try {
-            zval* this_ptr = getThis();
-            zval* z        = FunctionHandler::checkClass(this_ptr);
-            Value vthis(this_ptr);
+            try {
+                zval* this_ptr = getThis();
+                zval* z        = FunctionHandler::checkClass(this_ptr);
+                Value vthis(this_ptr);
 
-            if (EXPECTED(0 == SETJMP(bailout))) {
-                Value r = ((static_cast<T*>(Z_PTR_P(z)))->*f)(vthis);
-                if (EXPECTED(!EG(exception))) {
-                    r.assignTo(return_value);
+                JMP_BUF bailout;
+                EG(bailout) = &bailout;
+                if (EXPECTED(0 == SETJMP(bailout))) {
+                    Value r = ((static_cast<T*>(Z_PTR_P(z)))->*f)(vthis);
+                    if (EXPECTED(!EG(exception))) {
+                        r.assignTo(return_value);
+                    }
+
+                    return;
                 }
             }
-            else {
-                bailed_out = true;
+            catch (const std::exception& e) {
+                zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
+                return;
             }
         }
-        catch (const std::exception& e) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
-        }
 
-        EG(bailout) = orig_bailout;
-        if (UNEXPECTED(bailed_out)) {
-            _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
-        }
+        _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
     }
 
     template<typename T, ConstMethodPrototypeVN<T> f>
     static void handler(struct _zend_execute_data* execute_data, struct _zval_struct* return_value)
     {
-        JMP_BUF* orig_bailout = EG(bailout);
-        JMP_BUF bailout;
-        bool bailed_out = false;
+        {
+            BailoutRestorer br;
 
-        EG(bailout) = &bailout;
-        try {
-            zval* this_ptr = getThis();
-            zval* z        = FunctionHandler::checkClass(this_ptr);
-            Value vthis(this_ptr);
+            try {
+                zval* this_ptr = getThis();
+                zval* z        = FunctionHandler::checkClass(this_ptr);
+                Value vthis(this_ptr);
 
-            if (EXPECTED(0 == SETJMP(bailout))) {
-                Value r = ((static_cast<T*>(Z_PTR_P(z)))->*f)(vthis);
-                if (EXPECTED(!EG(exception))) {
-                    r.assignTo(return_value);
+                JMP_BUF bailout;
+                EG(bailout) = &bailout;
+                if (EXPECTED(0 == SETJMP(bailout))) {
+                    Value r = ((static_cast<T*>(Z_PTR_P(z)))->*f)(vthis);
+                    if (EXPECTED(!EG(exception))) {
+                        r.assignTo(return_value);
+                    }
+
+                    return;
                 }
             }
-            else {
-                bailed_out = true;
+            catch (const std::exception& e) {
+                zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
+                return;
             }
         }
-        catch (const std::exception& e) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
-        }
 
-        EG(bailout) = orig_bailout;
-        if (UNEXPECTED(bailed_out)) {
-            _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
-        }
+        _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
     }
 
     template<typename T, MethodPrototypeNV<T> f>
     static void handler(struct _zend_execute_data* execute_data, struct _zval_struct* return_value)
     {
-        JMP_BUF* orig_bailout = EG(bailout);
-        JMP_BUF bailout;
-        bool bailed_out = false;
+        {
+            BailoutRestorer br;
 
-        EG(bailout) = &bailout;
-        try {
-            zval* this_ptr = getThis();
-            zval* z        = FunctionHandler::checkClass(this_ptr);
-            Value vthis(this_ptr);
-            Parameters p(execute_data);
+            try {
+                zval* this_ptr = getThis();
+                zval* z        = FunctionHandler::checkClass(this_ptr);
+                Value vthis(this_ptr);
+                Parameters p(execute_data);
 
-            if (EXPECTED(0 == SETJMP(bailout))) {
-                ((static_cast<T*>(Z_PTR_P(z)))->*f)(vthis, p);
-                if (EXPECTED(!EG(exception))) {
-                    ZVAL_NULL(return_value);
+                JMP_BUF bailout;
+                EG(bailout) = &bailout;
+                if (EXPECTED(0 == SETJMP(bailout))) {
+                    ((static_cast<T*>(Z_PTR_P(z)))->*f)(vthis, p);
+                    if (EXPECTED(!EG(exception))) {
+                        ZVAL_NULL(return_value);
+                    }
+
+                    return;
                 }
             }
-            else {
-                bailed_out = true;
+            catch (const std::exception& e) {
+                zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
+                return;
             }
         }
-        catch (const std::exception& e) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
-        }
 
-        EG(bailout) = orig_bailout;
-        if (UNEXPECTED(bailed_out)) {
-            _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
-        }
+        _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
     }
 
     template<typename T, ConstMethodPrototypeNV<T> f>
     static void handler(struct _zend_execute_data* execute_data, struct _zval_struct* return_value)
     {
-        JMP_BUF* orig_bailout = EG(bailout);
-        JMP_BUF bailout;
-        bool bailed_out = false;
+        {
+            BailoutRestorer br;
 
-        EG(bailout) = &bailout;
-        try {
-            zval* this_ptr = getThis();
-            zval* z        = FunctionHandler::checkClass(this_ptr);
-            Value vthis(this_ptr);
-            Parameters p(execute_data);
+            try {
+                zval* this_ptr = getThis();
+                zval* z        = FunctionHandler::checkClass(this_ptr);
+                Value vthis(this_ptr);
+                Parameters p(execute_data);
 
-            if (EXPECTED(0 == SETJMP(bailout))) {
-                ((static_cast<T*>(Z_PTR_P(z)))->*f)(vthis, p);
-                if (EXPECTED(!EG(exception))) {
-                    ZVAL_NULL(return_value);
+                JMP_BUF bailout;
+                EG(bailout) = &bailout;
+                if (EXPECTED(0 == SETJMP(bailout))) {
+                    ((static_cast<T*>(Z_PTR_P(z)))->*f)(vthis, p);
+                    if (EXPECTED(!EG(exception))) {
+                        ZVAL_NULL(return_value);
+                    }
+
+                    return;
                 }
             }
-            else {
-                bailed_out = true;
+            catch (const std::exception& e) {
+                zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
+                return;
             }
         }
-        catch (const std::exception& e) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
-        }
 
-        EG(bailout) = orig_bailout;
-        if (UNEXPECTED(bailed_out)) {
-            _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
-        }
+        _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
     }
 
     template<typename T, MethodPrototypeVV<T> f>
     static void handler(struct _zend_execute_data* execute_data, struct _zval_struct* return_value)
     {
-        JMP_BUF* orig_bailout = EG(bailout);
-        JMP_BUF bailout;
-        bool bailed_out = false;
+        {
+            BailoutRestorer br;
 
-        EG(bailout) = &bailout;
-        try {
-            zval* this_ptr = getThis();
-            zval* z        = FunctionHandler::checkClass(this_ptr);
-            Value vthis(this_ptr);
-            Parameters p(execute_data);
+            try {
+                zval* this_ptr = getThis();
+                zval* z        = FunctionHandler::checkClass(this_ptr);
+                Value vthis(this_ptr);
+                Parameters p(execute_data);
 
-            if (EXPECTED(0 == SETJMP(bailout))) {
-                Value r = ((static_cast<T*>(Z_PTR_P(z)))->*f)(vthis, p);
-                if (EXPECTED(!EG(exception))) {
-                    r.assignTo(return_value);
+                JMP_BUF bailout;
+                EG(bailout) = &bailout;
+                if (EXPECTED(0 == SETJMP(bailout))) {
+                    Value r = ((static_cast<T*>(Z_PTR_P(z)))->*f)(vthis, p);
+                    if (EXPECTED(!EG(exception))) {
+                        r.assignTo(return_value);
+                    }
+
+                    return;
                 }
             }
-            else {
-                bailed_out = true;
+            catch (const std::exception& e) {
+                zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
+                return;
             }
         }
-        catch (const std::exception& e) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
-        }
 
-        EG(bailout) = orig_bailout;
-        if (UNEXPECTED(bailed_out)) {
-            _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
-        }
+        _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
     }
 
     template<typename T, ConstMethodPrototypeVV<T> f>
     static void handler(struct _zend_execute_data* execute_data, struct _zval_struct* return_value)
     {
-        JMP_BUF* orig_bailout = EG(bailout);
-        JMP_BUF bailout;
-        bool bailed_out = false;
+        {
+            BailoutRestorer br;
 
-        EG(bailout) = &bailout;
-        try {
-            zval* this_ptr = getThis();
-            zval* z        = FunctionHandler::checkClass(this_ptr);
-            Value vthis(this_ptr);
-            Parameters p(execute_data);
+            try {
+                zval* this_ptr = getThis();
+                zval* z        = FunctionHandler::checkClass(this_ptr);
+                Value vthis(this_ptr);
+                Parameters p(execute_data);
 
-            if (EXPECTED(0 == SETJMP(bailout))) {
-                Value r = ((static_cast<T*>(Z_PTR_P(z)))->*f)(vthis, p);
-                if (EXPECTED(!EG(exception))) {
-                    r.assignTo(return_value);
+                JMP_BUF bailout;
+                EG(bailout) = &bailout;
+                if (EXPECTED(0 == SETJMP(bailout))) {
+                    Value r = ((static_cast<T*>(Z_PTR_P(z)))->*f)(vthis, p);
+                    if (EXPECTED(!EG(exception))) {
+                        r.assignTo(return_value);
+                    }
+
+                    return;
                 }
             }
-            else {
-                bailed_out = true;
+            catch (const std::exception& e) {
+                zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
+                return;
             }
         }
-        catch (const std::exception& e) {
-            zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
-        }
 
-        EG(bailout) = orig_bailout;
-        if (UNEXPECTED(bailed_out)) {
-            _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
-        }
+        _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
     }
 
 private:

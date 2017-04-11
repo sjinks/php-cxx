@@ -11,15 +11,38 @@
 namespace phpcxx {
 
 template<typename... Params>
-static inline Value call(const char* name, Params&&... p)
+static Value call(const char* name, Params&&... p)
 {
-    return FCall(Callable(name))(std::forward<Params>(p)...);
+    {
+        BailoutRestorer br;
+        JMP_BUF bailout;
+        FCall call(name);
+
+        EG(bailout) = &bailout;
+        if (EXPECTED(0 == SETJMP(bailout))) {
+            return call(std::forward<Params>(p)...);
+        }
+    }
+
+    _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
+    ZEND_ASSUME(0);
 }
 
 template<typename... Params>
-static inline Value call(const Value& v, Params&&... p)
+static Value call(const Value& v, Params&&... p)
 {
-    return FCall(Callable(v.pzval()))(std::forward<Params>(p)...);
+    {
+        BailoutRestorer br;
+        JMP_BUF bailout;
+        FCall call(v.pzval());
+        EG(bailout) = &bailout;
+        if (EXPECTED(0 == SETJMP(bailout))) {
+            return call(std::forward<Params>(p)...);
+        }
+    }
+
+    _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
+    ZEND_ASSUME(0);
 }
 
 template<> inline zval* FCall::paramHelper(phpcxx::Value&& v, zval&) { return v.pzval(); }

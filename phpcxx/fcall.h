@@ -40,6 +40,8 @@ public:
     {
     }
 
+    ~FCall();
+
     Value operator()(vector<Value> args);
     Value operator()(vector<zval> args);
 

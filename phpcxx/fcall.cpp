@@ -9,6 +9,8 @@ phpcxx::FCall::FCall(const zend_fcall_info& fci, const zend_fcall_info_cache& fc
     if (UNEXPECTED(this->m_fci.size != sizeof(zend_fcall_info))) {
         throw std::invalid_argument("Invalid function call information");
     }
+
+    Z_TRY_ADDREF_P(&this->m_fci.function_name);
 }
 
 phpcxx::FCall::FCall(const Callable& c)
@@ -16,6 +18,16 @@ phpcxx::FCall::FCall(const Callable& c)
     if (UNEXPECTED(!c.resolve(this->m_fci, this->m_fcc))) {
         throw std::invalid_argument("Invalid callable");
     }
+
+    Z_TRY_ADDREF_P(&this->m_fci.function_name);
+}
+
+phpcxx::FCall::~FCall()
+{
+    zval_dtor(&this->m_fci.function_name);
+#ifdef PHPCXX_DEBUG
+    ZVAL_UNDEF(&this->m_fci.function_name);
+#endif
 }
 
 phpcxx::Value phpcxx::FCall::operator()(vector<Value> args)

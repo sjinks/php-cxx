@@ -14,11 +14,23 @@ extern "C" {
 
 namespace phpcxx {
 
-struct placement_construct_t {
+class PHPCXX_EXPORT BailoutRestorer {
+public:
+    BailoutRestorer() : m_orig_bailout(EG(bailout)) {}
+    ~BailoutRestorer()
+    {
+        EG(bailout) = this->m_orig_bailout;
+    }
+
+private:
+    JMP_BUF* m_orig_bailout;
+};
+
+struct PHPCXX_EXPORT placement_construct_t {
     explicit placement_construct_t() {}
 };
 
-extern const placement_construct_t placement_construct;
+PHPCXX_EXPORT extern const placement_construct_t placement_construct;
 
 // See http://loungecpp.wikidot.com/tips-and-tricks:indices
 template<std::size_t... Is>
