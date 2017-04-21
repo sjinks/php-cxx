@@ -199,7 +199,7 @@ void phpcxx::ModulePrivate::registerConstants()
 
 void phpcxx::ModulePrivate::registerClasses()
 {
-    std::vector<phpcxx::ClassBase*> classes = this->q_ptr->classes();
+    std::vector<std::shared_ptr<phpcxx::ClassBase> > classes = this->q_ptr->classes();
     for (auto&& c : classes) {
         c->registerClass();
     }

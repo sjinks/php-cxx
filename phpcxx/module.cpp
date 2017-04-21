@@ -72,22 +72,22 @@ void phpcxx::Module::registerModules()
 
 std::vector<phpcxx::Module*> phpcxx::Module::otherModules()
 {
-    return std::vector<phpcxx::Module*>();
+    return {};
 }
 
 std::vector<phpcxx::Function> phpcxx::Module::functions()
 {
-    return std::vector<phpcxx::Function>();
+    return {};
 }
 
 std::vector<phpcxx::Constant> phpcxx::Module::constants()
 {
-    return std::vector<phpcxx::Constant>();
+    return {};
 }
 
-std::vector<phpcxx::ClassBase*> phpcxx::Module::classes()
+std::vector<std::shared_ptr<phpcxx::ClassBase> > phpcxx::Module::classes()
 {
-    return std::vector<phpcxx::ClassBase*>();
+    return {};
 }
 
 void phpcxx::Module::setGlobalsConstructor(globals_ctor_t f)

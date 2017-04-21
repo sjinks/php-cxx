@@ -24,7 +24,7 @@ class ModulePrivate;
 
 class PHPCXX_EXPORT Module {
 public:
-    [[gnu::nonnull(2 /* name */)]] Module(const char* name, const char* version);
+    [[gnu::nonnull(2 /* name */)]] Module(const char* name, const char* version = nullptr);
     virtual ~Module();
 
     struct _zend_module_entry* module();
@@ -50,7 +50,7 @@ protected:
     virtual std::vector<Module*> otherModules();
     virtual std::vector<Function> functions();
     virtual std::vector<Constant> constants();
-    virtual std::vector<ClassBase*> classes();
+    virtual std::vector<std::shared_ptr<ClassBase> > classes();
 
 private:
     friend class ModulePrivate;

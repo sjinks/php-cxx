@@ -8,7 +8,7 @@ namespace phpcxx {
 
 class PHPCXX_EXPORT Method : public Function {
 public:
-    Method(const char* name, InternalFunction c, const Arguments& required = {}, const Arguments& optional = {}, bool byref = false);
+    [[gnu::nonnull]] Method(const char* name, InternalFunction c, const Arguments& required = {}, const Arguments& optional = {}, bool byref = false);
     Method(const Method& other);
 
     enum Access {

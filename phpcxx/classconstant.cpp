@@ -55,6 +55,11 @@ phpcxx::ClassConstant::ClassConstant(phpcxx::ClassConstant&& other)
     std::swap(this->m_value, other.m_value);
 }
 
+phpcxx::ClassConstant::ClassConstant(const ClassConstant& other)
+    : m_name(other.m_name), m_value(other.m_value)
+{
+}
+
 phpcxx::ClassConstant::~ClassConstant()
 {
     zval_dtor(&this->m_value);

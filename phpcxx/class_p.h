@@ -3,6 +3,9 @@
 
 #include "phpcxx.h"
 
+#include "classconstant.h"
+
+#include <list>
 #include <memory>
 #include <vector>
 #include "method.h"
@@ -44,6 +47,9 @@ public:
         return this->m_ce;
     }
 
+    phpcxx::Method addMethod(const Method& m);
+    void addConstant(const ClassConstant& c);
+
 private:
     ClassBase* const q_ptr;
     const char* m_name;
@@ -53,6 +59,7 @@ private:
     std::vector<zend_class_entry*> m_interfaces;
     std::vector<phpcxx::Method> m_funcs;
     std::unique_ptr<zend_function_entry[]> m_zf;
+    std::vector<phpcxx::ClassConstant> m_consts;
     int m_flags;
 
     static zend_object* create_object(zend_class_entry* ce);

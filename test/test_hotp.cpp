@@ -3,9 +3,9 @@
 #include <ctime>
 #include <arpa/inet.h>
 #include <gtest/gtest.h>
+#include <phpcxx/phpclass.h>
 #include "phpcxx/fcall.h"
-#include "phpcxx/classbase.h"
-#include "phpcxx/classinterfacebase.h"
+#include "phpcxx/phpclass.h"
 #include "phpcxx/callable.h"
 #include "testsapi.h"
 #include "globals.h"
@@ -82,34 +82,31 @@ private:
     }
 };
 
-class HOTP_PHP : public phpcxx::ClassInterfaceBase<HOTP> {
-public:
-    using phpcxx::ClassInterfaceBase<HOTP>::ClassInterfaceBase;
-
-protected:
-    virtual std::vector<phpcxx::Method> methods() override
-    {
-        return {
-            phpcxx::createStaticMethod<&HOTP::generateByCounter>("generateByCounter"),
-            phpcxx::createStaticMethod<&HOTP::generateByTime>("generateByTime"),
-            phpcxx::createStaticMethod<&HOTP::generateByTimeWindow>("generateByTimeWindow")
-        };
-    }
-};
-
 class MyModule : public phpcxx::Module {
 public:
     using phpcxx::Module::Module;
 
 protected:
-    std::unique_ptr<HOTP_PHP> m_hotp;
+    std::unique_ptr<phpcxx::PhpClass<HOTP> > m_hotp;
 
-    virtual std::vector<phpcxx::ClassBase*> classes() override
+    virtual std::vector<std::shared_ptr<phpcxx::ClassBase> > classes() override
     {
-        this->m_hotp.reset(new HOTP_PHP("HOTP", 0));
+//        this->m_hotp.reset(new phpcxx::PhpClass<HOTP>("HOTP", 0));
+//        this->m_hotp->addStaticMethod<&HOTP::generateByCounter>("generateByCounter");
+//        this->m_hotp->addStaticMethod<&HOTP::generateByTime>("generateByTime");
+//        this->m_hotp->addStaticMethod<&HOTP::generateByTimeWindow>("generateByTimeWindow");
+//        return {
+//            this->m_hotp.get()
+//        };
+
+        phpcxx::PhpClass<HOTP> hotp("HOTP", 0);
+        hotp.addStaticMethod<&HOTP::generateByCounter>("generateByCounter");
+        hotp.addStaticMethod<&HOTP::generateByTime>("generateByTime");
+        hotp.addStaticMethod<&HOTP::generateByTimeWindow>("generateByTimeWindow");
         return {
-            this->m_hotp.get()
+            std::make_shared<phpcxx::ClassBase>(hotp)
         };
+
     }
 };
 
