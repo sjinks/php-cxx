@@ -83,7 +83,7 @@ public:
     /**
      * @brief Deallocates the storage referenced by the pointer `p`
      * @param p Storage to deallocate
-     * @param n Number of the allocated objects
+     * @param cnt Number of the allocated objects
      * @warning `p` must be a pointer obtained by an earlier call to `allocate()`
      */
     void deallocate(T* p, std::size_t cnt)
