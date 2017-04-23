@@ -72,7 +72,7 @@ protected:
 
 }
 
-TEST(ConstantsTest, TestConstants)
+TEST(Constants, TestConstants)
 {
     MyModule module("Constants", "0.0");
 
@@ -140,7 +140,7 @@ TEST(ConstantsTest, TestConstants)
     EXPECT_EQ("", e);
 }
 
-TEST(ConstantsTest, TestManualRegistration)
+TEST(Constants, TestManualRegistration)
 {
     MyModule2 module("Constants", "0.0");
 
