@@ -8,6 +8,10 @@
 
 namespace phpcxx {
 
+/**
+ * @brief `std::vector` with `EMallocAllocator`
+ * @see @ref EMallocAllocator
+ */
 template<typename T> using vector = std::vector<T, EMallocAllocator<T> >;
 
 }
