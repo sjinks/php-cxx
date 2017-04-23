@@ -203,7 +203,7 @@ void phpcxx::ModulePrivate::registerOtherModules()
 
 void phpcxx::ModulePrivate::registerConstants()
 {
-    std::vector<phpcxx::Constant> constants = this->q_ptr->constants();
+    auto&& constants = this->q_ptr->constants();
     for (auto&& c : constants) {
         zend_constant& zc = c.get();
         zc.module_number  = this->entry.module_number;

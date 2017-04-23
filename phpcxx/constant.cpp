@@ -40,3 +40,8 @@ struct _zend_constant& phpcxx::Constant::get()
 {
     return this->d_ptr->get();
 }
+
+bool phpcxx::Constant::registerConstant()
+{
+    return this->d_ptr->registerConstant();
+}
