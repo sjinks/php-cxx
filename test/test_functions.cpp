@@ -33,13 +33,16 @@ protected:
             phpcxx::createFunction<&MyModule::func1>("func1"),
             phpcxx::createFunction<&MyModule::func2>(
                 "func2",
-                { phpcxx::byValue("a", phpcxx::ArgumentType::Any, false) },
-                { phpcxx::byReference("b", "stdClass", true) }
+                1,
+                {
+                    phpcxx::byValue("a", phpcxx::ArgumentType::Any, false),
+                    phpcxx::byReference("b", "stdClass", true)
+                }
             ),
             phpcxx::createFunction<&MyModule::func3>("func3")
                 .setTypeHint(phpcxx::ArgumentType::Integer)
                 .setAllowNull(false)
-                .addOptionalArgument(
+                .addArgument(
                     phpcxx::Argument("a")
                         .setType(phpcxx::ArgumentType::Array)
                         .setNullable(true)
@@ -48,14 +51,15 @@ protected:
             phpcxx::createFunction<&MyModule::func4>("func4")
                 .setTypeHint(phpcxx::ArgumentType::Any)
                 .setAllowNull(false)
-                .addOptionalArgument(
+                .addArgument(
                     phpcxx::Argument("a")
                         .setType(phpcxx::ArgumentType::Any)
                         .setNullable(true)
                 ),
             phpcxx::createFunction<&MyModule::swap>("swap")
-                .addRequiredArgument(phpcxx::byReference("a"))
-                .addRequiredArgument(phpcxx::byReference("b")),
+                .setNumberOfRequiredArguments(2)
+                .addArgument(phpcxx::byReference("a"))
+                .addArgument(phpcxx::byReference("b")),
             phpcxx::createFunction<&MyModule::func_throwing>("func_throwing"),
             phpcxx::createFunction<&MyModule::call_func_throwing>("call_func_throwing"),
             phpcxx::createFunction<&MyModule::func_throwing3>("func_throwing3"),

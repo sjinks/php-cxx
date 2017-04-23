@@ -91,14 +91,6 @@ protected:
 
     virtual std::vector<std::shared_ptr<phpcxx::ClassBase> > classes() override
     {
-//        this->m_hotp.reset(new phpcxx::PhpClass<HOTP>("HOTP", 0));
-//        this->m_hotp->addStaticMethod<&HOTP::generateByCounter>("generateByCounter");
-//        this->m_hotp->addStaticMethod<&HOTP::generateByTime>("generateByTime");
-//        this->m_hotp->addStaticMethod<&HOTP::generateByTimeWindow>("generateByTimeWindow");
-//        return {
-//            this->m_hotp.get()
-//        };
-
         phpcxx::PhpClass<HOTP> hotp("HOTP", 0);
         hotp.addStaticMethod<&HOTP::generateByCounter>("generateByCounter");
         hotp.addStaticMethod<&HOTP::generateByTime>("generateByTime");

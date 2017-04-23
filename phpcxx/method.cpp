@@ -1,7 +1,7 @@
 #include "method.h"
 
-phpcxx::Method::Method(const char* name, InternalFunction c, const Arguments& required, const Arguments& optional, bool byref)
-    : Function(name, c, required, optional, byref)
+phpcxx::Method::Method(const char* name, InternalFunction c, std::size_t nreq, const Arguments& args, bool byRef)
+    : Function(name, c, nreq, args, byRef)
 {
     this->setAccess(Method::Public);
 }

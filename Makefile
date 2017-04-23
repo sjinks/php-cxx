@@ -69,6 +69,9 @@ GTEST_HDRS = $(wildcard /usr/include/gtest/*.h) $(wildcard /usr/include/gtest/in
 
 ifndef CXXFLAGS
 CXXFLAGS = -O0 -g3
+ifeq ($(CXX),g++)
+CPPFLAGS = -D_GLIBCXX_PROFILE
+endif
 endif
 
 ifeq ($(CXX),clang++)

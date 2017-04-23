@@ -55,8 +55,8 @@ public:
 
 private:
     Module* const q_ptr;
-    std::vector<Function> m_funcs;
     std::unique_ptr<zend_function_entry[]> m_zf;
+    std::unique_ptr<zend_internal_arg_info[]> m_arginfo;
 
 #ifdef ZTS
     static ts_rsrc_id phpcxx_globals_id;

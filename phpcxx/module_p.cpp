@@ -42,16 +42,33 @@ zend_module_entry* phpcxx::ModulePrivate::module()
     assert(empty.fname == nullptr && empty.handler == nullptr && empty.arg_info == nullptr);
 
     if (!this->entry.functions) {
-        this->m_funcs = this->q_ptr->functions();
-        this->m_zf.reset(new zend_function_entry[this->m_funcs.size()+1]);
-        zend_function_entry* ptr = this->m_zf.get();
+        auto&& funcs = this->q_ptr->functions();
+        if (funcs.size()) {
+            this->m_zf.reset(new zend_function_entry[funcs.size()+1]);
+            zend_function_entry* fptr = this->m_zf.get();
 
-        for (auto&& f : this->m_funcs) {
-            *ptr++ = f.getFE();
+            std::size_t arginfo_size = 0;
+            for (auto&& f : funcs) {
+                arginfo_size += f.getArgInfo().size();
+            }
+
+            this->m_arginfo.reset(new zend_internal_arg_info[arginfo_size]);
+            zend_internal_arg_info* aptr = this->m_arginfo.get();
+
+            for (auto&& f : funcs) {
+                *fptr = f.getFE();
+
+                auto& arginfo = f.getArgInfo();
+                assert(arginfo.size() > 0);
+                std::memcpy(aptr, arginfo.data(), arginfo.size() * sizeof(zend_internal_arg_info));
+                fptr->arg_info = aptr;
+                aptr += arginfo.size();
+                ++fptr;
+            }
+
+            *fptr = empty;
+            this->entry.functions = this->m_zf.get();
         }
-
-        *ptr = empty;
-        this->entry.functions = this->m_zf.get();
     }
 
     return &this->entry;

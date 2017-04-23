@@ -2,8 +2,8 @@
 #include "function_p.h"
 #include "value.h"
 
-phpcxx::Function::Function(const char* name, InternalFunction c, const Arguments& required, const Arguments& optional, bool byRef)
-    : d_ptr(std::make_shared<FunctionPrivate>(name, c, required, optional, byRef))
+phpcxx::Function::Function(const char* name, InternalFunction c, std::size_t nreq, const Arguments& args, bool byRef)
+    : d_ptr(std::make_shared<FunctionPrivate>(name, c, nreq, args, byRef))
 {
 }
 
@@ -16,23 +16,19 @@ phpcxx::Function::~Function()
 {
 }
 
-phpcxx::Function&& phpcxx::Function::addRequiredArgument(const Argument& arg)
-{
-    auto& args         = this->d_ptr->m_arginfo;
-    zend_intptr_t nreq = reinterpret_cast<zend_intptr_t>(args[0].name);
-    args.insert(args.begin() + nreq + 1u, arg.get());
-    args[0].name       = reinterpret_cast<const char*>(++nreq);
-    ++this->d_ptr->m_fe.num_args;
-    this->d_ptr->m_fe.arg_info = args.data();
-    return std::move(*this);
-}
-
-phpcxx::Function&& phpcxx::Function::addOptionalArgument(const Argument& arg)
+phpcxx::Function&& phpcxx::Function::addArgument(const Argument& arg)
 {
     auto& args = this->d_ptr->m_arginfo;
     args.push_back(arg.get());
     ++this->d_ptr->m_fe.num_args;
     this->d_ptr->m_fe.arg_info = args.data();
+    return std::move(*this);
+}
+
+phpcxx::Function&& phpcxx::Function::setNumberOfRequiredArguments(std::size_t n)
+{
+    auto& args   = this->d_ptr->m_arginfo;
+    args[0].name = reinterpret_cast<const char*>(static_cast<zend_intptr_t>(n));
     return std::move(*this);
 }
 
