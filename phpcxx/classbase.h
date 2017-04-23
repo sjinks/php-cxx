@@ -5,10 +5,11 @@
 
 #include <memory>
 #include <vector>
-#include "classconstant.h"
 #include "method.h"
 
 namespace phpcxx {
+
+class ClassConstant;
 
 /**
  * All classes that are going to be exposed to PHP
@@ -31,27 +32,30 @@ public:
     [[gnu::nonnull]] ClassBase(const char* name, int flags);
     virtual ~ClassBase();
 
+    ClassBase(const ClassBase& other) : d_ptr(other.d_ptr)
+    {
+    }
+
     ClassBase(ClassBase&& other) : d_ptr(std::move(other.d_ptr))
     {
     }
 
-protected:
-    virtual ClassImplementationBase* construct() = 0;
-
-    virtual std::vector<Method> methods();
-    virtual std::vector<ClassConstant> constants();
+    phpcxx::Method addClassMethod(const phpcxx::Method& m);
+    void addClassConstant(const phpcxx::ClassConstant& c);
 
     void extends(zend_class_entry* ce);
     void implements(zend_class_entry* ce);
 
     struct _zend_class_entry* pce();
+    struct _zend_class_entry* registerClass();
+
+protected:
+    virtual ClassImplementationBase* construct() { return nullptr; }
 
 private:
     friend class ClassPrivate;
     friend class ModulePrivate;
     std::shared_ptr<ClassPrivate> d_ptr;
-
-    void registerClass();
 };
 
 }

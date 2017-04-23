@@ -9,6 +9,7 @@ extern "C" {
 }
 
 #include "classbase.h"
+#include "classconstant.h"
 #include "class_p.h"
 
 static zend_object_handlers ce_handlers;
@@ -106,23 +107,35 @@ zend_function_entry* phpcxx::ClassPrivate::methods()
     static zend_function_entry empty;
     assert(empty.fname == nullptr && empty.handler == nullptr && empty.arg_info == nullptr);
 
-    this->m_funcs = this->q_ptr->methods();
-    this->m_zf.reset(new zend_function_entry[this->m_funcs.size()+1]);
-    zend_function_entry* ptr = this->m_zf.get();
+    if (this->m_funcs.size()) {
+        this->m_zf.reset(new zend_function_entry[this->m_funcs.size()+1]);
+        zend_function_entry* ptr = this->m_zf.get();
 
-    for (auto&& f : this->m_funcs) {
-        *ptr++ = f.getFE();
+        for (auto&& f : this->m_funcs) {
+            *ptr++ = f.getFE();
+        }
+
+        *ptr = empty;
+        return this->m_zf.get();
     }
 
-    *ptr = empty;
-    return this->m_zf.get();
+    return nullptr;
+}
+
+phpcxx::Method phpcxx::ClassPrivate::addMethod(const Method& m)
+{
+    this->m_funcs.push_back(m);
+    return m;
+}
+
+void phpcxx::ClassPrivate::addConstant(const ClassConstant& c)
+{
+    this->m_consts.push_back(c);
 }
 
 void phpcxx::ClassPrivate::registerConstants()
 {
-    std::vector<ClassConstant> constants = this->q_ptr->constants();
-
-    for (auto&& c : constants) {
+    for (auto&& c : this->m_consts) {
         zval& z = c.value();
         Z_TRY_ADDREF(z);
         if (SUCCESS != zend_declare_class_constant(this->m_ce, c.name(), std::strlen(c.name()), &z)) {

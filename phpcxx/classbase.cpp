@@ -25,17 +25,21 @@ struct _zend_class_entry* phpcxx::ClassBase::pce()
     return this->d_ptr->pce();
 }
 
-void phpcxx::ClassBase::registerClass()
+zend_class_entry* phpcxx::ClassBase::registerClass()
 {
-    this->d_ptr->initializeClass();
+    if (!this->d_ptr->pce()) {
+        this->d_ptr->initializeClass();
+    }
+
+    return this->d_ptr->pce();
 }
 
-std::vector<phpcxx::Method> phpcxx::ClassBase::methods()
+phpcxx::Method phpcxx::ClassBase::addClassMethod(const Method& m)
 {
-    return {};
+    return this->d_ptr->addMethod(m);
 }
 
-std::vector<phpcxx::ClassConstant> phpcxx::ClassBase::constants()
+void phpcxx::ClassBase::addClassConstant(const phpcxx::ClassConstant& c)
 {
-    return {};
+    this->d_ptr->addConstant(c);
 }

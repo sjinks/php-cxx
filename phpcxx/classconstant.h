@@ -22,6 +22,7 @@ public:
     ~ClassConstant();
 
     ClassConstant(ClassConstant&& other);
+    ClassConstant(const ClassConstant& other);
 
     template<typename T, typename std::enable_if<(sizeof(T) < sizeof(zend_long)) && std::is_integral<T>::value>::type* = nullptr>
     ClassConstant(const char* name, T v) : ClassConstant(name, static_cast<zend_long>(v)) {}
