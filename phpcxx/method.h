@@ -8,7 +8,7 @@ namespace phpcxx {
 
 class PHPCXX_EXPORT Method : public Function {
 public:
-    [[gnu::nonnull]] Method(const char* name, InternalFunction c, const Arguments& required = {}, const Arguments& optional = {}, bool byref = false);
+    [[gnu::nonnull]] Method(const char* name, InternalFunction c, std::size_t nreq = 0, const Arguments& args = {}, bool byref = false);
     Method(const Method& other);
 
     enum Access {
@@ -24,75 +24,75 @@ public:
 };
 
 template<typename T, MethodPrototypeNN<T> Handler>
-static inline Method createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+static inline Method createMethod(const char* name, std::size_t nreq = 0, const Arguments& args = {}, bool byRef = false)
 {
-    return Method(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
+    return Method(name, &FunctionHandler::handler<T, Handler>, nreq, args, byRef);
 }
 
 template<typename T, ConstMethodPrototypeNN<T> Handler>
-static inline Method createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+static inline Method createMethod(const char* name, std::size_t nreq = 0, const Arguments& args = {}, bool byRef = false)
 {
-    return Method(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
+    return Method(name, &FunctionHandler::handler<T, Handler>, nreq, args, byRef);
 }
 
 template<typename T, MethodPrototypeNV<T> Handler>
-static inline Method createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+static inline Method createMethod(const char* name, std::size_t nreq = 0, const Arguments& args = {}, bool byRef = false)
 {
-    return Method(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
+    return Method(name, &FunctionHandler::handler<T, Handler>, nreq, args, byRef);
 }
 
 template<typename T, ConstMethodPrototypeNV<T> Handler>
-static inline Method createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+static inline Method createMethod(const char* name, std::size_t nreq = 0, const Arguments& args = {}, bool byRef = false)
 {
-    return Method(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
+    return Method(name, &FunctionHandler::handler<T, Handler>, nreq, args, byRef);
 }
 
 template<typename T, MethodPrototypeVN<T> Handler>
-static inline Method createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+static inline Method createMethod(const char* name, std::size_t nreq = 0, const Arguments& args = {}, bool byRef = false)
 {
-    return Method(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
+    return Method(name, &FunctionHandler::handler<T, Handler>, nreq, args, byRef);
 }
 
 template<typename T, ConstMethodPrototypeVN<T> Handler>
-static inline Method createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+static inline Method createMethod(const char* name, std::size_t nreq = 0, const Arguments& args = {}, bool byRef = false)
 {
-    return Method(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
+    return Method(name, &FunctionHandler::handler<T, Handler>, nreq, args, byRef);
 }
 
 template<typename T, MethodPrototypeVV<T> Handler>
-static inline Method createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+static inline Method createMethod(const char* name, std::size_t nreq = 0, const Arguments& args = {}, bool byRef = false)
 {
-    return Method(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
+    return Method(name, &FunctionHandler::handler<T, Handler>, nreq, args, byRef);
 }
 
 template<typename T, ConstMethodPrototypeVV<T> Handler>
-static inline Method createMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+static inline Method createMethod(const char* name, std::size_t nreq = 0, const Arguments& args = {}, bool byRef = false)
 {
-    return Method(name, &FunctionHandler::handler<T, Handler>, required, optional, byRef);
+    return Method(name, &FunctionHandler::handler<T, Handler>, nreq, args, byRef);
 }
 
 template<FunctionPrototypeNN Handler>
-static inline Method createStaticMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+static inline Method createStaticMethod(const char* name, std::size_t nreq = 0, const Arguments& args = {}, bool byRef = false)
 {
-    return Method(name, &FunctionHandler::handler<Handler>, required, optional, byRef).setStatic(true);
+    return Method(name, &FunctionHandler::handler<Handler>, nreq, args, byRef).setStatic(true);
 }
 
 template<FunctionPrototypeNV Handler>
-static inline Method createStaticMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+static inline Method createStaticMethod(const char* name, std::size_t nreq = 0, const Arguments& args = {}, bool byRef = false)
 {
-    return Method(name, &FunctionHandler::handler<Handler>, required, optional, byRef).setStatic(true);
+    return Method(name, &FunctionHandler::handler<Handler>, nreq, args, byRef).setStatic(true);
 }
 
 template<FunctionPrototypeVN Handler>
-static inline Method createStaticMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+static inline Method createStaticMethod(const char* name, std::size_t nreq = 0, const Arguments& args = {}, bool byRef = false)
 {
-    return Method(name, &FunctionHandler::handler<Handler>, required, optional, byRef).setStatic(true);
+    return Method(name, &FunctionHandler::handler<Handler>, nreq, args, byRef).setStatic(true);
 }
 
 template<FunctionPrototypeVV Handler>
-static inline Method createStaticMethod(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+static inline Method createStaticMethod(const char* name, std::size_t nreq = 0, const Arguments& args = {}, bool byRef = false)
 {
-    return Method(name, &FunctionHandler::handler<Handler>, required, optional, byRef).setStatic(true);
+    return Method(name, &FunctionHandler::handler<Handler>, nreq, args, byRef).setStatic(true);
 }
 
 }

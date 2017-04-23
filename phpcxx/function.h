@@ -17,12 +17,12 @@ namespace phpcxx {
 class FunctionPrivate;
 class PHPCXX_EXPORT Function {
 public:
-    Function(const char* name, InternalFunction c, const Arguments& required = {}, const Arguments& optional = {}, bool byref = false);
+    [[gnu::nonnull]] Function(const char* name, InternalFunction c, size_t nreq = 0, const Arguments& args = {}, bool byref = false);
     Function(const Function& other);
     ~Function();
 
-    Function&& addRequiredArgument(const Argument& arg);
-    Function&& addOptionalArgument(const Argument& arg);
+    Function&& addArgument(const Argument& arg);
+    Function&& setNumberOfRequiredArguments(std::size_t n);
     Function&& setReturnByReference(bool byref);
     Function&& setAllowNull(bool allow);
     Function&& setTypeHint(ArgumentType t);
@@ -38,27 +38,27 @@ protected:
 };
 
 template<FunctionPrototypeNN Handler>
-static inline Function createFunction(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+static inline Function createFunction(const char* name, std::size_t nreq = 0, const Arguments& args = {}, bool byRef = false)
 {
-    return Function(name, &FunctionHandler::handler<Handler>, required, optional, byRef);
+    return Function(name, &FunctionHandler::handler<Handler>, nreq, args, byRef);
 }
 
 template<FunctionPrototypeNV Handler>
-static inline Function createFunction(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+static inline Function createFunction(const char* name, std::size_t nreq = 0, const Arguments& args = {}, bool byRef = false)
 {
-    return Function(name, &FunctionHandler::handler<Handler>, required, optional, byRef);
+    return Function(name, &FunctionHandler::handler<Handler>, nreq, args, byRef);
 }
 
 template<FunctionPrototypeVN Handler>
-static inline Function createFunction(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+static inline Function createFunction(const char* name, std::size_t nreq = 0, const Arguments& args = {}, bool byRef = false)
 {
-    return Function(name, &FunctionHandler::handler<Handler>, required, optional, byRef);
+    return Function(name, &FunctionHandler::handler<Handler>, nreq, args, byRef);
 }
 
 template<FunctionPrototypeVV Handler>
-static inline Function createFunction(const char* name, const Arguments& required = {}, const Arguments& optional = {}, bool byRef = false)
+static inline Function createFunction(const char* name, std::size_t nreq = 0, const Arguments& args = {}, bool byRef = false)
 {
-    return Function(name, &FunctionHandler::handler<Handler>, required, optional, byRef);
+    return Function(name, &FunctionHandler::handler<Handler>, nreq, args, byRef);
 }
 
 }

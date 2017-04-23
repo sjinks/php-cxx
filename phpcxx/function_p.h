@@ -30,17 +30,17 @@ public:
         std::memcpy(this->m_arginfo.data(), ai, size * sizeof(zend_internal_arg_info));
     }
 
-    FunctionPrivate(const char* name, InternalFunction c, const Arguments& required, const Arguments& optional, bool byRef)
+    FunctionPrivate(const char* name, InternalFunction c, std::size_t nreq, const Arguments& args, bool byRef)
     {
-        this->m_arginfo.reserve(required.size() + optional.size() + 1);
+        this->m_arginfo.reserve(args.size() + 1);
 
         this->m_fe.fname    = name ? name : "";
         this->m_fe.handler  = c;
-        this->m_fe.num_args = static_cast<decltype(this->m_fe.num_args)>(required.size() + optional.size());
+        this->m_fe.num_args = static_cast<decltype(this->m_fe.num_args)>(args.size());
         this->m_fe.flags    = 0;
 
         zend_internal_arg_info f;
-        f.name        = reinterpret_cast<const char*>(static_cast<zend_uintptr_t>(required.size()));
+        f.name        = reinterpret_cast<const char*>(static_cast<zend_uintptr_t>(nreq));
         f.class_name  = nullptr;
         f.type_hint   = IS_UNDEF;
         f.pass_by_reference = byRef;
@@ -49,11 +49,7 @@ public:
 
         this->m_arginfo.push_back(f);
 
-        for (auto&& arg : required) {
-            this->m_arginfo.push_back(arg.get());
-        }
-
-        for (auto&& arg : optional) {
+        for (auto&& arg : args) {
             this->m_arginfo.push_back(arg.get());
         }
 
@@ -67,7 +63,5 @@ private:
 };
 
 }
-
-
 
 #endif /* PHPCXX_FUNCTION_P_H */
