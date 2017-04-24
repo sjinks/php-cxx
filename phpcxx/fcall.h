@@ -18,7 +18,7 @@ class Value;
 class PHPCXX_EXPORT FCall {
 public:
     FCall(const zend_fcall_info& fci, const zend_fcall_info_cache& fcc);
-    FCall(const Callable& c);
+    FCall(Callable c);
 
     [[gnu::nonnull]] FCall(const char* name)
         : FCall(Callable(name))
