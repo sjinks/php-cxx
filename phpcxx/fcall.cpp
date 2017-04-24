@@ -13,7 +13,7 @@ phpcxx::FCall::FCall(const zend_fcall_info& fci, const zend_fcall_info_cache& fc
     Z_TRY_ADDREF_P(&this->m_fci.function_name);
 }
 
-phpcxx::FCall::FCall(const Callable& c)
+phpcxx::FCall::FCall(Callable c)
 {
     if (UNEXPECTED(!c.resolve(this->m_fci, this->m_fcc))) {
         throw std::invalid_argument("Invalid callable");

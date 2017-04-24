@@ -42,6 +42,12 @@ public:
     Value& operator[](const Value& key);
     [[gnu::nonnull]] Value& operator[](zend_string* key);
 
+    template<typename T, typename std::enable_if<(sizeof(T) < sizeof(zend_long)) && std::is_integral<T>::value>::type* = nullptr>
+    Value& operator[](T idx)
+    {
+        return this->operator[](static_cast<zend_long>(idx));
+    }
+
     std::size_t size() const;
 
     bool isset(zend_long idx) const;
