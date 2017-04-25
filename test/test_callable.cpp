@@ -2,8 +2,10 @@
 #include <string>
 #include <gtest/gtest.h>
 #include "phpcxx/callable.h"
+#include "phpcxx/module.h"
 #include "phpcxx/superglobal.h"
 #include "testsapi.h"
+#include "globals.h"
 
 extern "C" {
 #include <Zend/zend.h>

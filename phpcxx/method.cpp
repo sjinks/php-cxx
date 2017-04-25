@@ -1,4 +1,5 @@
 #include "method.h"
+#include "function_p.h"
 
 phpcxx::Method::Method(const char* name, InternalFunction c, std::size_t nreq, const Arguments& args, bool byRef)
     : Function(name, c, nreq, args, byRef)

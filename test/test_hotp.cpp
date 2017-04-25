@@ -7,6 +7,7 @@
 #include "phpcxx/fcall.h"
 #include "phpcxx/phpclass.h"
 #include "phpcxx/callable.h"
+#include "phpcxx/module.h"
 #include "testsapi.h"
 #include "globals.h"
 

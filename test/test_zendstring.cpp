@@ -1,8 +1,7 @@
-#include <iostream>
 #include <sstream>
 #include <string>
-#include <vector>
 #include <gtest/gtest.h>
+#include "phpcxx/module.h"
 #include "phpcxx/zendstring.h"
 #include "testsapi.h"
 

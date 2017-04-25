@@ -4,6 +4,7 @@
 #include "phpcxx.h"
 
 extern "C" {
+#include <Zend/zend.h>
 #include <Zend/zend_long.h>
 }
 
