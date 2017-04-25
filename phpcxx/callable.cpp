@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstring>
 #include <stdexcept>
 
@@ -9,11 +10,16 @@ extern "C" {
 
 phpcxx::Callable::Callable(const char* name)
 {
+    assert(name != nullptr);
+
     ZVAL_STRING(&this->m_z, name);
 }
 
 phpcxx::Callable::Callable(const char* cls, const char* name)
 {
+    assert(cls  != nullptr);
+    assert(name != nullptr);
+
     array_init_size(&this->m_z, 2);
     zend_hash_real_init(Z_ARRVAL(this->m_z), 1);
     ZEND_HASH_FILL_PACKED(Z_ARRVAL(this->m_z)) {
@@ -27,6 +33,9 @@ phpcxx::Callable::Callable(const char* cls, const char* name)
 
 phpcxx::Callable::Callable(zval* obj, const char* name)
 {
+    assert(obj  != nullptr);
+    assert(name != nullptr);
+
     ZVAL_DEREF(obj);
     if (EXPECTED(Z_TYPE_P(obj) == IS_STRING || Z_TYPE_P(obj) == IS_OBJECT)) {
         array_init_size(&this->m_z, 2);
@@ -47,6 +56,8 @@ phpcxx::Callable::Callable(zval* obj, const char* name)
 
 phpcxx::Callable::Callable(zval* arg)
 {
+    assert(arg != nullptr);
+
     ZVAL_DEREF(arg);
     switch (Z_TYPE_P(arg)) {
         case IS_STRING:     // function name
@@ -82,7 +93,7 @@ phpcxx::Callable::Callable(zval* arg)
 
 phpcxx::Callable::~Callable()
 {
-    zval_dtor(&this->m_z);
+    zval_ptr_dtor(&this->m_z);
 #ifdef PHPCXX_DEBUG
     ZVAL_UNDEF(&this->m_z);
 #endif
