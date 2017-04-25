@@ -87,6 +87,11 @@ CXXFLAGS_EXTRA += -O0 -coverage
 LDFLAGS_EXTRA  += -coverage
 endif
 
+ifeq ($(NOPCH),1)
+PHPCXX_CPPFLAGS_PCH = 
+TESTER_CPPFLAGS_PCH = 
+endif
+
 TESTER_CXX_OBJS    = $(patsubst %.cpp,.build/%.o,$(TESTER_CXX_SOURCES))
 LIBRARY_CXX_OBJS   = $(patsubst %.cpp,.build/%.o,$(LIBRARY_CXX_SOURCES))
 
@@ -106,6 +111,7 @@ output_directory: .lib
 .lib:
 	mkdir -p "$@"
 
+ifneq ($(NOPCH),1)
 $(LIBRARY_GCH): $(LIBRARY_PCH) | build_directory
 	$(CXX) $(CPPFLAGS) $(PHPCXX_CPPFLAGS) $(CPPFLAGS_EXTRA) $(CXXFLAGS) $(CXXFLAGS_EXTRA) -MMD -MP -MF"$(@:%.gch=%.d)" -MT"$(@:%.gch=%.d)" -MT"$@" -o "$@" "$<"
 
@@ -114,6 +120,9 @@ $(TESTER_GCH): $(TESTER_PCH) | build_directory
 
 $(LIBRARY_CXX_OBJS): $(LIBRARY_GCH)
 $(TESTER_CXX_OBJS): $(TESTER_GCH)
+else
+$(OBJS): | clean-pch
+endif
 
 $(TESTER): $(TESTER_CXX_OBJS) $(STATIC_LIBRARY) .build/gtest-all.o | output_directory
 	$(CXX) $(LDFLAGS) $(TESTER_LDFLAGS) $(LDFLAGS_EXTRA) $^ $(TESTER_LDLIBS) $(LDLIBS) -o "$@"
@@ -155,6 +164,9 @@ clean:
 clean-coverage:
 	-rm -rf .tracefile coverage $(COV_GCDA)
 
+clean-pch:
+	-rm -f $(TESTER_GCH) $(LIBRARY_GCH)
+
 test: $(TESTER)
 	$(TESTER)
 
@@ -165,4 +177,4 @@ coverage: clean-coverage
 	lcov -q -r .tracefile "/usr/include/*" "$(shell $(PHP_CONFIG) --include-dir)/*" -o .tracefile
 	genhtml -q --legend -o coverage -t "phpcxx Code Coverage" .tracefile
 
-.PHONY: build_directory output_directory clean coverage clean-coverage 
+.PHONY: build_directory output_directory clean coverage clean-coverage clean-pch 

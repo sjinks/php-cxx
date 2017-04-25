@@ -16,9 +16,9 @@ env:
 matrix:
   include:
     - compiler: gcc
-      env: PHPCXX_CPPFLAGS_PCH= TESTER_CPPFLAGS_PCH= PHPVER=7.0 CXXFLAGS="-O0 -g"
+      env: NOPCH=1 PHPVER=7.0 CXXFLAGS="-O0 -g"
     - compiler: gcc
-      env: PHPCXX_CPPFLAGS_PCH= TESTER_CPPFLAGS_PCH= PHPVER=7.1 CXXFLAGS="-O0 -g"
+      env: NOPCH=1 PHPVER=7.1 CXXFLAGS="-O0 -g"
 
 before_install:
   - sudo add-apt-repository -y ppa:ondrej/php
