@@ -128,11 +128,11 @@ TEST_F(ArrayFixture, InitializationConversion)
         EXPECT_EQ(0, a2.size());
 
         EXPECT_TRUE(a1.isset("0"));
-        EXPECT_TRUE(a1.isset(static_cast<zend_long>(0)));
+        EXPECT_TRUE(a1.isset(0));
         EXPECT_FALSE(a2.isset(static_cast<zend_long>(0)));
 
-        EXPECT_EQ(a1["0"], a1[static_cast<zend_long>(0)]);
-        EXPECT_EQ(4, a1[static_cast<zend_long>(0)].asLong());
+        EXPECT_EQ(a1["0"], a1[0]);
+        EXPECT_EQ(4, a1[0].asLong());
 
         EXPECT_EQ(phpcxx::Type::Null, a1[1].type());
     });
@@ -242,6 +242,9 @@ TEST_F(ArrayFixture, Operations)
         zero = false;
         EXPECT_EQ(phpcxx::Type::False, zero.type());
         EXPECT_TRUE(a.isset(zero));
+
+        a.unset(0);
+        EXPECT_FALSE(a.isset(zero));
     });
 
     EXPECT_EQ("", m_err.str());
