@@ -1,8 +1,10 @@
 #!/bin/bash
 
+[ "$NOPCH" = "1" ] && exit 0
+
 PREFIX=$(readlink -enq "$(dirname $0)/../")
 
-if [ "$CXX" = "g++" ]; then
+if [ "$CXX" = "g++" -o "$CXX" = "ccache g++" ]; then
 	GCOV=gcov
 	ARGS="-s \"$PREFIX\" -ablpr"
 else
