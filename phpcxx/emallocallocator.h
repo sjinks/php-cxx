@@ -68,7 +68,7 @@ public:
      * Uses `safe_emalloc()` for memory allocation. Never returns `nullptr`
      * because a fatal error is thrown upon memory allocation failure
      */
-    [[gnu::malloc]] T* allocate(std::size_t cnt)
+    [[gnu::malloc, gnu::returns_nonnull]] T* allocate(std::size_t cnt)
     {
 #ifdef PHPCXX_DEBUG
         assert(SG(sapi_started));
@@ -145,7 +145,7 @@ static inline bool operator!=(const EMallocAllocator<T>& lhs, const EMallocAlloc
  * @return Alloacted an initialized object
  */
 template<typename T, typename... Args>
-[[gnu::malloc]] static inline T* emcreate(Args&&... args)
+[[gnu::malloc, gnu::returns_nonnull]] static inline T* emcreate(Args&&... args)
 {
     using Allocator = phpcxx::EMallocAllocator<T>;
     using Traits    = std::allocator_traits<Allocator>;
