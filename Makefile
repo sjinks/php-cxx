@@ -24,6 +24,7 @@ LIBRARY_CXX_SOURCES = \
 	phpcxx/argument.cpp \
 	phpcxx/array.cpp \
 	phpcxx/constant.cpp \
+	phpcxx/callable.cpp \
 	phpcxx/class_p.cpp \
 	phpcxx/classbase.cpp \
 	phpcxx/classconstant.cpp \

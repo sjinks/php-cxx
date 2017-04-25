@@ -89,7 +89,7 @@ TEST(Callable, TestResolve)
 
             phpcxx::Callable c2("this_function_does_not_exist");
             EXPECT_FALSE(c2.resolve(fci, fcc));
-            EXPECT_EQ(sizeof(fci), fci.size);
+            EXPECT_EQ(0, fci.size);
             EXPECT_EQ(0, fcc.initialized);
             EXPECT_EQ(nullptr, fcc.function_handler);
 
