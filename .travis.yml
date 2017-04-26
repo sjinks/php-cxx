@@ -16,9 +16,9 @@ env:
 matrix:
   include:
     - compiler: gcc
-      env: NOPCH=1 PHPVER=7.0 CXXFLAGS="-O0 -g"
+      env: NOPCH=1 PHPVER=7.0 CXXFLAGS="-O2 -g"
     - compiler: gcc
-      env: NOPCH=1 PHPVER=7.1 CXXFLAGS="-O0 -g"
+      env: NOPCH=1 PHPVER=7.1 CXXFLAGS="-O2 -g"
 
 before_install:
   - ./.travis/before_install.sh
