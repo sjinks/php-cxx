@@ -11,22 +11,6 @@ extern "C" {
 #include "value.h"
 #include "zendstring.h"
 
-[[gnu::nonnull]] static inline zval* derefAndCheck(zval* z)
-{
-#if 0
-    if (UNEXPECTED(Z_ISREF_P(z))) {
-        z = Z_REFVAL_P(z);
-    }
-
-    if (UNEXPECTED(Z_TYPE_P(z) != IS_ARRAY)) {
-        throw std::runtime_error("Not an array");
-    }
-#endif
-
-    assert(!Z_ISREF_P(z) && Z_TYPE_P(z) == IS_ARRAY);
-    return z;
-}
-
 phpcxx::Array::Array()
 {
     array_init(&this->m_z);
@@ -34,6 +18,8 @@ phpcxx::Array::Array()
 
 phpcxx::Array::Array(zval* z)
 {
+    assert(z != nullptr);
+
     if (Z_ISREF_P(z) && Z_TYPE_P(Z_REFVAL_P(z)) == IS_ARRAY) {
         ZVAL_COPY(&this->m_z, Z_REFVAL_P(z));
     }
@@ -69,7 +55,7 @@ phpcxx::Array::~Array()
 #endif
 }
 
-phpcxx::Array& phpcxx::Array::operator=(const Array& other)
+phpcxx::Array& phpcxx::Array::operator=(Array& other)
 {
     phpcxx::assign(&this->m_z, &other.m_z);
     return *this;
@@ -77,10 +63,10 @@ phpcxx::Array& phpcxx::Array::operator=(const Array& other)
 
 phpcxx::Value& phpcxx::Array::operator[](std::nullptr_t)
 {
-    zval* z = derefAndCheck(&this->m_z);
-    SEPARATE_ARRAY(z);
+    assert(Z_TYPE(this->m_z) == IS_ARRAY);
+    SEPARATE_ARRAY(&this->m_z);
 
-    zval* var_ptr = zend_hash_next_index_insert(Z_ARRVAL_P(z), &EG(uninitialized_zval));
+    zval* var_ptr = zend_hash_next_index_insert(Z_ARRVAL(this->m_z), &EG(uninitialized_zval));
     if (UNEXPECTED(!var_ptr)) {
         throw std::runtime_error("Cannot add element to the array as the next element is already occupied");
     }
@@ -90,13 +76,13 @@ phpcxx::Value& phpcxx::Array::operator[](std::nullptr_t)
 
 phpcxx::Value& phpcxx::Array::operator[](zend_long idx)
 {
-    zval* z = derefAndCheck(&this->m_z);
-    SEPARATE_ARRAY(z);
+    assert(Z_TYPE(this->m_z) == IS_ARRAY);
+    SEPARATE_ARRAY(&this->m_z);
 
     zend_ulong h = static_cast<zend_ulong>(idx);
-    zval* retval = zend_hash_index_find(Z_ARRVAL_P(z), h);
+    zval* retval = zend_hash_index_find(Z_ARRVAL(this->m_z), h);
     if (!retval) {
-        retval = zend_hash_index_add_new(Z_ARRVAL_P(z), h, &EG(uninitialized_zval));
+        retval = zend_hash_index_add_new(Z_ARRVAL(this->m_z), h, &EG(uninitialized_zval));
         if (UNEXPECTED(!retval)) {
             throw std::runtime_error("Cannot add element to the array as the next element is already occupied");
         }
@@ -110,21 +96,21 @@ phpcxx::Value& phpcxx::Array::operator[](const Value& key)
     zval* z = key.pzval();
 
     while (true) {
-        switch (key.type()) {
-            case Type::String:    return this->operator[](Z_STR_P(z));
-            case Type::Integer:   return this->operator[](Z_LVAL_P(z));
-            case Type::Double:    return this->operator[](zend_dval_to_lval(Z_DVAL_P(z)));
-            case Type::True:      return this->operator[](static_cast<zend_long>(1l));
-            case Type::False:     return this->operator[](static_cast<zend_long>(0l));
-            case Type::Resource:  return this->operator[](Z_RES_HANDLE_P(z));
-            case Type::Undefined: return this->operator[](ZSTR_EMPTY_ALLOC());
-            case Type::Null:      return this->operator[](ZSTR_EMPTY_ALLOC());
-            case Type::Reference:
+        switch (Z_TYPE_P(z)) {
+            case IS_STRING:    return this->operator[](Z_STR_P(z));
+            case IS_LONG:      return this->operator[](Z_LVAL_P(z));
+            case IS_DOUBLE:    return this->operator[](zend_dval_to_lval(Z_DVAL_P(z)));
+            case IS_TRUE:      return this->operator[](static_cast<zend_long>(1l));
+            case IS_FALSE:     return this->operator[](static_cast<zend_long>(0l));
+            case IS_RESOURCE:  return this->operator[](Z_RES_HANDLE_P(z));
+            case IS_UNDEF:     return this->operator[](ZSTR_EMPTY_ALLOC());
+            case IS_NULL:      return this->operator[](ZSTR_EMPTY_ALLOC());
+            case IS_REFERENCE:
                 z = Z_REFVAL_P(z);
                 break;
 
             default:
-                throw std::runtime_error("Illegal offset type");
+                throw std::invalid_argument("Illegal offset type");
         }
     }
 }
@@ -136,10 +122,10 @@ phpcxx::Value& phpcxx::Array::operator[](zend_string* key)
         return this->operator[](static_cast<zend_long>(hval));
     }
 
-    zval* z = derefAndCheck(&this->m_z);
-    SEPARATE_ARRAY(z);
+    assert(Z_TYPE(this->m_z) == IS_ARRAY);
+    SEPARATE_ARRAY(&this->m_z);
 
-    zval* retval = zend_hash_find(Z_ARRVAL_P(z), key);
+    zval* retval = zend_hash_find(Z_ARRVAL(this->m_z), key);
     if (retval) {
         if (UNEXPECTED(Z_TYPE_P(retval) == IS_INDIRECT)) {
             retval = Z_INDIRECT_P(retval);
@@ -149,7 +135,7 @@ phpcxx::Value& phpcxx::Array::operator[](zend_string* key)
         }
     }
     else {
-        retval = zend_hash_add_new(Z_ARRVAL_P(z), key, &EG(uninitialized_zval));
+        retval = zend_hash_add_new(Z_ARRVAL(this->m_z), key, &EG(uninitialized_zval));
         if (UNEXPECTED(!retval)) {
             throw std::runtime_error("Cannot add element to the array as the next element is already occupied");
         }
@@ -160,14 +146,14 @@ phpcxx::Value& phpcxx::Array::operator[](zend_string* key)
 
 std::size_t phpcxx::Array::size() const
 {
-    zval* z = derefAndCheck(&this->m_z);
-    return zend_hash_num_elements(Z_ARRVAL_P(z));
+    assert(Z_TYPE(this->m_z) == IS_ARRAY);
+    return zend_hash_num_elements(Z_ARRVAL(this->m_z));
 }
 
 bool phpcxx::Array::isset(zend_long idx) const
 {
-    zval* z = derefAndCheck(&this->m_z);
-    return zend_hash_index_exists(Z_ARRVAL_P(z), static_cast<zend_ulong>(idx));
+    assert(Z_TYPE(this->m_z) == IS_ARRAY);
+    return zend_hash_index_exists(Z_ARRVAL(this->m_z), static_cast<zend_ulong>(idx));
 }
 
 bool phpcxx::Array::isset(const Value& key) const
@@ -175,21 +161,21 @@ bool phpcxx::Array::isset(const Value& key) const
     zval* z = key.pzval();
 
     while (true) {
-        switch (key.type()) {
-            case Type::String:    return this->isset(Z_STR_P(z));
-            case Type::Integer:   return this->isset(Z_LVAL_P(z));
-            case Type::Double:    return this->isset(zend_dval_to_lval(Z_DVAL_P(z)));
-            case Type::True:      return this->isset(static_cast<zend_long>(1));
-            case Type::False:     return this->isset(static_cast<zend_long>(0));
-            case Type::Resource:  return this->isset(Z_RES_HANDLE_P(z));
-            case Type::Undefined: return this->isset(ZSTR_EMPTY_ALLOC());
-            case Type::Null:      return this->isset(ZSTR_EMPTY_ALLOC());
-            case Type::Reference:
+        switch (Z_TYPE_P(z)) {
+            case IS_STRING:    return this->isset(Z_STR_P(z));
+            case IS_LONG:      return this->isset(Z_LVAL_P(z));
+            case IS_DOUBLE:    return this->isset(zend_dval_to_lval(Z_DVAL_P(z)));
+            case IS_TRUE:      return this->isset(static_cast<zend_long>(1));
+            case IS_FALSE:     return this->isset(static_cast<zend_long>(0));
+            case IS_RESOURCE:  return this->isset(Z_RES_HANDLE_P(z));
+            case IS_UNDEF:     return this->isset(ZSTR_EMPTY_ALLOC());
+            case IS_NULL:      return this->isset(ZSTR_EMPTY_ALLOC());
+            case IS_REFERENCE:
                 z = Z_REFVAL_P(z);
                 break;
 
             default:
-                throw std::runtime_error("Illegal offset type");
+                throw std::invalid_argument("Illegal offset type");
         }
     }
 }
@@ -201,15 +187,15 @@ bool phpcxx::Array::isset(zend_string* key) const
         return this->isset(static_cast<zend_long>(hval));
     }
 
-    zval* z = derefAndCheck(&this->m_z);
-    return zend_hash_exists(Z_ARRVAL_P(z), key);
+    assert(Z_TYPE(this->m_z) == IS_ARRAY);
+    return zend_hash_exists(Z_ARRVAL(this->m_z), key);
 }
 
 void phpcxx::Array::unset(zend_long idx)
 {
-    zval* z = derefAndCheck(&this->m_z);
-    SEPARATE_ARRAY(z);
-    zend_hash_index_del(Z_ARRVAL_P(z), static_cast<zend_ulong>(idx));
+    assert(Z_TYPE(this->m_z) == IS_ARRAY);
+    SEPARATE_ARRAY(&this->m_z);
+    zend_hash_index_del(Z_ARRVAL(this->m_z), static_cast<zend_ulong>(idx));
 }
 
 void phpcxx::Array::unset(const Value& key)
@@ -217,21 +203,21 @@ void phpcxx::Array::unset(const Value& key)
     zval* z = key.pzval();
 
     while (true) {
-        switch (key.type()) {
-            case Type::String:    return this->unset(Z_STR_P(z));
-            case Type::Integer:   return this->unset(Z_LVAL_P(z));
-            case Type::Double:    return this->unset(zend_dval_to_lval(Z_DVAL_P(z)));
-            case Type::True:      return this->unset(static_cast<zend_long>(1));
-            case Type::False:     return this->unset(static_cast<zend_long>(0));
-            case Type::Resource:  return this->unset(Z_RES_HANDLE_P(z));
-            case Type::Undefined: return this->unset(ZSTR_EMPTY_ALLOC());
-            case Type::Null:      return this->unset(ZSTR_EMPTY_ALLOC());
-            case Type::Reference:
+        switch (Z_TYPE_P(z)) {
+            case IS_STRING:    return this->unset(Z_STR_P(z));
+            case IS_LONG:      return this->unset(Z_LVAL_P(z));
+            case IS_DOUBLE:    return this->unset(zend_dval_to_lval(Z_DVAL_P(z)));
+            case IS_TRUE:      return this->unset(static_cast<zend_long>(1));
+            case IS_FALSE:     return this->unset(static_cast<zend_long>(0));
+            case IS_RESOURCE:  return this->unset(Z_RES_HANDLE_P(z));
+            case IS_UNDEF:     return this->unset(ZSTR_EMPTY_ALLOC());
+            case IS_NULL:      return this->unset(ZSTR_EMPTY_ALLOC());
+            case IS_REFERENCE:
                 z = Z_REFVAL_P(z);
                 break;
 
             default:
-                throw std::runtime_error("Illegal offset type");
+                throw std::invalid_argument("Illegal offset type");
         }
     }
 }
@@ -243,10 +229,10 @@ void phpcxx::Array::unset(zend_string* key)
         return this->unset(static_cast<zend_long>(hval));
     }
 
-    zval* z = derefAndCheck(&this->m_z);
-    SEPARATE_ARRAY(z);
+    assert(Z_TYPE(this->m_z) == IS_ARRAY);
+    SEPARATE_ARRAY(&this->m_z);
 
-    HashTable* ht = Z_ARRVAL_P(z);
+    HashTable* ht = Z_ARRVAL(this->m_z);
     if (UNEXPECTED(ht == &EG(symbol_table))) {
         zend_delete_global_variable(key);
     }
