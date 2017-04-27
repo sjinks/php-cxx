@@ -96,16 +96,16 @@ phpcxx::Value& phpcxx::Array::operator[](const Value& key)
     zval* z = key.pzval();
 
     while (true) {
-        switch (key.type()) {
-            case Type::String:    return this->operator[](Z_STR_P(z));
-            case Type::Integer:   return this->operator[](Z_LVAL_P(z));
-            case Type::Double:    return this->operator[](zend_dval_to_lval(Z_DVAL_P(z)));
-            case Type::True:      return this->operator[](static_cast<zend_long>(1l));
-            case Type::False:     return this->operator[](static_cast<zend_long>(0l));
-            case Type::Resource:  return this->operator[](Z_RES_HANDLE_P(z));
-            case Type::Undefined: return this->operator[](ZSTR_EMPTY_ALLOC());
-            case Type::Null:      return this->operator[](ZSTR_EMPTY_ALLOC());
-            case Type::Reference:
+        switch (Z_TYPE_P(z)) {
+            case IS_STRING:    return this->operator[](Z_STR_P(z));
+            case IS_LONG:      return this->operator[](Z_LVAL_P(z));
+            case IS_DOUBLE:    return this->operator[](zend_dval_to_lval(Z_DVAL_P(z)));
+            case IS_TRUE:      return this->operator[](static_cast<zend_long>(1l));
+            case IS_FALSE:     return this->operator[](static_cast<zend_long>(0l));
+            case IS_RESOURCE:  return this->operator[](Z_RES_HANDLE_P(z));
+            case IS_UNDEF:     return this->operator[](ZSTR_EMPTY_ALLOC());
+            case IS_NULL:      return this->operator[](ZSTR_EMPTY_ALLOC());
+            case IS_REFERENCE:
                 z = Z_REFVAL_P(z);
                 break;
 
@@ -161,16 +161,16 @@ bool phpcxx::Array::isset(const Value& key) const
     zval* z = key.pzval();
 
     while (true) {
-        switch (key.type()) {
-            case Type::String:    return this->isset(Z_STR_P(z));
-            case Type::Integer:   return this->isset(Z_LVAL_P(z));
-            case Type::Double:    return this->isset(zend_dval_to_lval(Z_DVAL_P(z)));
-            case Type::True:      return this->isset(static_cast<zend_long>(1));
-            case Type::False:     return this->isset(static_cast<zend_long>(0));
-            case Type::Resource:  return this->isset(Z_RES_HANDLE_P(z));
-            case Type::Undefined: return this->isset(ZSTR_EMPTY_ALLOC());
-            case Type::Null:      return this->isset(ZSTR_EMPTY_ALLOC());
-            case Type::Reference:
+        switch (Z_TYPE_P(z)) {
+            case IS_STRING:    return this->isset(Z_STR_P(z));
+            case IS_LONG:      return this->isset(Z_LVAL_P(z));
+            case IS_DOUBLE:    return this->isset(zend_dval_to_lval(Z_DVAL_P(z)));
+            case IS_TRUE:      return this->isset(static_cast<zend_long>(1));
+            case IS_FALSE:     return this->isset(static_cast<zend_long>(0));
+            case IS_RESOURCE:  return this->isset(Z_RES_HANDLE_P(z));
+            case IS_UNDEF:     return this->isset(ZSTR_EMPTY_ALLOC());
+            case IS_NULL:      return this->isset(ZSTR_EMPTY_ALLOC());
+            case IS_REFERENCE:
                 z = Z_REFVAL_P(z);
                 break;
 
@@ -203,16 +203,16 @@ void phpcxx::Array::unset(const Value& key)
     zval* z = key.pzval();
 
     while (true) {
-        switch (key.type()) {
-            case Type::String:    return this->unset(Z_STR_P(z));
-            case Type::Integer:   return this->unset(Z_LVAL_P(z));
-            case Type::Double:    return this->unset(zend_dval_to_lval(Z_DVAL_P(z)));
-            case Type::True:      return this->unset(static_cast<zend_long>(1));
-            case Type::False:     return this->unset(static_cast<zend_long>(0));
-            case Type::Resource:  return this->unset(Z_RES_HANDLE_P(z));
-            case Type::Undefined: return this->unset(ZSTR_EMPTY_ALLOC());
-            case Type::Null:      return this->unset(ZSTR_EMPTY_ALLOC());
-            case Type::Reference:
+        switch (Z_TYPE_P(z)) {
+            case IS_STRING:    return this->unset(Z_STR_P(z));
+            case IS_LONG:      return this->unset(Z_LVAL_P(z));
+            case IS_DOUBLE:    return this->unset(zend_dval_to_lval(Z_DVAL_P(z)));
+            case IS_TRUE:      return this->unset(static_cast<zend_long>(1));
+            case IS_FALSE:     return this->unset(static_cast<zend_long>(0));
+            case IS_RESOURCE:  return this->unset(Z_RES_HANDLE_P(z));
+            case IS_UNDEF:     return this->unset(ZSTR_EMPTY_ALLOC());
+            case IS_NULL:      return this->unset(ZSTR_EMPTY_ALLOC());
+            case IS_REFERENCE:
                 z = Z_REFVAL_P(z);
                 break;
 
