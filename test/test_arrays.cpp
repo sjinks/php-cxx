@@ -57,6 +57,14 @@ TEST_F(ArrayFixture, InitializationNormal)
         EXPECT_EQ(0, a1.size());
         EXPECT_EQ(1, a2.size());
         EXPECT_EQ(1, a3.size());
+
+        phpcxx::Array a4(std::move(a3));
+        z3       = a3.pzval();
+        zval* z4 = a4.pzval();
+
+        EXPECT_EQ(IS_UNDEF, Z_TYPE_P(z3));
+        EXPECT_EQ(IS_ARRAY, Z_TYPE_P(z4));
+        EXPECT_EQ(1, a4.size());
     });
     EXPECT_EQ("", m_err.str());
     m_err.str(std::string());
@@ -375,6 +383,245 @@ TEST_F(ArrayFixture, Arrays)
         phpcxx::Value& a = globals["a"];
         EXPECT_EQ(14, a.asLong());
     });
+    EXPECT_EQ("", m_err.str());
+    m_err.str(std::string());
+}
+
+TEST_F(ArrayFixture, TestIsset)
+{
+    m_sapi.run([]() {
+        phpcxx::Array a;
+
+        phpcxx::Value v0  = 0;
+        phpcxx::Value v1  = 1;
+        phpcxx::string s0 = "0";
+        phpcxx::string s1 = "1";
+        const char* c0    = "0";
+        const char* c1    = "1";
+        phpcxx::ZendString z0("0");
+        phpcxx::ZendString z1("1");
+
+        phpcxx::Value v_unset;
+        phpcxx::Value v_null(nullptr);
+        phpcxx::Value v_false(false);
+        phpcxx::Value v_true(true);
+
+        a[0] = 1;
+
+        EXPECT_TRUE(a.isset(v0));
+        EXPECT_TRUE(a.isset(s0));
+        EXPECT_TRUE(a.isset(c0));
+        EXPECT_TRUE(a.isset(0));
+        EXPECT_TRUE(a.isset(v_false));
+        EXPECT_TRUE(a.isset(z0));
+
+        EXPECT_FALSE(a.isset(v1));
+        EXPECT_FALSE(a.isset(s1));
+        EXPECT_FALSE(a.isset(c1));
+        EXPECT_FALSE(a.isset(1));
+        EXPECT_FALSE(a.isset(v_true));
+        EXPECT_FALSE(a.isset(v_null));
+        EXPECT_FALSE(a.isset(v_unset));
+        EXPECT_FALSE(a.isset(z1));
+
+        phpcxx::Value ref = v0.reference();
+        EXPECT_TRUE(a.isset(ref));
+
+        EXPECT_THROW(a.isset(phpcxx::Value(a.pzval())), std::invalid_argument);
+
+        zval fake_res;
+        ZVAL_NEW_RES(&fake_res, 1, nullptr, 1);
+        phpcxx::Value fr(&fake_res);
+        EXPECT_FALSE(a.isset(fr));
+        efree(Z_RES(fake_res));
+    });
+
+    EXPECT_EQ("", m_err.str());
+    m_err.str(std::string());
+}
+
+TEST_F(ArrayFixture, TestUnset)
+{
+    m_sapi.run([]() {
+        phpcxx::Array a;
+
+        phpcxx::string s0 = "0";
+        const char* c1    = "1";
+        phpcxx::Value v2  = 3;
+        phpcxx::ZendString z3("3");
+        phpcxx::Value v4  = 4.0;
+        phpcxx::Value v5  = "5";
+        phpcxx::Value r5  = v5.reference();
+
+        phpcxx::Value v_unset;
+        phpcxx::Value v_null(nullptr);
+        phpcxx::Value v_false(false);
+        phpcxx::Value v_true(true);
+
+        a[s0] = 0;
+        a[c1] = 1;
+        a[v2] = 2;
+        a[z3] = 3;
+        a[v4] = 4;
+        a[v5] = 5;
+
+        EXPECT_TRUE(a.isset(s0));
+        EXPECT_TRUE(a.isset(c1));
+        EXPECT_TRUE(a.isset(v2));
+        EXPECT_TRUE(a.isset(z3));
+        EXPECT_TRUE(a.isset(v4));
+        EXPECT_TRUE(a.isset(v5));
+        EXPECT_TRUE(a.isset(r5));
+
+        EXPECT_TRUE(a.isset(v_false));
+        EXPECT_TRUE(a.isset(v_true));
+        EXPECT_FALSE(a.isset(v_null));
+        EXPECT_FALSE(a.isset(v_unset));
+
+        a.unset(s0);
+        a.unset(c1);
+        a.unset(v2);
+        a.unset(z3);
+        a.unset(v4);
+        a.unset(r5);
+
+        EXPECT_FALSE(a.isset(s0));
+        EXPECT_FALSE(a.isset(c1));
+        EXPECT_FALSE(a.isset(v2));
+        EXPECT_FALSE(a.isset(z3));
+        EXPECT_FALSE(a.isset(v4));
+        EXPECT_FALSE(a.isset(v5));
+        EXPECT_FALSE(a.isset(r5));
+
+        EXPECT_FALSE(a.isset(v_false));
+        EXPECT_FALSE(a.isset(v_true));
+        EXPECT_FALSE(a.isset(v_null));
+        EXPECT_FALSE(a.isset(v_unset));
+
+        EXPECT_THROW(a.unset(phpcxx::Value(a.pzval())), std::invalid_argument);
+
+        zval fake_res;
+        ZVAL_NEW_RES(&fake_res, 1, nullptr, 1);
+        phpcxx::Value fr(&fake_res);
+
+        a[v_true] = 1;
+        EXPECT_TRUE(a.isset(1));
+        EXPECT_TRUE(a.isset(v_true));
+        EXPECT_TRUE(a.isset(fr));
+        a.unset(fr);
+        EXPECT_FALSE(a.isset(1));
+        EXPECT_FALSE(a.isset(v_true));
+        EXPECT_FALSE(a.isset(fr));
+
+        a[fr] = 1;
+        EXPECT_TRUE(a.isset(1));
+        EXPECT_TRUE(a.isset(v_true));
+        EXPECT_TRUE(a.isset(fr));
+        a.unset(v_true);
+        EXPECT_FALSE(a.isset(1));
+        EXPECT_FALSE(a.isset(v_true));
+        EXPECT_FALSE(a.isset(fr));
+
+        efree(Z_RES(fake_res));
+
+        a[v_false] = 0;
+        EXPECT_TRUE(a.isset(v_false));
+        EXPECT_FALSE(a.isset(v_null));
+        EXPECT_FALSE(a.isset(v_unset));
+        a.unset(v_false);
+        EXPECT_FALSE(a.isset(v_false));
+
+        a[v_unset] = 0;
+        EXPECT_TRUE(a.isset(v_unset));
+        EXPECT_TRUE(a.isset(v_null));
+        EXPECT_TRUE(a.isset(""));
+        EXPECT_FALSE(a.isset(v_false));
+        a.unset(v_unset);
+        EXPECT_FALSE(a.isset(v_unset));
+        EXPECT_FALSE(a.isset(v_null));
+        EXPECT_FALSE(a.isset(""));
+
+        a[v_null] = 0;
+        EXPECT_TRUE(a.isset(v_unset));
+        EXPECT_TRUE(a.isset(v_null));
+        EXPECT_TRUE(a.isset(""));
+        EXPECT_FALSE(a.isset(v_false));
+        a.unset(v_null);
+        EXPECT_FALSE(a.isset(v_unset));
+        EXPECT_FALSE(a.isset(v_null));
+        EXPECT_FALSE(a.isset(""));
+    });
+
+    EXPECT_EQ("", m_err.str());
+    m_err.str(std::string());
+}
+
+TEST_F(ArrayFixture, TestExceptions)
+{
+    m_sapi.run([]() {
+        phpcxx::Array a;
+
+        zval z;
+        ZVAL_PTR(&z, nullptr);
+
+        phpcxx::Value idx(&z);
+
+        EXPECT_THROW(a[idx],       std::invalid_argument);
+        EXPECT_THROW(a.isset(idx), std::invalid_argument);
+        EXPECT_THROW(a.unset(idx), std::invalid_argument);
+    });
+
+    EXPECT_EQ("", m_err.str());
+    m_err.str(std::string());
+}
+
+TEST_F(ArrayFixture, TestGlobals)
+{
+    m_sapi.run([]() {
+        zval z;
+        runPhpCode("global $a; global $b; $b = $GLOBALS['GLOBALS'];");
+        runPhpCode("$b;", z);
+
+        ASSERT_EQ(IS_ARRAY, Z_TYPE(z));
+
+        phpcxx::Array a(&z);
+        EXPECT_TRUE(a.isset("a"));
+        EXPECT_TRUE(a.isset("b"));
+        a.unset("a");
+        EXPECT_FALSE(a.isset("a"));
+    });
+
+    EXPECT_EQ("", m_err.str());
+    m_err.str(std::string());
+}
+
+TEST_F(ArrayFixture, TestIndirect)
+{
+    m_sapi.run([]() {
+        zval y;
+        zval z;
+        ZVAL_TRUE(&z);
+        ZVAL_INDIRECT(&y, &z);
+
+        phpcxx::Array a;
+        a["idx"] = &y;
+
+        // Indirect variables will be resolved
+        phpcxx::Value vy = a["idx"];
+        EXPECT_EQ(phpcxx::Type::True, vy.type());
+
+        ZVAL_UNDEF(&z);
+
+        // Indirect IS_UNDEF variables will be returned as IS_NULL
+        vy = a["idx"];
+        EXPECT_EQ(phpcxx::Type::Null, vy.type());
+
+        // Indirection is not resolved for numeric indices
+        a[0] = &y;
+        vy = a[0];
+        EXPECT_EQ(phpcxx::Type::Indirect, vy.type());
+    });
+
     EXPECT_EQ("", m_err.str());
     m_err.str(std::string());
 }
