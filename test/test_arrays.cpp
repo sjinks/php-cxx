@@ -431,8 +431,10 @@ TEST_F(ArrayFixture, TestIsset)
 
         zval fake_res;
         ZVAL_NEW_RES(&fake_res, 1, nullptr, 1);
-        phpcxx::Value fr(&fake_res);
-        EXPECT_FALSE(a.isset(fr));
+        {
+            phpcxx::Value fr(&fake_res);
+            EXPECT_FALSE(a.isset(fr));
+        }
         efree(Z_RES(fake_res));
     });
 
@@ -502,26 +504,27 @@ TEST_F(ArrayFixture, TestUnset)
 
         zval fake_res;
         ZVAL_NEW_RES(&fake_res, 1, nullptr, 1);
-        phpcxx::Value fr(&fake_res);
+        {
+            phpcxx::Value fr(&fake_res);
 
-        a[v_true] = 1;
-        EXPECT_TRUE(a.isset(1));
-        EXPECT_TRUE(a.isset(v_true));
-        EXPECT_TRUE(a.isset(fr));
-        a.unset(fr);
-        EXPECT_FALSE(a.isset(1));
-        EXPECT_FALSE(a.isset(v_true));
-        EXPECT_FALSE(a.isset(fr));
+            a[v_true] = 1;
+            EXPECT_TRUE(a.isset(1));
+            EXPECT_TRUE(a.isset(v_true));
+            EXPECT_TRUE(a.isset(fr));
+            a.unset(fr);
+            EXPECT_FALSE(a.isset(1));
+            EXPECT_FALSE(a.isset(v_true));
+            EXPECT_FALSE(a.isset(fr));
 
-        a[fr] = 1;
-        EXPECT_TRUE(a.isset(1));
-        EXPECT_TRUE(a.isset(v_true));
-        EXPECT_TRUE(a.isset(fr));
-        a.unset(v_true);
-        EXPECT_FALSE(a.isset(1));
-        EXPECT_FALSE(a.isset(v_true));
-        EXPECT_FALSE(a.isset(fr));
-
+            a[fr] = 1;
+            EXPECT_TRUE(a.isset(1));
+            EXPECT_TRUE(a.isset(v_true));
+            EXPECT_TRUE(a.isset(fr));
+            a.unset(v_true);
+            EXPECT_FALSE(a.isset(1));
+            EXPECT_FALSE(a.isset(v_true));
+            EXPECT_FALSE(a.isset(fr));
+        }
         efree(Z_RES(fake_res));
 
         a[v_false] = 0;
