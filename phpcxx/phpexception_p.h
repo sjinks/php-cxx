@@ -15,33 +15,15 @@ public:
     [[gnu::nonnull]] PhpExceptionPrivate(struct _zend_object* obj);
     ~PhpExceptionPrivate();
 
-    const string& getClass() const { return this->m_class;   }
-    const string& message() const  { return this->m_message; }
-    const string& file() const     { return this->m_file;    }
-    long int code() const          { return this->m_code;    }
-    long int line() const          { return this->m_line;    }
-    Array& trace() const           { return this->m_trace;   }
+    const string& className() const { return this->m_class;   }
+    const string& message() const   { return this->m_message; }
+    const string& file() const      { return this->m_file;    }
+    long int code() const           { return this->m_code;    }
+    long int line() const           { return this->m_line;    }
+    Array& trace() const            { return this->m_trace;   }
     const PhpException* previous() const { return this->m_previous.get(); }
 
-    void markHandled(bool handled)
-    {
-        if (this->m_handled != PhpExceptionPrivate::Protected) {
-            this->m_handled = handled ? PhpExceptionPrivate::Handled : PhpExceptionPrivate::NotHandled;
-        }
-    }
-
-    bool isHandled() const
-    {
-        return this->m_handled != PhpExceptionPrivate::NotHandled;
-    }
-
 private:
-    enum Status {
-        NotHandled,
-        Handled,
-        Protected
-    };
-
     string m_class;
     string m_message;
     string m_file;
@@ -49,7 +31,6 @@ private:
     long int m_line;
     std::unique_ptr<PhpException, emdeleter> m_previous;
     mutable Array m_trace;
-    Status m_handled;
 };
 
 }

@@ -9,7 +9,7 @@ extern "C" {
 #include "emallocallocator.h"
 
 phpcxx::PhpExceptionPrivate::PhpExceptionPrivate(zend_object* obj)
-    : m_previous(nullptr), m_handled(PhpExceptionPrivate::NotHandled)
+    : m_previous(nullptr)
 {
     zval rv;
     zval ex;
@@ -39,16 +39,13 @@ phpcxx::PhpExceptionPrivate::PhpExceptionPrivate(zend_object* obj)
     if (previous && Z_TYPE_P(previous) == IS_OBJECT) {
         zend_object* p = Z_OBJ_P(previous);
         std::unique_ptr<PhpExceptionPrivate, emdeleter> ep(emcreate<PhpExceptionPrivate>(p), emdeleter());
-        ep->m_handled = PhpExceptionPrivate::Protected;
         this->m_previous.reset(emcreate<PhpException>(ep.release()));
     }
 }
 
 phpcxx::PhpExceptionPrivate::~PhpExceptionPrivate()
 {
-    if (this->m_handled && !this->m_class.empty()) {
-        zend_clear_exception();
-    }
+    zend_clear_exception();
 }
 
 phpcxx::PhpException::PhpException()
@@ -64,9 +61,9 @@ phpcxx::PhpException::PhpException(phpcxx::PhpException&& other)
 {
 }
 
-const phpcxx::string& phpcxx::PhpException::getClass() const
+const phpcxx::string& phpcxx::PhpException::className() const
 {
-    return this->d_ptr->getClass();
+    return this->d_ptr->className();
 }
 
 const phpcxx::string& phpcxx::PhpException::message() const
@@ -111,14 +108,4 @@ phpcxx::PhpException::~PhpException() noexcept
 const char* phpcxx::PhpException::what() const noexcept
 {
     return this->d_ptr->message().c_str();
-}
-
-void phpcxx::PhpException::markHandled(bool handled) const
-{
-    this->d_ptr->markHandled(handled);
-}
-
-bool phpcxx::PhpException::isHandled() const
-{
-    return this->d_ptr->isHandled();
 }

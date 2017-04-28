@@ -109,10 +109,8 @@ private:
     static void call_func_throwing()
     {
         EXPECT_THROW(phpcxx::call("func_throwing"), phpcxx::PhpException);
-        EXPECT_TRUE(EG(exception) != nullptr);
-        zend_clear_exception();
-        EXPECT_TRUE(EG(exception) == nullptr);
 
+        bool exception_caught = false;
         try {
             phpcxx::call("func_throwing");
             EXPECT_TRUE(0);
@@ -120,11 +118,12 @@ private:
         catch (const phpcxx::PhpException& e) {
             EXPECT_EQ(1, e.code());
             EXPECT_EQ("Message", e.message());
-            EXPECT_EQ("Exception", e.getClass());
-            e.markHandled(true);
+            EXPECT_EQ("Exception", e.className());
+            exception_caught = true;
         }
 
         EXPECT_TRUE(EG(exception) == nullptr);
+        EXPECT_TRUE(exception_caught);
     }
 
     static void func_throwing3()
@@ -136,9 +135,8 @@ private:
     static void call_func_throwing3()
     {
         EXPECT_THROW(phpcxx::call("func_throwing3"), phpcxx::PhpException);
-        EXPECT_TRUE(EG(exception) != nullptr);
-        zend_clear_exception();
 
+        bool exception_caught = false;
         try {
             phpcxx::call("func_throwing3");
             // Should not happen
@@ -147,10 +145,11 @@ private:
         catch (phpcxx::PhpException& e) {
             EXPECT_EQ(0, e.code());
             EXPECT_EQ("Unhandled C++ exception: crash boom bang", e.message());
-            e.markHandled(true);
+            exception_caught = true;
         }
 
         EXPECT_TRUE(EG(exception) == nullptr);
+        EXPECT_TRUE(exception_caught);
     }
 
     static void func_bailingout()

@@ -34,17 +34,13 @@ protected:
         catch (const phpcxx::PhpException& e) {
             exception_caught = true;
 
-            EXPECT_FALSE(e.isHandled());
-            EXPECT_EQ("LogicException",     e.getClass());
+            EXPECT_EQ("LogicException",     e.className());
             EXPECT_EQ(nullptr,              e.previous());
             EXPECT_EQ("Exception message",  e.message());
             EXPECT_EQ(123,                  e.code());
             EXPECT_NE(phpcxx::string::npos, e.file().find("eval'd code"));
             EXPECT_EQ(4,                    e.line());
             EXPECT_STREQ(e.what(),          e.message().c_str());
-
-            e.markHandled(true);
-            EXPECT_TRUE(e.isHandled());
         }
         catch (const std::exception& e) {
             EXPECT_FALSE(2);
@@ -64,26 +60,17 @@ protected:
         catch (phpcxx::PhpException& e) {
             exception_caught = true;
 
-            EXPECT_FALSE(e.isHandled());
-            EXPECT_EQ("Exception",          e.getClass());
+            EXPECT_EQ("Exception",          e.className());
             EXPECT_EQ("Top-level",          e.message());
             EXPECT_EQ(456,                  e.code());
             EXPECT_NE(phpcxx::string::npos, e.file().find("eval'd code"));
             EXPECT_EQ(8,                    e.line());
             EXPECT_STREQ(e.what(),          e.message().c_str());
 
-            e.markHandled(true);
-            EXPECT_TRUE(e.isHandled());
-
             EXPECT_NE(nullptr, e.previous());
             const phpcxx::PhpException* p = e.previous();
             if (p != nullptr) {
-                // Nested exceptions are always marked as handled, and this cannot be changed
-                EXPECT_TRUE(p->isHandled());
-                p->markHandled(false);
-                EXPECT_TRUE(p->isHandled());
-
-                EXPECT_EQ("LogicException",     p->getClass());
+                EXPECT_EQ("LogicException",     p->className());
                 EXPECT_EQ(nullptr,              p->previous());
                 EXPECT_EQ("Nested",             p->message());
                 EXPECT_EQ(123,                  p->code());
@@ -101,8 +88,7 @@ protected:
             EXPECT_EQ("test_nested_exception",  trace[1]["function"].toString());
 
             phpcxx::PhpException x(std::move(e));
-            EXPECT_TRUE(x.isHandled());
-            EXPECT_EQ("Exception",          x.getClass());
+            EXPECT_EQ("Exception",          x.className());
             EXPECT_EQ("Top-level",          x.message());
             EXPECT_EQ(456,                  x.code());
             EXPECT_NE(phpcxx::string::npos, x.file().find("eval'd code"));

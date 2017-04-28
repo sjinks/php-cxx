@@ -56,7 +56,7 @@ public:
      * @brief Returns the name of the thrown class (ie, `Exception`)
      * @return Name of the class
      */
-    const string& getClass() const;
+    const string& className() const;
 
     /**
      * @brief Returns the exception message
@@ -94,18 +94,6 @@ public:
      * @retval `nullptr` There was no previous exception
      */
     const PhpException* previous() const;
-
-    /**
-     * @brief Marks the exception as handled or unhandled
-     * @param handled Whether the exception was handled
-     */
-    void markHandled(bool handled) const;
-
-    /**
-     * @brief Returns whether the exception was marked as handled
-     * @return Exception status
-     */
-    bool isHandled() const;
 
 private:
     friend class PhpExceptionPrivate;
