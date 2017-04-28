@@ -5,13 +5,9 @@
 #include "phpcxx/fcall.h"
 #include "phpcxx/phpexception.h"
 #include "phpcxx/parameters.h"
+#include "phpcxx/function.h"
 #include "testsapi.h"
 #include "globals.h"
-
-extern "C" {
-#include <Zend/zend.h>
-#include <Zend/zend_string.h>
-}
 
 namespace {
 
@@ -65,7 +61,7 @@ protected:
             phpcxx::call("throw_nested_exception");
             EXPECT_FALSE(1);
         }
-        catch (const phpcxx::PhpException& e) {
+        catch (phpcxx::PhpException& e) {
             exception_caught = true;
 
             EXPECT_FALSE(e.isHandled());
@@ -103,6 +99,14 @@ protected:
             EXPECT_EQ(phpcxx::Type::Array,      trace[1].type());
             EXPECT_EQ("throw_nested_exception", trace[0]["function"].toString());
             EXPECT_EQ("test_nested_exception",  trace[1]["function"].toString());
+
+            phpcxx::PhpException x(std::move(e));
+            EXPECT_TRUE(x.isHandled());
+            EXPECT_EQ("Exception",          x.getClass());
+            EXPECT_EQ("Top-level",          x.message());
+            EXPECT_EQ(456,                  x.code());
+            EXPECT_NE(phpcxx::string::npos, x.file().find("eval'd code"));
+            EXPECT_EQ(8,                    x.line());
         }
         catch (const std::exception& e) {
             EXPECT_FALSE(2);

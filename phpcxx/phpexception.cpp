@@ -59,6 +59,11 @@ phpcxx::PhpException::PhpException()
     }
 }
 
+phpcxx::PhpException::PhpException(phpcxx::PhpException&& other)
+    : d_ptr(std::move(other.d_ptr))
+{
+}
+
 const phpcxx::string& phpcxx::PhpException::getClass() const
 {
     return this->d_ptr->getClass();

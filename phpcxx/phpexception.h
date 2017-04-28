@@ -40,7 +40,7 @@ public:
      * @brief Move constructor
      * @param other Exception being moved
      */
-    PhpException(PhpException&& other) = default;
+    PhpException(PhpException&& other);
 
     /**
      * @brief Destructor
