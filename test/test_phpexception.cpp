@@ -90,16 +90,18 @@ protected:
             try {
                 throw;
             }
-            catch (phpcxx::PhpException& e) {
-                EXPECT_EQ("Exception",          e.className());
-                EXPECT_EQ("Top-level",          e.message());
-                EXPECT_EQ(456,                  e.code());
-                EXPECT_NE(phpcxx::string::npos, e.file().find("eval'd code"));
-                EXPECT_EQ(8,                    e.line());
-                EXPECT_STREQ(e.what(),          e.message().c_str());
+            catch (phpcxx::PhpException& f) {
+                EXPECT_TRUE(EG(exception) != nullptr);
 
-                EXPECT_NE(nullptr, e.previous());
-                const phpcxx::PhpException* p = e.previous();
+                EXPECT_EQ("Exception",          f.className());
+                EXPECT_EQ("Top-level",          f.message());
+                EXPECT_EQ(456,                  f.code());
+                EXPECT_NE(phpcxx::string::npos, f.file().find("eval'd code"));
+                EXPECT_EQ(8,                    f.line());
+                EXPECT_STREQ(f.what(),          f.message().c_str());
+
+                EXPECT_NE(nullptr, f.previous());
+                const phpcxx::PhpException* p = f.previous();
                 if (p != nullptr) {
                     EXPECT_EQ("LogicException",     p->className());
                     EXPECT_EQ(nullptr,              p->previous());
@@ -111,14 +113,24 @@ protected:
                 }
 
                 phpcxx::Array trace;
-                trace = e.trace();
+                trace = f.trace();
                 EXPECT_EQ(2, trace.size());
                 EXPECT_EQ(phpcxx::Type::Array,      trace[0].type());
                 EXPECT_EQ(phpcxx::Type::Array,      trace[1].type());
                 EXPECT_EQ("throw_nested_exception", trace[0]["function"].toString());
                 EXPECT_EQ("test_nested_exception",  trace[1]["function"].toString());
+            }
 
-                phpcxx::PhpException x(std::move(e));
+            // `throw;` rethrew the original object,
+            // the destructor of the exception was NOT called
+            EXPECT_FALSE(EG(exception) == nullptr);
+
+            // Test move constructor
+            try {
+                throw;
+            }
+            catch (phpcxx::PhpException& z) { // catch by non-const reference so that we can move
+                phpcxx::PhpException x(std::move(z));
                 EXPECT_EQ("Exception",          x.className());
                 EXPECT_EQ("Top-level",          x.message());
                 EXPECT_EQ(456,                  x.code());
