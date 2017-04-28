@@ -61,6 +61,18 @@ phpcxx::Array& phpcxx::Array::operator=(Array& other)
     return *this;
 }
 
+phpcxx::Array& phpcxx::Array::operator=(zval* z)
+{
+    assert(z != nullptr);
+    ZVAL_DEREF(z);
+    if (Z_TYPE_P(z) != IS_ARRAY) {
+        throw std::invalid_argument("zval is not array");
+    }
+
+    phpcxx::assign(&this->m_z, z);
+    return *this;
+}
+
 phpcxx::Value& phpcxx::Array::operator[](std::nullptr_t)
 {
     assert(Z_TYPE(this->m_z) == IS_ARRAY);

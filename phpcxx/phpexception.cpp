@@ -9,16 +9,16 @@ extern "C" {
 #include "emallocallocator.h"
 
 phpcxx::PhpExceptionPrivate::PhpExceptionPrivate(zend_object* obj)
-    : m_previous(nullptr), m_handled(false)
+    : m_previous(nullptr)
 {
     zval rv;
     zval ex;
     ZVAL_OBJ(&ex, obj);
-    zend_class_entry* scope = Z_OBJCE(ex);
+    zend_class_entry* scope = obj->ce;
     zend_string* msg  = zval_get_string(zend_read_property(scope, &ex, ZEND_STRL("message"), 1, &rv));
     zend_string* file = zval_get_string(zend_read_property(scope, &ex, ZEND_STRL("file"), 1, &rv));
-    zend_long   code  = zval_get_long(zend_read_property(scope, &ex, ZEND_STRL("code"), 1, &rv));
-    zend_long   line  = zval_get_long(zend_read_property(scope, &ex, ZEND_STRL("line"), 1, &rv));
+    zend_long    code = zval_get_long(zend_read_property(scope, &ex, ZEND_STRL("code"), 1, &rv));
+    zend_long    line = zval_get_long(zend_read_property(scope, &ex, ZEND_STRL("line"), 1, &rv));
 
     this->m_class     = { ZSTR_VAL(scope->name), ZSTR_LEN(scope->name) };
     this->m_message   = { ZSTR_VAL(msg),         ZSTR_LEN(msg)         };
@@ -45,14 +45,15 @@ phpcxx::PhpExceptionPrivate::PhpExceptionPrivate(zend_object* obj)
 
 phpcxx::PhpExceptionPrivate::~PhpExceptionPrivate()
 {
-    if (this->m_handled && !this->m_class.empty()) {
-        zend_clear_exception();
-    }
+    zend_clear_exception();
 }
 
 phpcxx::PhpException::PhpException()
-    : d_ptr(emcreate<PhpExceptionPrivate>(EG(exception)), emdeleter())
+    : d_ptr(EG(exception) ? emcreate<PhpExceptionPrivate>(EG(exception)) : nullptr, emdeleter())
 {
+    if (UNEXPECTED(!EG(exception))) {
+        throw std::logic_error("PhpException thrown without an active PHP exception");
+    }
 }
 
 phpcxx::PhpException::PhpException(phpcxx::PhpException&& other)
@@ -60,9 +61,9 @@ phpcxx::PhpException::PhpException(phpcxx::PhpException&& other)
 {
 }
 
-const phpcxx::string& phpcxx::PhpException::getClass() const
+const phpcxx::string& phpcxx::PhpException::className() const
 {
-    return this->d_ptr->getClass();
+    return this->d_ptr->className();
 }
 
 const phpcxx::string& phpcxx::PhpException::message() const
@@ -85,7 +86,7 @@ long int phpcxx::PhpException::line() const
     return this->d_ptr->line();
 }
 
-phpcxx::Value phpcxx::PhpException::trace() const
+phpcxx::Array& phpcxx::PhpException::trace() const
 {
     return this->d_ptr->trace();
 }
@@ -107,14 +108,4 @@ phpcxx::PhpException::~PhpException() noexcept
 const char* phpcxx::PhpException::what() const noexcept
 {
     return this->d_ptr->message().c_str();
-}
-
-void phpcxx::PhpException::markHandled(bool handled) const
-{
-    this->d_ptr->markHandled(handled);
-}
-
-bool phpcxx::PhpException::isHandled() const
-{
-    return this->d_ptr->isHandled();
 }
