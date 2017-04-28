@@ -66,8 +66,18 @@ public:
     /**
      * @brief Assignment operator
      * @param other Array being copied
+     * @return Array
      */
     Array& operator=(Array& other);
+
+    /**
+     * @brief Assignment operator
+     * @overload
+     * @param z zval array
+     * @return Array
+     * @throws std::invalid argument @a z is not an array or a reference to an array
+     */
+    Array& operator=(zval* z);
 
     /**
      * @brief Assignment operator

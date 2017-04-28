@@ -3,10 +3,13 @@
 
 #include "phpcxx.h"
 #include "emallocallocator.h"
-#include "value.h"
+#include "array.h"
 
 namespace phpcxx {
 
+/**
+ * @internal
+ */
 class PhpExceptionPrivate {
 public:
     [[gnu::nonnull]] PhpExceptionPrivate(struct _zend_object* obj);
@@ -17,21 +20,36 @@ public:
     const string& file() const     { return this->m_file;    }
     long int code() const          { return this->m_code;    }
     long int line() const          { return this->m_line;    }
-    Value trace() const            { return this->m_trace;   }
+    Array& trace() const           { return this->m_trace;   }
     const PhpException* previous() const { return this->m_previous.get(); }
 
-    void markHandled(bool handled) { this->m_handled = handled; }
-    bool isHandled() const         { return this->m_handled;    }
+    void markHandled(bool handled)
+    {
+        if (this->m_handled != PhpExceptionPrivate::Protected) {
+            this->m_handled = handled ? PhpExceptionPrivate::Handled : PhpExceptionPrivate::NotHandled;
+        }
+    }
+
+    bool isHandled() const
+    {
+        return this->m_handled != PhpExceptionPrivate::NotHandled;
+    }
 
 private:
+    enum Status {
+        NotHandled,
+        Handled,
+        Protected
+    };
+
     string m_class;
     string m_message;
     string m_file;
     long int m_code;
     long int m_line;
     std::unique_ptr<PhpException, emdeleter> m_previous;
-    Value m_trace;
-    bool m_handled;
+    mutable Array m_trace;
+    Status m_handled;
 };
 
 }
