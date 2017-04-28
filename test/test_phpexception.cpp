@@ -57,7 +57,7 @@ protected:
             phpcxx::call("throw_nested_exception");
             EXPECT_FALSE(1);
         }
-        catch (phpcxx::PhpException& e) {
+        catch (const phpcxx::PhpException& e) {
             exception_caught = true;
 
             EXPECT_EQ("Exception",          e.className());
@@ -87,12 +87,44 @@ protected:
             EXPECT_EQ("throw_nested_exception", trace[0]["function"].toString());
             EXPECT_EQ("test_nested_exception",  trace[1]["function"].toString());
 
-            phpcxx::PhpException x(std::move(e));
-            EXPECT_EQ("Exception",          x.className());
-            EXPECT_EQ("Top-level",          x.message());
-            EXPECT_EQ(456,                  x.code());
-            EXPECT_NE(phpcxx::string::npos, x.file().find("eval'd code"));
-            EXPECT_EQ(8,                    x.line());
+            try {
+                throw;
+            }
+            catch (phpcxx::PhpException& e) {
+                EXPECT_EQ("Exception",          e.className());
+                EXPECT_EQ("Top-level",          e.message());
+                EXPECT_EQ(456,                  e.code());
+                EXPECT_NE(phpcxx::string::npos, e.file().find("eval'd code"));
+                EXPECT_EQ(8,                    e.line());
+                EXPECT_STREQ(e.what(),          e.message().c_str());
+
+                EXPECT_NE(nullptr, e.previous());
+                const phpcxx::PhpException* p = e.previous();
+                if (p != nullptr) {
+                    EXPECT_EQ("LogicException",     p->className());
+                    EXPECT_EQ(nullptr,              p->previous());
+                    EXPECT_EQ("Nested",             p->message());
+                    EXPECT_EQ(123,                  p->code());
+                    EXPECT_NE(phpcxx::string::npos, p->file().find("eval'd code"));
+                    EXPECT_EQ(5,                    p->line());
+                    EXPECT_STREQ(p->what(),         p->message().c_str());
+                }
+
+                phpcxx::Array trace;
+                trace = e.trace();
+                EXPECT_EQ(2, trace.size());
+                EXPECT_EQ(phpcxx::Type::Array,      trace[0].type());
+                EXPECT_EQ(phpcxx::Type::Array,      trace[1].type());
+                EXPECT_EQ("throw_nested_exception", trace[0]["function"].toString());
+                EXPECT_EQ("test_nested_exception",  trace[1]["function"].toString());
+
+                phpcxx::PhpException x(std::move(e));
+                EXPECT_EQ("Exception",          x.className());
+                EXPECT_EQ("Top-level",          x.message());
+                EXPECT_EQ(456,                  x.code());
+                EXPECT_NE(phpcxx::string::npos, x.file().find("eval'd code"));
+                EXPECT_EQ(8,                    x.line());
+            }
         }
         catch (const std::exception& e) {
             EXPECT_FALSE(2);
@@ -102,7 +134,6 @@ protected:
         return exception_caught;
     }
 };
-
 
 }
 

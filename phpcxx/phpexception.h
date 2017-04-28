@@ -32,13 +32,10 @@ public:
     [[gnu::nonnull]] PhpException(PhpExceptionPrivate* dd) noexcept;
 
     /**
-     * @brief Deleted copy constructor
-     */
-    PhpException(const PhpException&) = delete;
-
-    /**
      * @brief Move constructor
      * @param other Exception being moved
+     * @warning Calling any method of `other` will result in a crash
+     * @warning This constructor is not intended to be called by the user
      */
     PhpException(PhpException&& other);
 
