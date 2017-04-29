@@ -285,7 +285,7 @@ public:
      * @warning The `zval` is returned as is, its reference counter is not modified. Calling `zval_dtor()` or
      * `zval_ptr_dtor()` on the returned `zval` will result in a crash.
      */
-    zval* pzval() { return &this->m_z; }
+    [[gnu::returns_nonnull]] zval* pzval() { return &this->m_z; }
 private:
     /**
      * @brief Internal representation of the array

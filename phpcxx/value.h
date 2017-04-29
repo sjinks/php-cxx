@@ -381,7 +381,7 @@ public:
     /**
      * @internal
      */
-    zval* pzval() const { return &this->m_z; }
+    [[gnu::returns_nonnull]] zval* pzval() const { return &this->m_z; }
 
 private:
     mutable zval m_z;
