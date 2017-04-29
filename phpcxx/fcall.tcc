@@ -7,6 +7,7 @@
 
 #include "array.h"
 #include "value.h"
+#include "bailoutrestorer.h"
 
 namespace phpcxx {
 
@@ -25,7 +26,7 @@ static Value call(const char* name, Params&&... p)
     }
 
     _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
-    ZEND_ASSUME(0);
+    ZEND_ASSUME(0); // Unreachable
 }
 
 template<typename... Params>
@@ -42,7 +43,7 @@ static Value call(const Value& v, Params&&... p)
     }
 
     _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
-    ZEND_ASSUME(0);
+    ZEND_ASSUME(0); // Unreachable
 }
 
 template<> inline zval* FCall::paramHelper(phpcxx::Value&& v, zval&) { return v.pzval(); }

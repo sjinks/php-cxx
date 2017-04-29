@@ -14,18 +14,6 @@ extern "C" {
 
 namespace phpcxx {
 
-class PHPCXX_EXPORT BailoutRestorer {
-public:
-    BailoutRestorer() : m_orig_bailout(EG(bailout)) {}
-    ~BailoutRestorer()
-    {
-        EG(bailout) = this->m_orig_bailout;
-    }
-
-private:
-    JMP_BUF* m_orig_bailout;
-};
-
 struct PHPCXX_EXPORT placement_construct_t {
     explicit placement_construct_t() {}
 };
