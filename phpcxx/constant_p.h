@@ -15,7 +15,7 @@ namespace phpcxx {
 
 /**
  * @internal
- * @brief Implemenation details of phpcxx::Constant
+ * @brief Implemenation details of @ref phpcxx::Constant
  * @see Constant
  */
 class PHPCXX_HIDDEN ConstantPrivate {

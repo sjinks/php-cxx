@@ -14,13 +14,23 @@ extern "C" {
 
 namespace phpcxx {
 
+/**
+ * @brief Tag for placement-new
+ */
 struct PHPCXX_EXPORT placement_construct_t {
+    /**
+     * @brief Constructor
+     */
     explicit placement_construct_t() {}
 };
 
 PHPCXX_EXPORT extern const placement_construct_t placement_construct;
 
-// See http://loungecpp.wikidot.com/tips-and-tricks:indices
+/**
+ * @defgroup indices Helper type to expand parameter packs
+ * @see http://loungecpp.wikidot.com/tips-and-tricks:indices
+ * @{
+ */
 template<std::size_t... Is>
 struct indices {};
 
