@@ -3,6 +3,12 @@
 
 #include <type_traits>
 
+extern "C" {
+#include <Zend/zend.h>
+}
+
+#include "string.h"
+
 namespace phpcxx {
 
 /**
@@ -70,7 +76,7 @@ template<typename T> struct is_pzval   : public std::integral_constant<bool, std
  * @brief Checks whether @a T with cv-qualifiers removed is @ref phpcxx::string
  * @tparam T Type to check
  */
-template<typename T> struct is_string  : public std::integral_constant<bool, std::is_same<string, remove_cv_t<T> >::value> {};
+template<typename T> struct is_string  : public std::integral_constant<bool, std::is_same<phpcxx::string, remove_cv_t<T> >::value> {};
 
 /**
  * @brief Check whether @a T with cv-qualifiers removed is `char*` or `char[]`
