@@ -12,8 +12,8 @@ phpcxx::Parameters::Parameters(const vector<Value*>& v)
 {
 }
 
-phpcxx::Parameters::Parameters(struct _zend_execute_data* execute_data)
-    : d_ptr(emcreate<ParametersPrivate>(execute_data), emdeleter())
+phpcxx::Parameters::Parameters()
+    : d_ptr(emcreate<ParametersPrivate>(), emdeleter())
 {
 }
 
