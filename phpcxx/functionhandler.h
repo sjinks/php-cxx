@@ -293,7 +293,7 @@ public:
                 zval* this_ptr = getThis();
                 zval* z        = FunctionHandler::checkClass(this_ptr);
                 Value vthis(this_ptr);
-                Parameters p(execute_data);
+                Parameters p;
 
                 JMP_BUF bailout;
                 EG(bailout) = &bailout;
@@ -329,7 +329,7 @@ public:
                 zval* this_ptr = getThis();
                 zval* z        = FunctionHandler::checkClass(this_ptr);
                 Value vthis(this_ptr);
-                Parameters p(execute_data);
+                Parameters p;
 
                 JMP_BUF bailout;
                 EG(bailout) = &bailout;
@@ -365,7 +365,7 @@ public:
                 zval* this_ptr = getThis();
                 zval* z        = FunctionHandler::checkClass(this_ptr);
                 Value vthis(this_ptr);
-                Parameters p(execute_data);
+                Parameters p;
 
                 JMP_BUF bailout;
                 EG(bailout) = &bailout;
@@ -401,7 +401,7 @@ public:
                 zval* this_ptr = getThis();
                 zval* z        = FunctionHandler::checkClass(this_ptr);
                 Value vthis(this_ptr);
-                Parameters p(execute_data);
+                Parameters p;
 
                 JMP_BUF bailout;
                 EG(bailout) = &bailout;
