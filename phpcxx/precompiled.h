@@ -73,6 +73,7 @@ extern "C" {
 #include "string.h"
 #include "superglobal.h"
 #include "types.h"
+#include "typetraits.h"
 #include "value.h"
 #include "vector.h"
 #include "zendstring.h"
