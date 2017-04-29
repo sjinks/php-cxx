@@ -46,13 +46,13 @@ template<typename T> struct is_null_pointer : public std::is_null_pointer<T> {};
  * @brief Checks whether @a T is `bool`
  * @tparam T Type to check
  */
-template<typename T> struct is_bool    : public std::integral_constant<bool, std::is_same<T, bool>::value> {};
+template<typename T> struct is_bool    : public std::integral_constant<bool, std::is_same<remove_cv_t<T>, bool>::value> {};
 
 /**
  * @brief Checks whether @a T is of integral type AND is not `bool`
  * @tparam T Type to check
  */
-template<typename T> struct is_integer : public std::integral_constant<bool, std::is_integral<T>::value && !std::is_same<T, bool>::value> {};
+template<typename T> struct is_integer : public std::integral_constant<bool, std::is_integral<T>::value && !is_bool<T>::value> {};
 
 /**
  * @brief Checks whether @a T is of numeric type (integral or floating point)
