@@ -44,6 +44,7 @@ extern "C" {
 #include "argument.h"
 #include "argument_p.h"
 #include "array.h"
+#include "bailoutrestorer.h"
 #include "callable.h"
 #include "class_p.h"
 #include "classbase.h"

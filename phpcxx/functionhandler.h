@@ -3,6 +3,7 @@
 
 #include "phpcxx.h"
 
+#include "bailoutrestorer.h"
 #include "exception.h"
 #include "parameters.h"
 #include "types.h"

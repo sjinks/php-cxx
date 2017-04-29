@@ -49,6 +49,7 @@ LIBRARY_PCH = phpcxx/precompiled.h
 TESTER_CXX_SOURCES = \
 	test/tester.cpp \
 	test/testsapi.cpp \
+	test/test_bailoutrestorer.cpp \
 	test/test_arguments.cpp \
 	test/test_lifecycle.cpp \
 	test/test_moduleglobals.cpp \
