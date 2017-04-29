@@ -8,8 +8,8 @@ extern "C" {
 }
 
 #include <cstring>
-#include <type_traits>
 #include "string.h"
+#include "typetraits.h"
 #include "zendstring.h"
 
 namespace phpcxx {
@@ -32,58 +32,9 @@ struct build_indices<0, Is...> : indices<Is...> {};
 
 template<typename ...T>
 using IndicesFor = build_indices<sizeof...(T)>;
-
-/**
- * @defgroup Helper types from C++14
- * @{
- */
-#if __cplusplus < 201402L
-template<typename T>                using remove_cv_t        = typename std::remove_cv<T>::type;
-template<typename T>                using remove_pointer_t   = typename std::remove_pointer<T>::type;
-template<typename T>                using remove_extent_t    = typename std::remove_extent<T>::type;
-template<bool B, typename T = void> using enable_if_t        = typename std::enable_if<B, T>::type;
-#else
-template<typename T>                using remove_cv_t        = std::remove_cv_t<T>;
-template<typename T>                using remove_pointer_t   = std::remove_pointer_t<T>;
-template<typename T>                using remove_extent_t    = std::remove_extent_t<T>;
-template<bool B, typename T = void> using enable_if_t        = std::enable_if_t<B, T>;
-#endif
 /**
  * @}
  */
-
-/**
- * @defgroup is_null_pointer
- * @{
- */
-#if __cplusplus < 201402L
-template<typename>   struct is_null_pointer_helper : public std::false_type {};
-template<>           struct is_null_pointer_helper<std::nullptr_t> : public std::true_type {};
-template<typename T> struct is_null_pointer : public is_null_pointer_helper<remove_cv_t<T> >::type {};
-#else
-template<typename T> struct is_null_pointer : public std::is_null_pointer<T> {};
-#endif
-/**
- * @}
- */
-
-template<typename T> struct is_bool    : public std::integral_constant<bool, std::is_same<T, bool>::value> {};
-template<typename T> struct is_integer : public std::integral_constant<bool, std::is_integral<T>::value && !std::is_same<T, bool>::value> {};
-template<typename T> struct is_numeric : public std::integral_constant<bool, is_integer<T>::value || std::is_floating_point<T>::value> {};
-template<typename T> struct is_pzval   : public std::integral_constant<bool, std::is_same<zval*, T>::value> {};
-template<typename T> struct is_string  : public std::integral_constant<bool, std::is_same<string, remove_cv_t<T> >::value> {};
-
-template<typename T>
-struct is_pchar : public
-    std::integral_constant<
-        bool,
-           std::is_same<char*, remove_cv_t<T> >::value
-        || (   std::is_pointer<T>::value
-            && std::is_same<char, remove_cv_t<remove_pointer_t<remove_cv_t<T> > > >::value
-           )
-        || std::is_same<char, remove_cv_t<remove_extent_t<T> > >::value
-    >
-{};
 
 /**
  * @defgroup Construction of zvals
