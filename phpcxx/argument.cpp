@@ -43,7 +43,12 @@ const char* phpcxx::Argument::className() const
 
 phpcxx::ArgumentType phpcxx::Argument::type() const
 {
-    return static_cast<phpcxx::ArgumentType>(this->d_ptr->m_arginfo.type_hint);
+    int type_hint = this->d_ptr->m_arginfo.type_hint;
+    if (IS_TRUE == type_hint || IS_FALSE == type_hint) {
+        return phpcxx::ArgumentType::Bool;
+    }
+
+    return static_cast<phpcxx::ArgumentType>(type_hint);
 }
 
 bool phpcxx::Argument::canBeNull() const
