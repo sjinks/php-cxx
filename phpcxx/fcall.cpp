@@ -24,7 +24,7 @@ phpcxx::FCall::FCall(Callable c)
 
 phpcxx::FCall::~FCall()
 {
-    zval_dtor(&this->m_fci.function_name);
+    zval_ptr_dtor(&this->m_fci.function_name);
 #ifdef PHPCXX_DEBUG
     ZVAL_UNDEF(&this->m_fci.function_name);
 #endif

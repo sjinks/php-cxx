@@ -11,6 +11,12 @@
 
 namespace {
 
+/**
+ * @internal
+ * @brief Helper function for codecov (`_zend_bailout` is for some reason not marked as `noreturn`)
+ * @param filename
+ * @param line
+ */
 [[noreturn]] static void bailout(const char* filename, long int line)
 {
     _zend_bailout(const_cast<char*>(filename), line);
@@ -54,8 +60,19 @@ static Value call(const Value& v, Params&&... p)
     bailout(__FILE__, __LINE__);
 }
 
-template<> inline zval* FCall::paramHelper(phpcxx::Value&& v, zval&) { return v.pzval(); }
-template<> inline zval* FCall::paramHelper(phpcxx::Array&& v, zval&) { return v.pzval(); }
+/**
+ * @brief Constructs `zval` from `phpcxx::Value`
+ * @param[in] v `phpcxx::Value`
+ * @return Pointer to `zval`
+ */
+template<> [[gnu::returns_nonnull]] inline zval* FCall::paramHelper(phpcxx::Value&& v, zval&) { return v.pzval(); }
+
+/**
+ * @brief Constructs `zval` from `phpcxx::Array`
+ * @param[in] v `phpcxx::Array`
+ * @return Pointer to `zval`
+ */
+template<> [[gnu::returns_nonnull]] inline zval* FCall::paramHelper(phpcxx::Array&& v, zval&) { return v.pzval(); }
 
 template<typename... Params>
 inline phpcxx::Value FCall::operator()(Params&&... p)
