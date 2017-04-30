@@ -20,7 +20,11 @@ protected:
     {
         return {
             phpcxx::createFunction<&MyModule::test_simple_exception>("test_simple_exception"),
-            phpcxx::createFunction<&MyModule::test_nested_exception>("test_nested_exception")
+            phpcxx::createFunction<&MyModule::test_nested_exception>("test_nested_exception"),
+            phpcxx::createFunction<&MyModule::throw_exception_vv>("throw_exception_23_vv"),
+            phpcxx::createFunction<&MyModule::throw_exception_vn>("throw_exception_23_vn"),
+            phpcxx::createFunction<&MyModule::throw_exception_nv>("throw_exception_23_nv"),
+            phpcxx::createFunction<&MyModule::throw_exception_nn>("throw_exception_23_nn")
         };
     }
 
@@ -145,6 +149,38 @@ protected:
         EXPECT_EQ(nullptr, EG(exception));
         return exception_caught;
     }
+
+    static void throw_exception_nn()
+    {
+        EXPECT_TRUE(nullptr == EG(exception));
+        zend_throw_exception(zend_exception_get_default(), "Exception", 0);
+        EXPECT_TRUE(nullptr != EG(exception));
+        throw phpcxx::PhpException();
+    }
+
+    static phpcxx::Value throw_exception_vn()
+    {
+        EXPECT_TRUE(nullptr == EG(exception));
+        zend_throw_exception(zend_exception_get_default(), "Exception", 0);
+        EXPECT_TRUE(nullptr != EG(exception));
+        throw phpcxx::PhpException();
+    }
+
+    static void throw_exception_nv(phpcxx::Parameters&)
+    {
+        EXPECT_TRUE(nullptr == EG(exception));
+        zend_throw_exception(zend_exception_get_default(), "Exception", 0);
+        EXPECT_TRUE(nullptr != EG(exception));
+        throw phpcxx::PhpException();
+    }
+
+    static phpcxx::Value throw_exception_vv(phpcxx::Parameters&)
+    {
+        EXPECT_TRUE(nullptr == EG(exception));
+        zend_throw_exception(zend_exception_get_default(), "Exception", 0);
+        EXPECT_TRUE(nullptr != EG(exception));
+        throw phpcxx::PhpException();
+    }
 };
 
 }
@@ -243,4 +279,129 @@ TEST(PhpException, TestInvalidArguments)
     std::string e = err.str(); err.str("");
     EXPECT_EQ("", o);
     EXPECT_EQ("SUCCESS", e);
+}
+
+/**
+ * @see https://github.com/sjinks/php-cxx/issues/23
+ */
+TEST(PhpException, TestIssue23)
+{
+    std::stringstream out;
+    std::stringstream err;
+    std::string o;
+    std::string e;
+
+    bool success = false;
+
+    {
+        MyModule module("PhpException", "0.0");
+        TestSAPI sapi(out, err);
+        sapi.addModule(module);
+        sapi.initialize();
+
+        sapi.run([&success] {
+            DummyStackFrame dummy;
+            try {
+                phpcxx::call("throw_exception_23_vv");
+                ADD_FAILURE();
+            }
+            catch (phpcxx::PhpException& e) {
+                success = true;
+            }
+            catch (const std::exception& e) {
+                ADD_FAILURE();
+            }
+        });
+
+        EXPECT_TRUE(success);
+    }
+
+    o = out.str(); out.str("");
+    e = err.str(); err.str("");
+    EXPECT_EQ("", o);
+    EXPECT_EQ("", e);
+
+    {
+        MyModule module("PhpException", "0.0");
+        TestSAPI sapi(out, err);
+        sapi.addModule(module);
+        sapi.initialize();
+
+        sapi.run([&success] {
+            DummyStackFrame dummy;
+            try {
+                phpcxx::call("throw_exception_23_vn");
+                ADD_FAILURE();
+            }
+            catch (phpcxx::PhpException& e) {
+                success = true;
+            }
+            catch (const std::exception& e) {
+                ADD_FAILURE();
+            }
+        });
+
+        EXPECT_TRUE(success);
+    }
+
+    o = out.str(); out.str("");
+    e = err.str(); err.str("");
+    EXPECT_EQ("", o);
+    EXPECT_EQ("", e);
+
+    {
+        MyModule module("PhpException", "0.0");
+        TestSAPI sapi(out, err);
+        sapi.addModule(module);
+        sapi.initialize();
+
+        sapi.run([&success] {
+            DummyStackFrame dummy;
+            try {
+                phpcxx::call("throw_exception_23_nn");
+                ADD_FAILURE();
+            }
+            catch (phpcxx::PhpException& e) {
+                success = true;
+            }
+            catch (const std::exception& e) {
+                ADD_FAILURE();
+            }
+        });
+
+        EXPECT_TRUE(success);
+    }
+
+    o = out.str(); out.str("");
+    e = err.str(); err.str("");
+    EXPECT_EQ("", o);
+    EXPECT_EQ("", e);
+
+    {
+        MyModule module("PhpException", "0.0");
+        TestSAPI sapi(out, err);
+        sapi.addModule(module);
+        sapi.initialize();
+
+        sapi.run([&success] {
+            DummyStackFrame dummy;
+            try {
+                phpcxx::call("throw_exception_23_nv");
+                ADD_FAILURE();
+            }
+            catch (phpcxx::PhpException& e) {
+                success = true;
+            }
+            catch (const std::exception& e) {
+                ADD_FAILURE();
+            }
+        });
+
+        EXPECT_TRUE(success);
+    }
+
+    o = out.str(); out.str("");
+    e = err.str(); err.str("");
+    EXPECT_EQ("", o);
+    EXPECT_EQ("", e);
 }

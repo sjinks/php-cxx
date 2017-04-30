@@ -9,7 +9,7 @@ extern "C" {
 #include "emallocallocator.h"
 
 phpcxx::PhpExceptionPrivate::PhpExceptionPrivate(zend_object* obj)
-    : m_previous(nullptr)
+    : m_previous(nullptr), m_pass(false)
 {
     zval rv;
     zval ex;
@@ -45,7 +45,9 @@ phpcxx::PhpExceptionPrivate::PhpExceptionPrivate(zend_object* obj)
 
 phpcxx::PhpExceptionPrivate::~PhpExceptionPrivate()
 {
-    zend_clear_exception();
+    if (!this->m_pass) {
+        zend_clear_exception();
+    }
 }
 
 phpcxx::PhpException::PhpException()
@@ -108,4 +110,9 @@ phpcxx::PhpException::~PhpException() noexcept
 const char* phpcxx::PhpException::what() const noexcept
 {
     return this->d_ptr->message().c_str();
+}
+
+void phpcxx::PhpException::passException()
+{
+    this->d_ptr->passException();
 }

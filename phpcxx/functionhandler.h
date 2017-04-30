@@ -31,6 +31,10 @@ public:
                     return;
                 }
             }
+            catch (phpcxx::PhpException& e) {
+                e.passException();
+                return;
+            }
             catch (const std::exception& e) {
                 zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
                 return;
@@ -59,6 +63,10 @@ public:
                     return;
                 }
             }
+            catch (phpcxx::PhpException& e) {
+                e.passException();
+                return;
+            }
             catch (const std::exception& e) {
                 zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
                 return;
@@ -85,6 +93,10 @@ public:
 
                     return;
                 }
+            }
+            catch (phpcxx::PhpException& e) {
+                e.passException();
+                return;
             }
             catch (const std::exception& e) {
                 zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
@@ -113,6 +125,10 @@ public:
 
                     return;
                 }
+            }
+            catch (phpcxx::PhpException& e) {
+                e.passException();
+                return;
             }
             catch (const std::exception& e) {
                 zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
@@ -149,6 +165,10 @@ public:
                     return;
                 }
             }
+            catch (phpcxx::PhpException& e) {
+                e.passException();
+                return;
+            }
             catch (const std::exception& e) {
                 zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
                 return;
@@ -179,6 +199,10 @@ public:
 
                     return;
                 }
+            }
+            catch (phpcxx::PhpException& e) {
+                e.passException();
+                return;
             }
             catch (const std::exception& e) {
                 zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
@@ -211,6 +235,10 @@ public:
                     return;
                 }
             }
+            catch (phpcxx::PhpException& e) {
+                e.passException();
+                return;
+            }
             catch (const std::exception& e) {
                 zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
                 return;
@@ -241,6 +269,10 @@ public:
 
                     return;
                 }
+            }
+            catch (phpcxx::PhpException& e) {
+                e.passException();
+                return;
             }
             catch (const std::exception& e) {
                 zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
@@ -274,6 +306,10 @@ public:
                     return;
                 }
             }
+            catch (phpcxx::PhpException& e) {
+                e.passException();
+                return;
+            }
             catch (const std::exception& e) {
                 zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
                 return;
@@ -305,6 +341,10 @@ public:
 
                     return;
                 }
+            }
+            catch (phpcxx::PhpException& e) {
+                e.passException();
+                return;
             }
             catch (const std::exception& e) {
                 zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
@@ -338,6 +378,10 @@ public:
                     return;
                 }
             }
+            catch (phpcxx::PhpException& e) {
+                e.passException();
+                return;
+            }
             catch (const std::exception& e) {
                 zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
                 return;
@@ -369,6 +413,10 @@ public:
 
                     return;
                 }
+            }
+            catch (phpcxx::PhpException& e) {
+                e.passException();
+                return;
             }
             catch (const std::exception& e) {
                 zend_throw_exception_ex(phpcxx_exception_ce, 0, "Unhandled C++ exception: %s", e.what());
