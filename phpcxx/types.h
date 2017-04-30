@@ -31,6 +31,7 @@ enum class Type : zend_uchar {
 
 enum class ArgumentType : zend_uchar {
     Any       = IS_UNDEF,
+    Null      = IS_NULL,
     Bool      = _IS_BOOL,
     Integer   = IS_LONG,
     Double    = IS_DOUBLE,
