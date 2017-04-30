@@ -30,15 +30,15 @@ protected:
                 "test_parameters",
                 9,
                 {
-                    phpcxx::byValue("a", phpcxx::ArgumentType::Any),
-                    phpcxx::byValue("b", phpcxx::ArgumentType::Bool),
-                    phpcxx::byValue("c", phpcxx::ArgumentType::Integer),
-                    phpcxx::byValue("d", phpcxx::ArgumentType::Double),
-                    phpcxx::byValue("e", phpcxx::ArgumentType::String),
-                    phpcxx::byValue("f", phpcxx::ArgumentType::Array),
-                    phpcxx::byValue("g", phpcxx::ArgumentType::Object),
-                    phpcxx::byValue("h", phpcxx::ArgumentType::Resource),
-                    phpcxx::byValue("i", phpcxx::ArgumentType::Callable)
+                    phpcxx::byValue("a", phpcxx::ArgumentType::Any, false),
+                    phpcxx::byValue("b", phpcxx::ArgumentType::Bool, false),
+                    phpcxx::byValue("c", phpcxx::ArgumentType::Integer, false),
+                    phpcxx::byValue("d", phpcxx::ArgumentType::Double, false),
+                    phpcxx::byValue("e", phpcxx::ArgumentType::String, false),
+                    phpcxx::byValue("f", phpcxx::ArgumentType::Array, false),
+                    phpcxx::byValue("g", phpcxx::ArgumentType::Object, false),
+                    phpcxx::byValue("h", phpcxx::ArgumentType::Resource, false),
+                    phpcxx::byValue("i", phpcxx::ArgumentType::Callable, false)
                 }
             )
         };
