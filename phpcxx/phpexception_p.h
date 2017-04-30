@@ -22,6 +22,7 @@ public:
     long int line() const           { return this->m_line;    }
     Array& trace() const            { return this->m_trace;   }
     const PhpException* previous() const { return this->m_previous.get(); }
+    void passException()            { this->m_pass = true;    }
 
 private:
     string m_class;
@@ -31,6 +32,7 @@ private:
     long int m_line;
     std::unique_ptr<PhpException, emdeleter> m_previous;
     mutable Array m_trace;
+    bool m_pass;
 };
 
 }

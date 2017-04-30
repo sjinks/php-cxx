@@ -99,6 +99,14 @@ private:
      * @brief Implementation details
      */
     std::unique_ptr<PhpExceptionPrivate, emdeleter> d_ptr;
+
+    friend class FunctionHandler;
+
+    /**
+     * @internal
+     * @brief Sets the flag which tells the destructor not to clear PHP exception
+     */
+    void passException();
 };
 
 }
