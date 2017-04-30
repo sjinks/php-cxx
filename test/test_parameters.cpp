@@ -215,8 +215,6 @@ TEST(Parameters, TestInitialization)
         sapi.initialize();
 
         sapi.run([]() {
-            DummyStackFrame dummy;
-
             phpcxx::Value v1 = true;
             phpcxx::Value v2 = false;
             phpcxx::Value v3 = nullptr;

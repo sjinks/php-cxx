@@ -9,6 +9,16 @@
 #include "value.h"
 #include "bailoutrestorer.h"
 
+namespace {
+
+[[noreturn]] static void bailout(const char* filename, long int line)
+{
+    _zend_bailout(const_cast<char*>(filename), line);
+    ZEND_ASSUME(0);
+}
+
+}
+
 namespace phpcxx {
 
 template<typename... Params>
@@ -25,8 +35,7 @@ static Value call(const char* name, Params&&... p)
         }
     }
 
-    _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
-    ZEND_ASSUME(0); // Unreachable
+    bailout(__FILE__, __LINE__);
 }
 
 template<typename... Params>
@@ -42,8 +51,7 @@ static Value call(const Value& v, Params&&... p)
         }
     }
 
-    _zend_bailout(const_cast<char*>(__FILE__), __LINE__);
-    ZEND_ASSUME(0); // Unreachable
+    bailout(__FILE__, __LINE__);
 }
 
 template<> inline zval* FCall::paramHelper(phpcxx::Value&& v, zval&) { return v.pzval(); }
