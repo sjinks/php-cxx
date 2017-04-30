@@ -70,7 +70,7 @@ public:
         if (EG(current_execute_data)) {
             zend_execute_data* execute_data = EG(current_execute_data);
 
-            if (EX(func)->common.required_num_args < EX_NUM_ARGS()) {
+            if (EX_NUM_ARGS() < EX(func)->common.required_num_args) {
 #if PHP_VERSION_ID >= 70100
                 zend_wrong_parameters_count_error(
                     static_cast<int>(EX_NUM_ARGS()),
