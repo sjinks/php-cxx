@@ -60,6 +60,7 @@ TESTER_CXX_SOURCES = \
 	test/test_functions.cpp \
 	test/test_zendstring.cpp \
 	test/test_callable.cpp \
+	test/test_fcall.cpp \
 	test/test_phpexception.cpp \
 	test/test_hotp.cpp
 
