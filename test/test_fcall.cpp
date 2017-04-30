@@ -138,8 +138,8 @@ TEST(FCall, TestBailout)
 
         sapi.run([&bailed_out]() {
             DummyStackFrame dummy;
+            phpcxx::Value f("func_bailingout");
             zend_try {
-                phpcxx::Value f("func_bailingout");
                 phpcxx::call(f);
                 ADD_FAILURE();
             }
