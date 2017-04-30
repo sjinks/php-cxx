@@ -65,12 +65,7 @@ public:
      * @return Parameter
      * @warning No bounds checking is performed
      */
-    Value& operator[](std::size_t idx);
-
-    /**
-     * @overload
-     */
-    const Value& operator[](std::size_t idx) const;
+    Value& operator[](std::size_t idx) const;
 
 private:
     /**

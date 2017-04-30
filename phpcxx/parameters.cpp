@@ -31,13 +31,7 @@ bool phpcxx::Parameters::verify() const
     return this->d_ptr->verify();
 }
 
-phpcxx::Value& phpcxx::Parameters::operator[](std::size_t idx)
-{
-    zval* z = this->d_ptr->m_params[idx];
-    return *new(reinterpret_cast<void*>(z)) Value(placement_construct);
-}
-
-const phpcxx::Value& phpcxx::Parameters::operator[](std::size_t idx) const
+phpcxx::Value& phpcxx::Parameters::operator[](std::size_t idx) const
 {
     zval* z = this->d_ptr->m_params[idx];
     return *new(reinterpret_cast<void*>(z)) Value(placement_construct);
