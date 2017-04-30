@@ -11,11 +11,18 @@
 
 namespace phpcxx {
 
+/**
+ * @internal
+ * @brief Implementation details of @ref phpcxx::Parameters
+ */
 class PHPCXX_HIDDEN ParametersPrivate {
     friend class Parameters;
 public:
+    /**
+     * @brief Constructor
+     * @param l Parameters
+     */
     ParametersPrivate(std::initializer_list<Value*> l)
-        : m_execute_data(nullptr)
     {
         this->m_params.reserve(l.size());
         for (auto&& v : l) {
@@ -23,8 +30,10 @@ public:
         }
     }
 
+    /**
+     * @overload
+     */
     ParametersPrivate(const vector<Value*>& v)
-        : m_execute_data(nullptr)
     {
         this->m_params.reserve(v.size());
         for (std::size_t i=0; i<v.size(); ++i) {
@@ -32,24 +41,36 @@ public:
         }
     }
 
-    ParametersPrivate(struct _zend_execute_data* execute_data)
-        : m_execute_data(execute_data)
+    /**
+     * @brief Default constructor
+     * @details Constructs the class from `EG(current_execute_data)`
+     */
+    ParametersPrivate()
     {
-        zval* param_ptr       = ZEND_CALL_ARG(execute_data, 1);
-        std::size_t arg_count = EX_NUM_ARGS();
+        zend_execute_data* execute_data = EG(current_execute_data);
+        if (EXPECTED(execute_data)) {
+            zval* param_ptr       = ZEND_CALL_ARG(execute_data, 1);
+            std::size_t arg_count = EX_NUM_ARGS();
 
-        this->m_params.reserve(arg_count);
-        for (std::size_t i=0; i<arg_count; ++i, ++param_ptr) {
-            this->m_params.push_back(param_ptr);
+            this->m_params.reserve(arg_count);
+            for (std::size_t i=0; i<arg_count; ++i, ++param_ptr) {
+                this->m_params.push_back(param_ptr);
+            }
         }
     }
 
+    /**
+     * @brief Checks whether the number of arguments and their type match the specification of the function
+     * @return Check status
+     * @throws phpcxx::PhpException if any of `zend_wrong_paramers_count_error()` / `zend_wrong_parameters_count_error()` /
+     * `zend_check_internal_arg_type()` throws an exception
+     */
     bool verify() const
     {
-        if (this->m_execute_data) {
-            zend_execute_data* execute_data = this->m_execute_data;
+        if (EG(current_execute_data)) {
+            zend_execute_data* execute_data = EG(current_execute_data);
 
-            if (EX(func)->common.required_num_args < EX_NUM_ARGS()) {
+            if (EX_NUM_ARGS() < EX(func)->common.required_num_args) {
 #if PHP_VERSION_ID >= 70100
                 zend_wrong_parameters_count_error(
                     static_cast<int>(EX_NUM_ARGS()),
@@ -84,7 +105,9 @@ public:
     }
 
 private:
-    zend_execute_data* m_execute_data;
+    /**
+     * @brief Vector of parameters
+     */
     phpcxx::vector<zval*> m_params;
 };
 

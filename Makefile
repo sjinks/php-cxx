@@ -49,8 +49,6 @@ LIBRARY_PCH = phpcxx/precompiled.h
 TESTER_CXX_SOURCES = \
 	test/tester.cpp \
 	test/testsapi.cpp \
-	test/test_bailoutrestorer.cpp \
-	test/test_typetraits.cpp \
 	test/test_arguments.cpp \
 	test/test_lifecycle.cpp \
 	test/test_moduleglobals.cpp \
@@ -58,6 +56,7 @@ TESTER_CXX_SOURCES = \
 	test/test_value.cpp \
 	test/test_arrays.cpp \
 	test/test_superglobals.cpp \
+	test/test_parameters.cpp \
 	test/test_functions.cpp \
 	test/test_zendstring.cpp \
 	test/test_callable.cpp \
