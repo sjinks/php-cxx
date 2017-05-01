@@ -17,7 +17,7 @@ namespace {
  * @param filename
  * @param line
  */
-[[noreturn]] static void bailout(const char* filename, long int line)
+[[noreturn]] static inline void bailout(const char* filename, long int line)
 {
     _zend_bailout(const_cast<char*>(filename), line);
     ZEND_ASSUME(0);
