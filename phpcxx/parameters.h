@@ -30,7 +30,7 @@ public:
      * @brief Constructs parameters from `std::initializer_list`
      * @param l Parameters
      */
-    Parameters(std::initializer_list<Value*> l);
+    Parameters(const std::initializer_list<Value*>& l);
 
     /**
      * @brief Constructs parameters from `phpcxx::vector`
