@@ -4,19 +4,6 @@
 #include "value.h"
 #include "zendstring.h"
 
-static inline zval* derefAndCheck(zval* z)
-{
-    if (Z_ISREF_P(z)) {
-        z = Z_REFVAL_P(z);
-    }
-
-    if (UNEXPECTED(Z_TYPE_P(z) != IS_OBJECT)) {
-        throw std::runtime_error("Not an object");
-    }
-
-    return z;
-}
-
 phpcxx::Object::Object()
 {
     object_init(&this->m_z);
@@ -24,15 +11,16 @@ phpcxx::Object::Object()
 
 phpcxx::Object::Object(zval* z)
 {
-    if (Z_TYPE_P(z) == IS_OBJECT) {
-        ZVAL_MAKE_REF(z);
-        zend_reference* ref = Z_REF_P(z);
-        ++GC_REFCOUNT(ref);
-        ZVAL_REF(&this->m_z, ref);
+    assert(z != nullptr);
+
+    if (Z_ISREF_P(z) && Z_TYPE_P(Z_REFVAL_P(z)) == IS_OBJECT) {
+        ZVAL_COPY(&this->m_z, Z_REFVAL_P(z));
     }
     else {
         ZVAL_COPY(&this->m_z, z);
-        convert_to_object(&this->m_z);
+        if (Z_TYPE_P(z) != IS_OBJECT) {
+            convert_to_object(&this->m_z);
+        }
     }
 }
 
@@ -99,33 +87,17 @@ phpcxx::ObjectDimension phpcxx::Object::operator[](zend_ulong key)
 
 bool phpcxx::Object::offsetExists(zend_long idx) const
 {
-    zval* z = derefAndCheck(&this->m_z);
-    zval key;
-
-    ZVAL_LONG(&key, idx);
-    if (!Z_OBJ_HT_P(z)->has_dimension) {
-        zend_error(E_NOTICE, "Trying to check element of non-array");
-        return false;
-    }
-
-    int res = Z_OBJ_HT_P(z)->has_dimension(z, &key, 0);
-    if (EG(exception)) {
-        throw PhpException();
-    }
-
-    return res;
+    return this->offsetExists(phpcxx::Value(idx));
 }
 
 bool phpcxx::Object::offsetExists(const Value& key) const
 {
-    zval* z = derefAndCheck(&this->m_z);
-
-    if (!Z_OBJ_HT_P(z)->has_dimension) {
+    if (!Z_OBJ_HT(this->m_z)->has_dimension) {
         zend_error(E_NOTICE, "Trying to check element of non-array");
         return false;
     }
 
-    int res = Z_OBJ_HT_P(z)->has_dimension(z, key.pzval(), 0);
+    int res = Z_OBJ_HT(this->m_z)->has_dimension(&this->m_z, key.pzval(), 0);
     if (EG(exception)) {
         throw PhpException();
     }
@@ -135,21 +107,7 @@ bool phpcxx::Object::offsetExists(const Value& key) const
 
 bool phpcxx::Object::offsetExists(zend_string* key) const
 {
-    zval* z = derefAndCheck(&this->m_z);
-    zval k;
-
-    ZVAL_STR(&k, key);
-    if (!Z_OBJ_HT_P(z)->has_dimension) {
-        zend_error(E_NOTICE, "Trying to check element of non-array");
-        return false;
-    }
-
-    int res = Z_OBJ_HT_P(z)->has_dimension(z, &k, 0);
-    if (EG(exception)) {
-        throw PhpException();
-    }
-
-    return res;
+    return this->offsetExists(phpcxx::Value(key));
 }
 
 phpcxx::Value phpcxx::Object::offsetGet(zend_long idx)
@@ -160,11 +118,10 @@ phpcxx::Value phpcxx::Object::offsetGet(zend_long idx)
 
 phpcxx::Value phpcxx::Object::offsetGet(const Value& key)
 {
-    zval* z = derefAndCheck(&this->m_z);
     zval result;
 
-    if (Z_OBJ_HT_P(z)->read_dimension) {
-        zval* retval = Z_OBJ_HT_P(z)->read_dimension(z, key.pzval(), BP_VAR_R, &result);
+    if (Z_OBJ_HT(this->m_z)->read_dimension) {
+        zval* retval = Z_OBJ_HT(this->m_z)->read_dimension(&this->m_z, key.pzval(), BP_VAR_R, &result);
         if (!EG(exception)) {
             if (retval) {
                 if (&result != retval) {
@@ -193,23 +150,20 @@ phpcxx::Value phpcxx::Object::offsetGet(const Value& key)
 
 phpcxx::Value phpcxx::Object::offsetGet(zend_string* key)
 {
-    zval k;
-    ZVAL_STR(&k, key);
-    return this->offsetGet(Value(&k));
+    phpcxx::Value k(key);
+    return this->offsetGet(k);
 }
 
 void phpcxx::Object::offsetSet(zend_long idx, const Value& v)
 {
-    Value key(idx);
-    return this->offsetSet(key, v);
+    phpcxx::Value key(idx);
+    this->offsetSet(key, v);
 }
 
 void phpcxx::Object::offsetSet(const Value& key, const Value& v)
 {
-    zval* z = derefAndCheck(&this->m_z);
-
-    if (Z_OBJ_HT_P(z)->write_dimension) {
-        Z_OBJ_HT_P(z)->write_dimension(z, key.pzval(), v.pzval());
+    if (Z_OBJ_HT(this->m_z)->write_dimension) {
+        Z_OBJ_HT(this->m_z)->write_dimension(&this->m_z, key.pzval(), v.pzval());
     }
     else {
         zend_throw_error(NULL, "Cannot use object as array");
@@ -221,31 +175,28 @@ void phpcxx::Object::offsetSet(const Value& key, const Value& v)
     }
 }
 
-void phpcxx::Object::offsetSet(std::nullptr_t nullptr_t, const Value& v)
+void phpcxx::Object::offsetSet(std::nullptr_t, const Value& v)
 {
-    Value key(nullptr);
+    phpcxx::Value key(nullptr);
     return this->offsetSet(key, v);
 }
 
 void phpcxx::Object::offsetSet(zend_string* key, const Value& v)
 {
-    zval k;
-    ZVAL_STR(&k, key);
-    return this->offsetSet(Value(&k), v);
+    phpcxx::Value k(key);
+    return this->offsetSet(k, v);
 }
 
 void phpcxx::Object::offsetUnset(zend_long idx)
 {
-    Value key(idx);
+    phpcxx::Value key(idx);
     this->offsetUnset(key);
 }
 
 void phpcxx::Object::offsetUnset(const Value& key)
 {
-    zval* z = derefAndCheck(&this->m_z);
-
-    if (Z_OBJ_HT_P(z)->unset_dimension) {
-        Z_OBJ_HT_P(z)->unset_dimension(z, key.pzval());
+    if (Z_OBJ_HT(this->m_z)->unset_dimension) {
+        Z_OBJ_HT(this->m_z)->unset_dimension(&this->m_z, key.pzval());
     }
     else {
         zend_throw_error(NULL, "Cannot use object as array");
@@ -259,7 +210,6 @@ void phpcxx::Object::offsetUnset(const Value& key)
 
 void phpcxx::Object::offsetUnset(zend_string* key)
 {
-    zval k;
-    ZVAL_STR(&k, key);
-    this->offsetUnset(Value(&k));
+    phpcxx::Value k(key);
+    this->offsetUnset(k);
 }

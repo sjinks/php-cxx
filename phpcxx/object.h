@@ -56,12 +56,12 @@ public:
 
     zend_long count();
 
-    zval* pzval() const { return &this->m_z; }
+    [[gnu::returns_nonnull]] zval* pzval() const { return &this->m_z; }
 
 private:
     mutable zval m_z;
 
-    Object(std::nullptr_t) {} // for placement new
+    Object(placement_construct_t) {}
 
     friend class Value;
 };
