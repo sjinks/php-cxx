@@ -47,7 +47,7 @@ using IndicesFor = build_indices<sizeof...(T)>;
  */
 
 /**
- * @defgroup Construction of zvals
+ * @defgroup constrzval Construction of zvals
  * @{
  */
 template<typename T, enable_if_t<is_null_pointer<T>::value>* = nullptr>
@@ -74,12 +74,18 @@ static inline void construct_zval(zval& z, T s)
 {
     ZVAL_COPY(&z, &s);
 }
+
+template<typename T, enable_if_t<std::is_same<zend_string*, remove_cv_t<T> >::value>* = nullptr>
+static inline void construct_zval(zval& z, T s)
+{
+    ZVAL_STR(&z, s);
+}
 /**
  * @}
  */
 
 /**
- * @defgroup Assignment
+ * @defgroup assignment Assignment
  * @{
  */
 
