@@ -2,7 +2,7 @@
 #include "parameters_p.h"
 #include "value.h"
 
-phpcxx::Parameters::Parameters(std::initializer_list<Value*> l)
+phpcxx::Parameters::Parameters(const std::initializer_list<Value*>& l)
     : d_ptr(emcreate<ParametersPrivate>(l), emdeleter())
 {
 }

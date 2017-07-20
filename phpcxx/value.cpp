@@ -528,11 +528,10 @@ void get_dimension_address(zval* result, zval* container, zval* dim, int type)
         container = Z_REFVAL_P(container);
     }
 
-    zval* retval;
     switch (Z_TYPE_P(container)) {
         case IS_OBJECT:
             if (Z_OBJ_HT_P(container)->read_dimension) {
-                retval = Z_OBJ_HT_P(container)->read_dimension(container, dim, type, result);
+                zval* retval = Z_OBJ_HT_P(container)->read_dimension(container, dim, type, result);
                 if (BP_VAR_R == type || BP_VAR_IS == type) {
                     if (retval) {
                         if (result != retval) {
