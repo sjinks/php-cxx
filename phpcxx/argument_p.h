@@ -16,11 +16,20 @@ public:
     {
         // argName can be nullptr; see ZEND_ARG_PASS_INFO macro
         this->m_arginfo.name              = argName;
+        this->m_arginfo.pass_by_reference = byRef;
+        this->m_arginfo.is_variadic       = isVariadic;
+#if PHP_VERSION_ID < 70200
         this->m_arginfo.class_name        = className;
         this->m_arginfo.type_hint         = static_cast<zend_uchar>(type);
         this->m_arginfo.allow_null        = allowNull;
-        this->m_arginfo.pass_by_reference = byRef;
-        this->m_arginfo.is_variadic       = isVariadic;
+#else
+        if (className) {
+            this->m_arginfo.type          = ZEND_TYPE_ENCODE_CLASS(zend_string_init_interned(className, std::strlen(className), 1), allowNull);
+        }
+        else {
+            this->m_arginfo.type          = ZEND_TYPE_ENCODE(type, allowNull);
+        }
+#endif
     }
 
     ArgumentPrivate(const zend_internal_arg_info& info)

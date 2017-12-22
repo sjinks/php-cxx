@@ -124,9 +124,15 @@ static void assign(zval* a, T b)
 #endif
         }
         else {
+#if PHP_VERSION_ID < 70200
             if (Z_COLLECTABLE_P(a) && UNEXPECTED(!GC_INFO(r))) {
                 gc_possible_root(r);
             }
+#else
+            if (UNEXPECTED(GC_MAY_LEAK(r))) {
+                gc_possible_root(r);
+            }
+#endif
         }
     }
 
@@ -168,9 +174,15 @@ static void assign(zval* a, const T& b)
 #endif
         }
         else {
+#if PHP_VERSION_ID < 70200
             if (Z_COLLECTABLE_P(a) && UNEXPECTED(!GC_INFO(r))) {
                 gc_possible_root(r);
             }
+#else
+            if (UNEXPECTED(GC_MAY_LEAK(r))) {
+                gc_possible_root(r);
+            }
+#endif
         }
     }
 
@@ -217,9 +229,15 @@ static void assign(zval* a, T b)
 #endif
         }
         else {
+#if PHP_VERSION_ID < 70200
             if (Z_COLLECTABLE_P(a) && UNEXPECTED(!GC_INFO(r))) {
                 gc_possible_root(r);
             }
+#else
+            if (UNEXPECTED(GC_MAY_LEAK(r))) {
+                gc_possible_root(r);
+            }
+#endif
         }
     }
 
@@ -261,9 +279,15 @@ static inline void assignTemporary(zval* a, zval* b)
 #endif
         }
         else {
+#if PHP_VERSION_ID < 70200
             if (Z_COLLECTABLE_P(a) && UNEXPECTED(!GC_INFO(r))) {
                 gc_possible_root(r);
             }
+#else
+            if (UNEXPECTED(GC_MAY_LEAK(r))) {
+                gc_possible_root(r);
+            }
+#endif
         }
     }
 

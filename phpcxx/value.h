@@ -218,7 +218,6 @@ public:
 
     bool isRefcounted() const { return Z_REFCOUNTED(this->m_z); }
     bool isReference() const { return Z_ISREF(this->m_z); }
-    bool isCollectable() const { return Z_COLLECTABLE(this->m_z); }
     bool isCopyable() const  { return Z_COPYABLE(this->m_z); }
     bool isImmutable() const { return Z_IMMUTABLE(this->m_z); }
     bool isIndirect() const  { return Z_TYPE(this->m_z) == IS_INDIRECT; }

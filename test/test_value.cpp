@@ -610,7 +610,6 @@ TEST_F(ValueFixture, Assignment)
         a    = nullptr;
         a[0] = "test";
         EXPECT_TRUE(a.isRefcounted());
-        EXPECT_TRUE(a.isCollectable());
 
         phpcxx::Value b = a;
         EXPECT_EQ(2, a.refCount());
@@ -647,7 +646,6 @@ TEST_F(ValueFixture, Assignment)
 
         a[0] = "test";
         EXPECT_TRUE(a.isRefcounted());
-        EXPECT_TRUE(a.isCollectable());
 
         phpcxx::Value b = a;
         EXPECT_EQ(2, a.refCount());

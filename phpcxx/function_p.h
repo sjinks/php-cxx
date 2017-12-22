@@ -41,11 +41,15 @@ public:
 
         zend_internal_arg_info f;
         f.name        = reinterpret_cast<const char*>(static_cast<zend_uintptr_t>(nreq));
+        f.pass_by_reference = byRef;
+        f.is_variadic = 0;
+#if PHP_VERSION_ID < 70200
         f.class_name  = nullptr;
         f.type_hint   = IS_UNDEF;
-        f.pass_by_reference = byRef;
         f.allow_null  = 0;
-        f.is_variadic = 0;
+#else
+        f.type        = 0;
+#endif
 
         this->m_arginfo.push_back(f);
 

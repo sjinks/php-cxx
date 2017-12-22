@@ -38,22 +38,48 @@ const char* phpcxx::Argument::name() const
 
 const char* phpcxx::Argument::className() const
 {
+#if PHP_VERSION_ID < 70200
     return this->d_ptr->m_arginfo.class_name;
+#else
+    return ZEND_TYPE_IS_CLASS(this->d_ptr->m_arginfo.type) ? ZSTR_VAL(ZEND_TYPE_NAME(this->d_ptr->m_arginfo.type)) : nullptr;
+#endif
 }
 
 phpcxx::ArgumentType phpcxx::Argument::type() const
 {
+#if PHP_VERSION_ID < 70200
     int type_hint = this->d_ptr->m_arginfo.type_hint;
     if (IS_TRUE == type_hint || IS_FALSE == type_hint) {
         return phpcxx::ArgumentType::Bool;
     }
 
     return static_cast<phpcxx::ArgumentType>(type_hint);
+#else
+    zend_type type = this->d_ptr->m_arginfo.type;
+    if (ZEND_TYPE_IS_CODE(type)) {
+        uintptr_t code = ZEND_TYPE_CODE(type);
+        if (IS_TRUE == code || IS_FALSE == code) {
+            return phpcxx::ArgumentType::Bool;
+        }
+
+        return static_cast<phpcxx::ArgumentType>(ZEND_TYPE_CODE(type));
+    }
+
+    if (ZEND_TYPE_IS_CLASS(type)) {
+        return phpcxx::ArgumentType::Object;
+    }
+
+    return phpcxx::ArgumentType::Any;
+#endif
 }
 
 bool phpcxx::Argument::canBeNull() const
 {
+#if PHP_VERSION_ID < 70200
     return this->d_ptr->m_arginfo.allow_null;
+#else
+    return ZEND_TYPE_ALLOW_NULL(this->d_ptr->m_arginfo.type);
+#endif
 }
 
 bool phpcxx::Argument::isPassedByReference() const
@@ -68,20 +94,37 @@ bool phpcxx::Argument::isVariadic() const
 
 phpcxx::Argument&& phpcxx::Argument::setType(phpcxx::ArgumentType type)
 {
+#if PHP_VERSION_ID < 70200
     this->d_ptr->m_arginfo.type_hint = static_cast<zend_uchar>(type);
+#else
+    this->d_ptr->m_arginfo.type = ZEND_TYPE_ENCODE(static_cast<zend_uchar>(type), ZEND_TYPE_ALLOW_NULL(this->d_ptr->m_arginfo.type));
+#endif
     return std::move(*this);
 }
 
 phpcxx::Argument&& phpcxx::Argument::setClass(const char* name)
 {
+#if PHP_VERSION_ID < 70200
     this->d_ptr->m_arginfo.type_hint  = IS_OBJECT;
     this->d_ptr->m_arginfo.class_name = name;
+#else
+    this->d_ptr->m_arginfo.type       = ZEND_TYPE_ENCODE_CLASS(zend_string_init_interned(name, std::strlen(name), 1), ZEND_TYPE_ALLOW_NULL(this->d_ptr->m_arginfo.type));
+#endif
     return std::move(*this);
 }
 
 phpcxx::Argument&& phpcxx::Argument::setNullable(bool v)
 {
+#if PHP_VERSION_ID < 70200
     this->d_ptr->m_arginfo.allow_null = v;
+#else
+    if (v) {
+        this->d_ptr->m_arginfo.type |= 1;
+    }
+    else {
+        this->d_ptr->m_arginfo.type &= ~1u;
+    }
+#endif
     return std::move(*this);
 }
 

@@ -71,7 +71,14 @@ public:
             zend_execute_data* execute_data = EG(current_execute_data);
 
             if (EX_NUM_ARGS() < EX(func)->common.required_num_args) {
-#if PHP_VERSION_ID >= 70100
+#if PHP_VERSION_ID >= 70200
+                zend_wrong_parameters_count_error(
+                    0,
+                    static_cast<int>(EX_NUM_ARGS()),
+                    static_cast<int>(EX(func)->common.required_num_args),
+                    static_cast<int>(EX(func)->common.num_args)
+                );
+#elif PHP_VERSION_ID > 70100
                 zend_wrong_parameters_count_error(
                     static_cast<int>(EX_NUM_ARGS()),
                     static_cast<int>(EX(func)->common.required_num_args),
