@@ -1,5 +1,5 @@
 PHP_CONFIG          = php-config
-SRCDIR              = $(realpath $(dir $(lastword $(filter Makefile,$(MAKEFILE_LIST)))))
+SRCDIR              = $(realpath $(dir $(lastword $(filter Makefile %/Makefile,$(MAKEFILE_LIST)))))
 
 CPPFLAGS_EXTRA      = $(shell $(PHP_CONFIG) --includes)
 CXXFLAGS_EXTRA      = -Wall -Wextra -Wno-unused-parameter -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -fPIC
@@ -22,6 +22,7 @@ TARGET              = $(SHARED_LIBRARY) $(STATIC_LIBRARY) $(TESTER)
 
 LIBRARY_CXX_SOURCES = \
 	phpcxx/argument.cpp \
+	phpcxx/argument_p.cpp \
 	phpcxx/array.cpp \
 	phpcxx/constant.cpp \
 	phpcxx/callable.cpp \

@@ -40,22 +40,42 @@ protected:
                 }
             ),
             phpcxx::createFunction<&MyModule::func3>("func3")
-                .setTypeHint(phpcxx::ArgumentType::Integer)
-                .setAllowNull(false)
+                .setTypeHint(phpcxx::ArgumentType::Integer, false)
                 .addArgument(
                     phpcxx::Argument("a")
-                        .setType(phpcxx::ArgumentType::Array)
-                        .setNullable(true)
+                        .setType(phpcxx::ArgumentType::Array, true)
                 )
             ,
             phpcxx::createFunction<&MyModule::func4>("func4")
-                .setTypeHint(phpcxx::ArgumentType::Any)
-                .setAllowNull(false)
+                .setTypeHint(phpcxx::ArgumentType::Any, false)
                 .addArgument(
                     phpcxx::Argument("a")
-                        .setType(phpcxx::ArgumentType::Any)
-                        .setNullable(true)
+                        .setType(phpcxx::ArgumentType::Any, true)
                 ),
+            phpcxx::createFunction<&MyModule::func5>(
+                "func5",
+                1,
+                {
+                    phpcxx::byValue("a", phpcxx::ArgumentType::Any, false),
+                    phpcxx::byValue("b", "stdClass", true)
+                }
+            ),
+            phpcxx::createFunction<&MyModule::func5>(
+                "func6",
+                2,
+                {
+                    phpcxx::byValue("a", phpcxx::ArgumentType::Any, false),
+                    phpcxx::byReference("b", "stdClass", true)
+                }
+            ),
+            phpcxx::createFunction<&MyModule::func5>(
+                "func7",
+                2,
+                {
+                    phpcxx::byValue("a", phpcxx::ArgumentType::Any, false),
+                    phpcxx::byValue("b", "stdClass", true)
+                }
+            ),
             phpcxx::createFunction<&MyModule::swap>("swap")
                 .setNumberOfRequiredArguments(2)
                 .addArgument(phpcxx::byReference("a"))
@@ -93,7 +113,7 @@ private:
         return p.size() ? p[0] : phpcxx::Value();
     }
 
-    static void func5(zend_execute_data* execute_data, zval* return_value)
+    static void func5(phpcxx::Parameters& p)
     {
     }
 
@@ -229,7 +249,7 @@ TEST(FunctionsTest, Definitions)
                 "echo $r->getReturnType(), PHP_EOL; "
                 "$params = $r->getParameters(); "
                 "echo $params[0]->getName(), ' ', $params[0]->getType(), ' ', (int)$params[0]->allowsNull(), ' ', (int)$params[0]->canBePassedByValue(), PHP_EOL;"
-                "echo $params[1]->getName(), ' ', $params[1]->getType(), ' ', (int)$params[1]->allowsNull(), ' ', (int)$params[1]->canBePassedByValue(), PHP_EOL;"
+                "echo $params[1]->getName(), ' ', $params[1]->getType(), ' ', (int)$params[1]->isOptional(), ' ', (int)$params[1]->canBePassedByValue(), PHP_EOL;"
             );
 
             o = out.str(); out.str(std::string());
@@ -271,6 +291,112 @@ TEST(FunctionsTest, Definitions)
             e = err.str(); err.str(std::string());
             EXPECT_EQ("func4\n1\n0\n0\n\na  1 1\n", o);
             EXPECT_EQ("", e);
+
+            // void func5($a, stdClass $b = null)
+            runPhpCode(
+                "$r = new ReflectionFunction('func5'); "
+                "echo $r->getName(), PHP_EOL; "
+                "echo $r->getNumberOfParameters(), PHP_EOL; "
+                "echo $r->getNumberOfRequiredParameters(), PHP_EOL; "
+                "echo (int)$r->hasReturnType(), PHP_EOL; "
+                "echo $r->getReturnType(), PHP_EOL; "
+                "$params = $r->getParameters(); "
+                "echo $params[0]->getName(), ' ', $params[0]->getType(), ' ', (int)$params[0]->allowsNull(), ' ', (int)$params[0]->canBePassedByValue(), PHP_EOL;"
+                "echo $params[1]->getName(), ' ', $params[1]->getType(), ' ', (int)$params[1]->isOptional(), ' ', (int)$params[1]->canBePassedByValue(), PHP_EOL;"
+            );
+
+            o = out.str(); out.str(std::string());
+            e = err.str(); err.str(std::string());
+            EXPECT_EQ("func5\n2\n1\n0\n\na  0 1\nb stdClass 1 1\n", o);
+            EXPECT_EQ("", e);
+
+            // void func6($a, stdClass& $b = null), $b is NOT optional
+            runPhpCode(
+                "$r = new ReflectionFunction('func6'); "
+                "echo $r->getName(), PHP_EOL; "
+                "echo $r->getNumberOfParameters(), PHP_EOL; "
+                "echo $r->getNumberOfRequiredParameters(), PHP_EOL; "
+                "echo (int)$r->hasReturnType(), PHP_EOL; "
+                "echo $r->getReturnType(), PHP_EOL; "
+                "$params = $r->getParameters(); "
+                "echo $params[0]->getName(), ' ', $params[0]->getType(), ' ', (int)$params[0]->allowsNull(), ' ', (int)$params[0]->canBePassedByValue(), PHP_EOL;"
+                "echo $params[1]->getName(), ' ', $params[1]->getType(), ' ', (int)$params[1]->isOptional(), ' ', (int)$params[1]->canBePassedByValue(), PHP_EOL;"
+            );
+
+            o = out.str(); out.str(std::string());
+            e = err.str(); err.str(std::string());
+            EXPECT_EQ("func6\n2\n2\n0\n\na  0 1\nb stdClass 0 0\n", o);
+            EXPECT_EQ("", e);
+
+            // void func7($a, stdClass $b = null), $b is NOT optional
+            runPhpCode(
+                "$r = new ReflectionFunction('func7'); "
+                "echo $r->getName(), PHP_EOL; "
+                "echo $r->getNumberOfParameters(), PHP_EOL; "
+                "echo $r->getNumberOfRequiredParameters(), PHP_EOL; "
+                "echo (int)$r->hasReturnType(), PHP_EOL; "
+                "echo $r->getReturnType(), PHP_EOL; "
+                "$params = $r->getParameters(); "
+                "echo $params[0]->getName(), ' ', $params[0]->getType(), ' ', (int)$params[0]->allowsNull(), ' ', (int)$params[0]->canBePassedByValue(), PHP_EOL;"
+                "echo $params[1]->getName(), ' ', $params[1]->getType(), ' ', (int)$params[1]->isOptional(), ' ', (int)$params[1]->canBePassedByValue(), PHP_EOL;"
+            );
+
+            o = out.str(); out.str(std::string());
+            e = err.str(); err.str(std::string());
+            EXPECT_EQ("func7\n2\n2\n0\n\na  0 1\nb stdClass 0 1\n", o);
+            EXPECT_EQ("", e);
+
+            // Make sure PHP accepts our `null` values
+            runPhpCode(
+                "$x = null; "
+                "func5(null, null); "
+                "func6(null, $x); "
+                "func7(null, null); "
+            );
+
+            o = out.str(); out.str(std::string());
+            e = err.str(); err.str(std::string());
+            EXPECT_EQ("", o);
+            EXPECT_EQ("", e);
+
+#if PHP_VERSION_ID < 70200
+            /*
+             * PHP 7.2's (tested on 7.2.0) ReflectionParameter does not play nice
+             * with nullable classes:
+             *
+             * ZEND_METHOD(reflection_type, allowsNull) does the following:
+             *
+             * RETVAL_BOOL(ZEND_TYPE_ALLOW_NULL(param->arg_info->type));
+             *
+             * For classes the code is more complicated than that
+             * (see phpcxx::Argument::canBeNull(), for example),
+             * therefore we run these tests only with 7.0 and 7.1.
+             */
+
+            // void func6($a, stdClass& $b = null), $b is NOT optional
+            runPhpCode(
+                "$r = new ReflectionFunction('func6'); "
+                "$params = $r->getParameters(); "
+                "echo $params[1]->getName(), ' ', $params[1]->getType(), ' ', (int)$params[1]->allowsNull(), ' ', (int)$params[1]->canBePassedByValue(), PHP_EOL;"
+            );
+
+            o = out.str(); out.str(std::string());
+            e = err.str(); err.str(std::string());
+            EXPECT_EQ("b stdClass 1 0\n", o);
+            EXPECT_EQ("", e);
+
+            // void func7($a, stdClass $b = null), $b is NOT optional
+            runPhpCode(
+                "$r = new ReflectionFunction('func7'); "
+                "$params = $r->getParameters(); "
+                "echo $params[1]->getName(), ' ', $params[1]->getType(), ' ', (int)$params[1]->allowsNull(), ' ', (int)$params[1]->canBePassedByValue(), PHP_EOL;"
+            );
+
+            o = out.str(); out.str(std::string());
+            e = err.str(); err.str(std::string());
+            EXPECT_EQ("b stdClass 1 1\n", o);
+            EXPECT_EQ("", e);
+#endif
 
             // swap(&$a, &$b)
             // return type Any = no type

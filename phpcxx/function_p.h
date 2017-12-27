@@ -10,6 +10,7 @@ extern "C" {
 
 #include <vector>
 #include "argument.h"
+#include "argument_p.h"
 #include "types.h"
 
 namespace phpcxx {
@@ -55,15 +56,26 @@ public:
 
         for (auto&& arg : args) {
             this->m_arginfo.push_back(arg.get());
+            if (arg.d_ptr->internal_class()) {
+                this->m_classes.push_back(arg.d_ptr->internal_class());
+                arg.d_ptr->clear_internal_class();
+            }
         }
 
         this->m_fe.arg_info = this->m_arginfo.data();
     }
 
+    ~FunctionPrivate()
+    {
+        for (std::size_t i=0; i<this->m_classes.size(); ++i) {
+            delete[] this->m_classes[i];
+        }
+    }
 
 private:
     zend_function_entry m_fe;
     std::vector<zend_internal_arg_info> m_arginfo;
+    std::vector<char*> m_classes;
 };
 
 }

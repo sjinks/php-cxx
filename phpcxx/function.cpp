@@ -38,39 +38,27 @@ phpcxx::Function&& phpcxx::Function::setReturnByReference(bool byref)
     return std::move(*this);
 }
 
-phpcxx::Function&& phpcxx::Function::setAllowNull(bool allow)
+phpcxx::Function&& phpcxx::Function::setTypeHint(ArgumentType t, bool nullable)
 {
+    zend_internal_arg_info& info = this->d_ptr->m_arginfo[0];
 #if PHP_VERSION_ID < 70200
-    this->d_ptr->m_arginfo[0].allow_null = allow;
+    info.type_hint  = static_cast<zend_uchar>(t);
+    info.allow_null = nullable;
 #else
-    if (allow) {
-        this->d_ptr->m_arginfo[0].type |= 1u;
-    }
-    else {
-        this->d_ptr->m_arginfo[0].type &= ~1u;
-    }
+    info.type       = ZEND_TYPE_ENCODE(static_cast<zend_uchar>(t), nullable);
 #endif
     return std::move(*this);
 }
 
-phpcxx::Function&& phpcxx::Function::setTypeHint(ArgumentType t)
-{
-#if PHP_VERSION_ID < 70200
-    this->d_ptr->m_arginfo[0].type_hint = static_cast<zend_uchar>(t);
-#else
-    this->d_ptr->m_arginfo[0].type = ZEND_TYPE_ENCODE(static_cast<zend_uchar>(t), ZEND_TYPE_ALLOW_NULL(this->d_ptr->m_arginfo[0].type));
-#endif
-    return std::move(*this);
-}
-
-phpcxx::Function&& phpcxx::Function::setTypeHint(const char* className)
+phpcxx::Function&& phpcxx::Function::setTypeHint(const char* className, bool nullable)
 {
     zend_internal_arg_info& info = this->d_ptr->m_arginfo[0];
 #if PHP_VERSION_ID < 70200
     info.type_hint  = IS_OBJECT;
     info.class_name = className;
+    info.allow_null = nullable;
 #else
-    info.type       = ZEND_TYPE_ENCODE_CLASS(zend_string_init_interned(className, std::strlen(className), 1), ZEND_TYPE_ALLOW_NULL(info.type));
+    info.type       = ZEND_TYPE_ENCODE_CLASS(className, nullable);
 #endif
     return std::move(*this);
 }
@@ -95,4 +83,9 @@ const struct _zend_function_entry& phpcxx::Function::getFE() const
 const std::vector<struct _zend_internal_arg_info>& phpcxx::Function::getArgInfo() const
 {
     return this->d_ptr->m_arginfo;
+}
+
+std::vector<char*>& phpcxx::Function::getClassNames() const
+{
+    return this->d_ptr->m_classes;
 }

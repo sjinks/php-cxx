@@ -34,6 +34,10 @@ phpcxx::ModulePrivate::ModulePrivate(phpcxx::Module* const q, const char* name, 
 phpcxx::ModulePrivate::~ModulePrivate()
 {
     ModuleMap::instance().remove(this->entry.module_number);
+
+    for (auto&& s : this->m_classes) {
+        delete[] s;
+    }
 }
 
 zend_module_entry* phpcxx::ModulePrivate::module()
@@ -59,11 +63,16 @@ zend_module_entry* phpcxx::ModulePrivate::module()
                 *fptr = f.getFE();
 
                 auto& arginfo = f.getArgInfo();
+                auto& cnames  = f.getClassNames();
+
                 assert(arginfo.size() > 0);
                 std::memcpy(aptr, arginfo.data(), arginfo.size() * sizeof(zend_internal_arg_info));
                 fptr->arg_info = aptr;
                 aptr += arginfo.size();
                 ++fptr;
+
+                this->m_classes.insert(std::end(this->m_classes), std::begin(cnames), std::end(cnames));
+                cnames.clear();
             }
 
             *fptr = empty;

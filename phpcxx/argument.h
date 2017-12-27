@@ -20,12 +20,12 @@ public:
     Argument(const char* argName, phpcxx::ArgumentType type, bool allowNull = false, bool byRef = false, bool isVariadic = false);
     Argument(const char* argName, const char* className, bool allowNull = false, bool byRef = false, bool isVariadic = false);
     Argument(const struct _zend_internal_arg_info& other);
+    Argument(const Argument&) = delete;
     Argument(Argument&&) noexcept;
     ~Argument();
 
-    Argument&& setType(phpcxx::ArgumentType type);
-    Argument&& setClass(const char* name);
-    Argument&& setNullable(bool v);
+    Argument&& setType(phpcxx::ArgumentType type, bool nullable);
+    Argument&& setClass(const char* name, bool nullable);
     Argument&& setByRef(bool v);
     Argument&& setVariadic(bool v);
 
@@ -39,6 +39,8 @@ public:
 
 private:
     std::unique_ptr<ArgumentPrivate> d_ptr;
+
+    friend class FunctionPrivate;
 };
 
 std::ostream& operator<<(std::ostream& os, const Argument& obj);

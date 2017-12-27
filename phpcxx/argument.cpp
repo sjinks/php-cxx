@@ -1,3 +1,4 @@
+#include <cstring>
 #include "argument.h"
 #include "argument_p.h"
 #include "value.h"
@@ -33,110 +34,55 @@ phpcxx::Argument::~Argument()
 
 const char* phpcxx::Argument::name() const
 {
-    return this->d_ptr->m_arginfo.name;
+    return this->d_ptr->name();
 }
 
 const char* phpcxx::Argument::className() const
 {
-#if PHP_VERSION_ID < 70200
-    return this->d_ptr->m_arginfo.class_name;
-#else
-    return ZEND_TYPE_IS_CLASS(this->d_ptr->m_arginfo.type) ? ZSTR_VAL(ZEND_TYPE_NAME(this->d_ptr->m_arginfo.type)) : nullptr;
-#endif
+    return this->d_ptr->className();
 }
 
 phpcxx::ArgumentType phpcxx::Argument::type() const
 {
-#if PHP_VERSION_ID < 70200
-    int type_hint = this->d_ptr->m_arginfo.type_hint;
-    if (IS_TRUE == type_hint || IS_FALSE == type_hint) {
-        return phpcxx::ArgumentType::Bool;
-    }
-
-    return static_cast<phpcxx::ArgumentType>(type_hint);
-#else
-    zend_type type = this->d_ptr->m_arginfo.type;
-    if (ZEND_TYPE_IS_CODE(type)) {
-        uintptr_t code = ZEND_TYPE_CODE(type);
-        if (IS_TRUE == code || IS_FALSE == code) {
-            return phpcxx::ArgumentType::Bool;
-        }
-
-        return static_cast<phpcxx::ArgumentType>(ZEND_TYPE_CODE(type));
-    }
-
-    if (ZEND_TYPE_IS_CLASS(type)) {
-        return phpcxx::ArgumentType::Object;
-    }
-
-    return phpcxx::ArgumentType::Any;
-#endif
+    return static_cast<phpcxx::ArgumentType>(this->d_ptr->type());
 }
 
 bool phpcxx::Argument::canBeNull() const
 {
-#if PHP_VERSION_ID < 70200
-    return this->d_ptr->m_arginfo.allow_null;
-#else
-    return ZEND_TYPE_ALLOW_NULL(this->d_ptr->m_arginfo.type);
-#endif
+    return this->d_ptr->nullable();
 }
 
 bool phpcxx::Argument::isPassedByReference() const
 {
-    return this->d_ptr->m_arginfo.pass_by_reference;
+    return this->d_ptr->isPassedByReference();
 }
 
 bool phpcxx::Argument::isVariadic() const
 {
-    return this->d_ptr->m_arginfo.is_variadic;
+    return this->d_ptr->isVariadic();
 }
 
-phpcxx::Argument&& phpcxx::Argument::setType(phpcxx::ArgumentType type)
+phpcxx::Argument&& phpcxx::Argument::setType(phpcxx::ArgumentType type, bool nullable)
 {
-#if PHP_VERSION_ID < 70200
-    this->d_ptr->m_arginfo.type_hint = static_cast<zend_uchar>(type);
-#else
-    this->d_ptr->m_arginfo.type = ZEND_TYPE_ENCODE(static_cast<zend_uchar>(type), ZEND_TYPE_ALLOW_NULL(this->d_ptr->m_arginfo.type));
-#endif
+    this->d_ptr->setType(static_cast<zend_uchar>(type), nullable);
     return std::move(*this);
 }
 
-phpcxx::Argument&& phpcxx::Argument::setClass(const char* name)
+phpcxx::Argument&& phpcxx::Argument::setClass(const char* name, bool nullable)
 {
-#if PHP_VERSION_ID < 70200
-    this->d_ptr->m_arginfo.type_hint  = IS_OBJECT;
-    this->d_ptr->m_arginfo.class_name = name;
-#else
-    this->d_ptr->m_arginfo.type       = ZEND_TYPE_ENCODE_CLASS(zend_string_init_interned(name, std::strlen(name), 1), ZEND_TYPE_ALLOW_NULL(this->d_ptr->m_arginfo.type));
-#endif
-    return std::move(*this);
-}
-
-phpcxx::Argument&& phpcxx::Argument::setNullable(bool v)
-{
-#if PHP_VERSION_ID < 70200
-    this->d_ptr->m_arginfo.allow_null = v;
-#else
-    if (v) {
-        this->d_ptr->m_arginfo.type |= 1;
-    }
-    else {
-        this->d_ptr->m_arginfo.type &= ~1u;
-    }
-#endif
+    this->d_ptr->setClass(name, nullable);
     return std::move(*this);
 }
 
 phpcxx::Argument&& phpcxx::Argument::setByRef(bool v)
 {
-    this->d_ptr->m_arginfo.pass_by_reference = v;
+    this->d_ptr->setByRef(v);
     return std::move(*this);
 }
 
 phpcxx::Argument&& phpcxx::Argument::setVariadic(bool v)
 {
-    this->d_ptr->m_arginfo.is_variadic = v;
+    this->d_ptr->setVariadic(v);
     return std::move(*this);
 }
 

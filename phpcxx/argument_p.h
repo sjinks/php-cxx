@@ -2,6 +2,7 @@
 #define PHPCXX_ARGUMENT_P_H
 
 #include "phpcxx.h"
+#include <cstring>
 
 extern "C" {
 #include <Zend/zend_compile.h>
@@ -12,32 +13,52 @@ namespace phpcxx {
 class PHPCXX_HIDDEN ArgumentPrivate {
     friend class Argument;
 public:
-    ArgumentPrivate(const char* argName, int type, const char* className, bool allowNull, bool byRef, bool isVariadic)
+    ArgumentPrivate(const char* argName, int type, const char* className, bool nullable, bool byRef, bool isVariadic);
+    ArgumentPrivate(const ArgumentPrivate&) = delete;
+
+    ArgumentPrivate(ArgumentPrivate&& other) noexcept
+        : m_arginfo(std::move(other.m_arginfo)), m_class(other.m_class)
     {
-        // argName can be nullptr; see ZEND_ARG_PASS_INFO macro
-        this->m_arginfo.name              = argName;
-        this->m_arginfo.pass_by_reference = byRef;
-        this->m_arginfo.is_variadic       = isVariadic;
-#if PHP_VERSION_ID < 70200
-        this->m_arginfo.class_name        = className;
-        this->m_arginfo.type_hint         = static_cast<zend_uchar>(type);
-        this->m_arginfo.allow_null        = allowNull;
-#else
-        if (className) {
-            this->m_arginfo.type          = ZEND_TYPE_ENCODE_CLASS(zend_string_init_interned(className, std::strlen(className), 1), allowNull);
-        }
-        else {
-            this->m_arginfo.type          = ZEND_TYPE_ENCODE(type, allowNull);
-        }
-#endif
+        other.m_class = nullptr;
     }
 
     ArgumentPrivate(const zend_internal_arg_info& info)
-        : m_arginfo(info)
+        : m_arginfo(info), m_class(nullptr)
     {}
+
+    ~ArgumentPrivate()
+    {
+        delete[] this->m_class;
+    }
+
+    void setType(zend_uchar type, bool nullable);
+    void setClass(const char* name, bool nullable);
+    void setByRef(bool v);
+    void setVariadic(bool v);
+
+    const char* name() const;
+    const char* className() const;
+    zend_uchar type() const;
+    bool nullable() const;
+    bool isPassedByReference() const;
+    bool isVariadic() const;
+
+    /**
+     * @internal
+     */
+    char* internal_class() const
+    {
+        return this->m_class;
+    }
+
+    void clear_internal_class()
+    {
+        this->m_class = nullptr;
+    }
 
 private:
     zend_internal_arg_info m_arginfo;
+    char* m_class;
 };
 
 }

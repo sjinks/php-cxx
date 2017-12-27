@@ -8,6 +8,7 @@ extern "C" {
 #include <Zend/zend.h>
 }
 
+//#if PHP_VERSION_ID < 70200
 TEST(ArgumentsTest, TestNative)
 {
     static const zend_internal_arg_info args[8] = {
@@ -128,6 +129,7 @@ TEST(ArgumentsTest, TestNative)
         }
     });
 }
+//#endif
 
 TEST(ArgumentsTest, TestPhpCxx)
 {
@@ -172,7 +174,7 @@ TEST(ArgumentsTest, TestPhpCxx)
 
         {
             phpcxx::Argument a("nullable_array");
-            a.setNullable(true).setByRef(true).setType(phpcxx::ArgumentType::Array);
+            a.setByRef(true).setType(phpcxx::ArgumentType::Array, true);
 
             EXPECT_STREQ("nullable_array", a.name());
             EXPECT_TRUE(a.isPassedByReference());
@@ -188,7 +190,7 @@ TEST(ArgumentsTest, TestPhpCxx)
 
         {
             phpcxx::Argument a("stdclass");
-            a.setByRef(false).setClass("stdClass");
+            a.setByRef(false).setClass("stdClass", false);
 
             EXPECT_STREQ("stdclass", a.name());
             EXPECT_FALSE(a.isPassedByReference());
@@ -204,7 +206,7 @@ TEST(ArgumentsTest, TestPhpCxx)
 
         {
             phpcxx::Argument a("callable");
-            a.setType(phpcxx::ArgumentType::Callable);
+            a.setType(phpcxx::ArgumentType::Callable, false);
 
             EXPECT_STREQ("callable", a.name());
             EXPECT_FALSE(a.isPassedByReference());
@@ -220,7 +222,7 @@ TEST(ArgumentsTest, TestPhpCxx)
 
         {
             phpcxx::Argument a("boolean");
-            a.setType(phpcxx::ArgumentType::Bool);
+            a.setType(phpcxx::ArgumentType::Bool, false);
 
             EXPECT_STREQ("boolean", a.name());
             EXPECT_FALSE(a.isPassedByReference());

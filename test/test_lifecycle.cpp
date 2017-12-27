@@ -245,6 +245,7 @@ TEST(LifecycleTest, AdditionalModule)
         EXPECT_EQ(1, ext2.module_shutdown_called);
     }
 
+#if PHP_VERSION_ID < 70100
     {
         MyModule ext1("LifeCycle1", "0.0");
         MyModule ext2("LifeCycle2", "0.0");
@@ -278,4 +279,5 @@ TEST(LifecycleTest, AdditionalModule)
         EXPECT_EQ(1, ext1.module_shutdown_called);
         EXPECT_EQ(1, ext2.module_shutdown_called);
     }
+#endif
 }

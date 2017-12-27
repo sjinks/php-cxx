@@ -78,7 +78,7 @@ public:
                     static_cast<int>(EX(func)->common.required_num_args),
                     static_cast<int>(EX(func)->common.num_args)
                 );
-#elif PHP_VERSION_ID > 70100
+#elif PHP_VERSION_ID >= 70100
                 zend_wrong_parameters_count_error(
                     static_cast<int>(EX_NUM_ARGS()),
                     static_cast<int>(EX(func)->common.required_num_args),

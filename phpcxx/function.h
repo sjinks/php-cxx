@@ -24,13 +24,17 @@ public:
     Function&& addArgument(const Argument& arg);
     Function&& setNumberOfRequiredArguments(std::size_t n);
     Function&& setReturnByReference(bool byref);
-    Function&& setAllowNull(bool allow);
-    Function&& setTypeHint(ArgumentType t);
-    Function&& setTypeHint(const char* className);
+    Function&& setTypeHint(ArgumentType t, bool nullable);
+    Function&& setTypeHint(const char* className, bool nullable);
     Function&& setDeprecated(bool v);
 
     const struct _zend_function_entry& getFE() const;
     const std::vector<struct _zend_internal_arg_info>& getArgInfo() const;
+
+    /**
+     * @internal
+     */
+    std::vector<char*>& getClassNames() const;
 
 protected:
     friend class FunctionPrivate;
