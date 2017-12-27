@@ -26,7 +26,11 @@ TEST(ZendString, TestConstruct)
             phpcxx::ZendString zs1("c string");
             phpcxx::ZendString zs2(std::string("std::string"));
             phpcxx::ZendString zs3(phpcxx::string("phpcxx::string"));
+#if PHP_VERSION_ID < 70200
             phpcxx::ZendString zs4(CG(empty_string));
+#else
+            phpcxx::ZendString zs4(zend_empty_string);
+#endif
 
             EXPECT_EQ(1, zs1.refCount());
             EXPECT_EQ(1, zs2.refCount());
@@ -77,15 +81,20 @@ TEST(ZendString, TestAssign)
         sapi.initialize();
 
         sapi.run([] {
-            phpcxx::ZendString zs1(CG(empty_string));
-            phpcxx::ZendString zs2(CG(empty_string));
-            phpcxx::ZendString zs3(CG(empty_string));
-            phpcxx::ZendString zs4(CG(empty_string));
+#if PHP_VERSION_ID < 70200
+            zend_string* empty = CG(empty_string);
+#else
+            zend_string* empty = zend_empty_string;
+#endif
+            phpcxx::ZendString zs1(empty);
+            phpcxx::ZendString zs2(empty);
+            phpcxx::ZendString zs3(empty);
+            phpcxx::ZendString zs4(empty);
 
             zs1 = "c string";
             zs2 = std::string("std::string");
             zs3 = phpcxx::string("phpcxx::string");
-            zs4 = CG(empty_string);
+            zs4 = empty;
 
             EXPECT_EQ(1, zs1.refCount());
             EXPECT_EQ(1, zs2.refCount());
@@ -118,7 +127,7 @@ TEST(ZendString, TestAssign)
             EXPECT_EQ(3, zs3.refCount());
             EXPECT_EQ(3, zs4.refCount());
 
-            zs4 = CG(empty_string);
+            zs4 = empty;
             EXPECT_TRUE(zs4.isInterned());
             zs4.makeInterned();
             EXPECT_TRUE(zs4.isInterned());
@@ -144,20 +153,26 @@ TEST(ZendString, TestReferences)
         sapi.initialize();
 
         sapi.run([] {
+#if PHP_VERSION_ID < 70200
+            zend_string* empty = CG(empty_string);
+#else
+            zend_string* empty = zend_empty_string;
+#endif
+
             // Interned strings always have refcount = 1
             // Interned strings are not destroyed
-            EXPECT_EQ(1, zend_string_refcount(CG(empty_string)));
+            EXPECT_EQ(1, zend_string_refcount(empty));
             {
-                phpcxx::ZendString zs(CG(empty_string));
+                phpcxx::ZendString zs(empty);
 
                 EXPECT_EQ(1, zs.refCount());
                 EXPECT_TRUE(zs.isInterned());
                 EXPECT_EQ(1, zs.addRef());
                 EXPECT_EQ(1, zs.delRef());
 
-                EXPECT_EQ(CG(empty_string), zs.get());
+                EXPECT_EQ(empty, zs.get());
             }
-            EXPECT_EQ(1, zend_string_refcount(CG(empty_string)));
+            EXPECT_EQ(1, zend_string_refcount(empty));
 
             zend_string* z = zend_string_init(ZEND_STRL("test"), 0);
             EXPECT_EQ(1, zend_string_refcount(z));
