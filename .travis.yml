@@ -12,6 +12,7 @@ env:
   matrix:
     - PHPVER=7.0
     - PHPVER=7.1
+    - PHPVER=7.2
 
 matrix:
   include:
