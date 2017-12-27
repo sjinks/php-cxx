@@ -249,7 +249,7 @@ TEST(FunctionsTest, Definitions)
                 "echo $r->getReturnType(), PHP_EOL; "
                 "$params = $r->getParameters(); "
                 "echo $params[0]->getName(), ' ', $params[0]->getType(), ' ', (int)$params[0]->allowsNull(), ' ', (int)$params[0]->canBePassedByValue(), PHP_EOL;"
-                "echo $params[1]->getName(), ' ', $params[1]->getType(), ' ', (int)$params[1]->isOptional(), ' ', (int)$params[1]->canBePassedByValue(), PHP_EOL;"
+                "echo $params[1]->getName(), ' ', $params[1]->getType(), ' ', (int)$params[1]->allowsNull(), ' ', (int)$params[1]->canBePassedByValue(), PHP_EOL;"
             );
 
             o = out.str(); out.str(std::string());
@@ -302,7 +302,7 @@ TEST(FunctionsTest, Definitions)
                 "echo $r->getReturnType(), PHP_EOL; "
                 "$params = $r->getParameters(); "
                 "echo $params[0]->getName(), ' ', $params[0]->getType(), ' ', (int)$params[0]->allowsNull(), ' ', (int)$params[0]->canBePassedByValue(), PHP_EOL;"
-                "echo $params[1]->getName(), ' ', $params[1]->getType(), ' ', (int)$params[1]->isOptional(), ' ', (int)$params[1]->canBePassedByValue(), PHP_EOL;"
+                "echo $params[1]->getName(), ' ', $params[1]->getType(), ' ', (int)$params[1]->allowsNull(), ' ', (int)$params[1]->canBePassedByValue(), PHP_EOL;"
             );
 
             o = out.str(); out.str(std::string());
@@ -320,12 +320,12 @@ TEST(FunctionsTest, Definitions)
                 "echo $r->getReturnType(), PHP_EOL; "
                 "$params = $r->getParameters(); "
                 "echo $params[0]->getName(), ' ', $params[0]->getType(), ' ', (int)$params[0]->allowsNull(), ' ', (int)$params[0]->canBePassedByValue(), PHP_EOL;"
-                "echo $params[1]->getName(), ' ', $params[1]->getType(), ' ', (int)$params[1]->isOptional(), ' ', (int)$params[1]->canBePassedByValue(), PHP_EOL;"
+                "echo $params[1]->getName(), ' ', $params[1]->getType(), ' ', (int)$params[1]->allowsNull(), ' ', (int)$params[1]->canBePassedByValue(), PHP_EOL;"
             );
 
             o = out.str(); out.str(std::string());
             e = err.str(); err.str(std::string());
-            EXPECT_EQ("func6\n2\n2\n0\n\na  0 1\nb stdClass 0 0\n", o);
+            EXPECT_EQ("func6\n2\n2\n0\n\na  0 1\nb stdClass 1 0\n", o);
             EXPECT_EQ("", e);
 
             // void func7($a, stdClass $b = null), $b is NOT optional
@@ -338,12 +338,12 @@ TEST(FunctionsTest, Definitions)
                 "echo $r->getReturnType(), PHP_EOL; "
                 "$params = $r->getParameters(); "
                 "echo $params[0]->getName(), ' ', $params[0]->getType(), ' ', (int)$params[0]->allowsNull(), ' ', (int)$params[0]->canBePassedByValue(), PHP_EOL;"
-                "echo $params[1]->getName(), ' ', $params[1]->getType(), ' ', (int)$params[1]->isOptional(), ' ', (int)$params[1]->canBePassedByValue(), PHP_EOL;"
+                "echo $params[1]->getName(), ' ', $params[1]->getType(), ' ', (int)$params[1]->allowsNull(), ' ', (int)$params[1]->canBePassedByValue(), PHP_EOL;"
             );
 
             o = out.str(); out.str(std::string());
             e = err.str(); err.str(std::string());
-            EXPECT_EQ("func7\n2\n2\n0\n\na  0 1\nb stdClass 0 1\n", o);
+            EXPECT_EQ("func7\n2\n2\n0\n\na  0 1\nb stdClass 1 1\n", o);
             EXPECT_EQ("", e);
 
             // Make sure PHP accepts our `null` values
@@ -358,45 +358,6 @@ TEST(FunctionsTest, Definitions)
             e = err.str(); err.str(std::string());
             EXPECT_EQ("", o);
             EXPECT_EQ("", e);
-
-#if PHP_VERSION_ID < 70200
-            /*
-             * PHP 7.2's (tested on 7.2.0) ReflectionParameter does not play nice
-             * with nullable classes:
-             *
-             * ZEND_METHOD(reflection_type, allowsNull) does the following:
-             *
-             * RETVAL_BOOL(ZEND_TYPE_ALLOW_NULL(param->arg_info->type));
-             *
-             * For classes the code is more complicated than that
-             * (see phpcxx::Argument::canBeNull(), for example),
-             * therefore we run these tests only with 7.0 and 7.1.
-             */
-
-            // void func6($a, stdClass& $b = null), $b is NOT optional
-            runPhpCode(
-                "$r = new ReflectionFunction('func6'); "
-                "$params = $r->getParameters(); "
-                "echo $params[1]->getName(), ' ', $params[1]->getType(), ' ', (int)$params[1]->allowsNull(), ' ', (int)$params[1]->canBePassedByValue(), PHP_EOL;"
-            );
-
-            o = out.str(); out.str(std::string());
-            e = err.str(); err.str(std::string());
-            EXPECT_EQ("b stdClass 1 0\n", o);
-            EXPECT_EQ("", e);
-
-            // void func7($a, stdClass $b = null), $b is NOT optional
-            runPhpCode(
-                "$r = new ReflectionFunction('func7'); "
-                "$params = $r->getParameters(); "
-                "echo $params[1]->getName(), ' ', $params[1]->getType(), ' ', (int)$params[1]->allowsNull(), ' ', (int)$params[1]->canBePassedByValue(), PHP_EOL;"
-            );
-
-            o = out.str(); out.str(std::string());
-            e = err.str(); err.str(std::string());
-            EXPECT_EQ("b stdClass 1 1\n", o);
-            EXPECT_EQ("", e);
-#endif
 
             // swap(&$a, &$b)
             // return type Any = no type
