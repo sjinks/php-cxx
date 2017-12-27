@@ -125,9 +125,22 @@ public:
         if (EG(current_module)) {
             zend_constant& zc = this->get();
             zc.module_number  = EG(current_module)->module_number;
+            zend_string* orig = zc.name;
             zend_string_addref(zc.name);
             if (FAILURE == zend_register_constant(&zc)) {
-                // Zend calls zend_string_release() for constant name upon failure
+                /*
+                 * Assume `zc.name` had N references (N+1 after `zend_string_addref()`)
+                 * Possible scenarios:
+                 *   - `zc.name` became interned: it has now 1 reference
+                 *   - `zc.name` was replaced with an interned string: `zc.name` has 1 reference, `orig` has N references
+                 *   - `zc.name` was used as is: it has now N references
+                 *
+                 * Thus when `zc.name` is interned, we can safely release `orig` immediately.
+                 */
+                if (ZSTR_IS_INTERNED(zc.name)) {
+                    zend_string_release(orig);
+                }
+
                 zc.module_number = -1;
                 return false;
             }
