@@ -183,11 +183,6 @@ TestSAPI::~TestSAPI()
 
 #ifdef ZTS
     tsrm_shutdown();
-#if defined(TSRMLS_CACHE_RESET)
-    TSRMLS_CACHE_RESET();
-#else
-    TSRMLS_CACHE = NULL;
-#endif
 #endif
 
     if (g.sapi.ini_entries) {
