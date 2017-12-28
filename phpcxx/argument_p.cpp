@@ -1,6 +1,10 @@
 #include <cstring>
 #include "argument_p.h"
 
+extern "C" {
+#include <main/php_version.h>
+}
+
 phpcxx::ArgumentPrivate::ArgumentPrivate(const char* argName, int type, const char* className, bool nullable, bool byRef, bool isVariadic)
     : m_class(nullptr)
 {
