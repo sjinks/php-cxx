@@ -20,7 +20,6 @@ TEST(ZendString, TestConstruct)
     {
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         sapi.run([] {
             phpcxx::ZendString zs1("c string");
@@ -78,7 +77,6 @@ TEST(ZendString, TestAssign)
     {
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         sapi.run([] {
 #if PHP_VERSION_ID < 70200
@@ -150,7 +148,6 @@ TEST(ZendString, TestReferences)
     {
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         sapi.run([] {
 #if PHP_VERSION_ID < 70200

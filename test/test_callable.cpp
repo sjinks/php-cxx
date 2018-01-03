@@ -21,7 +21,6 @@ TEST(Callable, TestConstruct)
     {
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         sapi.run([] {
             runPhpCode(R"___(
@@ -75,7 +74,6 @@ TEST(Callable, TestResolve)
     {
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         sapi.run([] {
             zend_fcall_info fci;

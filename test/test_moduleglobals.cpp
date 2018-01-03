@@ -67,14 +67,13 @@ TEST(ModuleGlobalsTest, TestModuleGlobals)
     {
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
-        std::string o = out.str(); out.str("");
-        std::string e = err.str(); err.str("");
-        EXPECT_EQ("", e);
-        EXPECT_EQ("globalsConstructor\nmoduleStartup\n", o);
+        sapi.run([&module, &out, &err]() {
+            std::string o = out.str(); out.str("");
+            std::string e = err.str(); err.str("");
+            EXPECT_EQ("", e);
+            EXPECT_EQ("globalsConstructor\nmoduleStartup\n", o);
 
-        sapi.run([&module]() {
             MyModuleGlobals* g1 = static_cast<MyModuleGlobals*>(module.globals());
             MyModuleGlobals* g2 = dynamic_cast<MyModuleGlobals*>(module.globals());
             ASSERT_TRUE(g1 != nullptr);

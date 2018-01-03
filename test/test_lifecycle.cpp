@@ -108,23 +108,12 @@ TEST(LifecycleTest, NormalRequest)
         TestSAPI sapi(std::cout, std::cerr);
         sapi.addModule(ext);
 
-        sapi.initialize();
-        EXPECT_EQ(1, ext.module_startup_called);
-        EXPECT_EQ(0, ext.module_shutdown_called);
-        EXPECT_EQ(0, ext.request_startup_called);
-        EXPECT_EQ(0, ext.request_shutdown_called);
-
         sapi.run([&ext]() {
             EXPECT_EQ(1, ext.module_startup_called);
             EXPECT_EQ(0, ext.module_shutdown_called);
             EXPECT_EQ(1, ext.request_startup_called);
             EXPECT_EQ(0, ext.request_shutdown_called);
         });
-
-        EXPECT_EQ(1, ext.module_startup_called);
-        EXPECT_EQ(0, ext.module_shutdown_called);
-        EXPECT_EQ(1, ext.request_startup_called);
-        EXPECT_EQ(1, ext.request_shutdown_called);
     }
 
     EXPECT_EQ(1, ext.module_startup_called);
@@ -149,12 +138,6 @@ TEST(LifecycleTest, ErroredRequest)
         TestSAPI sapi(out, err);
         sapi.addModule(ext);
 
-        sapi.initialize();
-        EXPECT_EQ(1, ext.module_startup_called);
-        EXPECT_EQ(0, ext.module_shutdown_called);
-        EXPECT_EQ(0, ext.request_startup_called);
-        EXPECT_EQ(0, ext.request_shutdown_called);
-
         sapi.run([&ext]() {
             EXPECT_EQ(1, ext.module_startup_called);
             EXPECT_EQ(0, ext.module_shutdown_called);
@@ -163,11 +146,6 @@ TEST(LifecycleTest, ErroredRequest)
 
             zend_error(E_ERROR, "Very fatal error");
         });
-
-        EXPECT_EQ(1, ext.module_startup_called);
-        EXPECT_EQ(0, ext.module_shutdown_called);
-        EXPECT_EQ(1, ext.request_startup_called);
-        EXPECT_EQ(1, ext.request_shutdown_called);
 
         EXPECT_EQ(out.str(), "");
         std::string errors = err.str();
@@ -194,12 +172,6 @@ TEST(LifecycleTest, MultipleRequests)
         TestSAPI sapi(std::cout, std::cerr);
         sapi.addModule(ext);
 
-        sapi.initialize();
-        EXPECT_EQ(1, ext.module_startup_called);
-        EXPECT_EQ(0, ext.module_shutdown_called);
-        EXPECT_EQ(0, ext.request_startup_called);
-        EXPECT_EQ(0, ext.request_shutdown_called);
-
         for (int i=0; i<n; ++i) {
             sapi.run([&ext, &i]() {
                 EXPECT_EQ(1,   ext.module_startup_called);
@@ -208,11 +180,6 @@ TEST(LifecycleTest, MultipleRequests)
                 EXPECT_EQ(i,   ext.request_shutdown_called);
             });
         }
-
-        EXPECT_EQ(1, ext.module_startup_called);
-        EXPECT_EQ(0, ext.module_shutdown_called);
-        EXPECT_EQ(n, ext.request_startup_called);
-        EXPECT_EQ(n, ext.request_shutdown_called);
     }
 
     EXPECT_EQ(1, ext.module_startup_called);
@@ -230,10 +197,6 @@ TEST(LifecycleTest, AdditionalModule)
         {
             TestSAPI sapi(std::cout, std::cerr);
             sapi.addModule(ext1);
-
-            sapi.initialize();
-            EXPECT_EQ(1, ext1.module_startup_called);
-            EXPECT_EQ(1, ext2.module_startup_called);
 
             sapi.run([&ext1, &ext2]() {
                 EXPECT_EQ(1, ext1.request_startup_called);
@@ -254,12 +217,10 @@ TEST(LifecycleTest, AdditionalModule)
             TestSAPI sapi(std::cout, std::cerr);
             sapi.addModule(ext1);
 
-            sapi.initialize();
-            zend_startup_module(ext2.module());
-            EXPECT_EQ(1, ext1.module_startup_called);
-            EXPECT_EQ(1, ext2.module_startup_called);
-
             sapi.run([&ext1, &ext2]() {
+                zend_startup_module(ext2.module());
+                EXPECT_EQ(1, ext1.module_startup_called);
+                EXPECT_EQ(1, ext2.module_startup_called);
                 EXPECT_EQ(1, ext1.request_startup_called);
                 // When a module is loaded after MINIT phase,
                 // its request startup / shutdown functions

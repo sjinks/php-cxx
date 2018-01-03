@@ -210,7 +210,6 @@ TEST(FunctionsTest, Definitions)
     {
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         sapi.run([&out, &err, &o, &e]() {
             zval res;
@@ -398,7 +397,6 @@ TEST(FunctionsTest, SimpleCalls)
     {
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         std::string o;
         std::string e;
@@ -477,7 +475,6 @@ TEST(FunctionsTest, ParamsByReference)
     {
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         std::string o;
         std::string e;

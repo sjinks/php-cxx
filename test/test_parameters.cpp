@@ -77,7 +77,6 @@ TEST(Parameters, TestCoercion)
     {
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         sapi.run([]() {
             runPhpCode(R"___(
@@ -134,7 +133,6 @@ TEST(Parameters, TestVerify)
         MyModule module("Parameters", "0.0");
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         sapi.run([&err]() {
             DummyStackFrame dummy;
@@ -187,7 +185,6 @@ set_error_handler("exception_error_handler");
         MyModule module("Parameters", "0.0");
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         sapi.run([]() {
             DummyStackFrame dummy;
@@ -212,7 +209,6 @@ TEST(Parameters, TestInitialization)
         MyModule module("Parameters", "0.0");
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         sapi.run([]() {
             phpcxx::Value v1 = true;

@@ -13,15 +13,14 @@ public:
     TestSAPI(std::ostream& out, std::ostream& err);
     ~TestSAPI();
 
-    void initialize();
     void addModule(phpcxx::Module& ext);
-    void run();
     void run(std::function<void(void)> callback);
 
     [[gnu::nonnull]] void setOutputStream(std::ostream* os);
     [[gnu::nonnull]] void setErrorStream(std::ostream* os);
 private:
     bool m_initialized;
+    bool m_in_request;
 };
 
 #endif /* SAPI_H_ */

@@ -43,7 +43,7 @@ LIBRARY_CXX_SOURCES = \
 	phpcxx/superglobal.cpp \
 	phpcxx/value.cpp \
 	phpcxx/variables.cpp
-	
+
 LIBRARY_GCH = .build/phpcxx/precompiled.h.gch
 LIBRARY_PCH = phpcxx/precompiled.h
 
