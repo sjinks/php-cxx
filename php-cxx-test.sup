@@ -72,3 +72,10 @@
    fun:zm_startup_core
 }
 
+{
+   _dlerror_run
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dlerror_run
+}
