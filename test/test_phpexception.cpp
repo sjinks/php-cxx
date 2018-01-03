@@ -195,7 +195,6 @@ TEST(PhpException, TestSimpleException)
     {
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         sapi.run([&err] {
             runPhpCode(R"___(
@@ -228,7 +227,6 @@ TEST(PhpException, TestNestedException)
     {
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         sapi.run([&err] {
             runPhpCode(R"___(
@@ -266,7 +264,6 @@ TEST(PhpException, TestInvalidArguments)
     {
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         sapi.run([&err] {
             ASSERT_EQ(nullptr, EG(exception));
@@ -297,7 +294,6 @@ TEST(PhpException, TestIssue23)
         MyModule module("PhpException", "0.0");
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         sapi.run([&success] {
             DummyStackFrame dummy;
@@ -325,7 +321,6 @@ TEST(PhpException, TestIssue23)
         MyModule module("PhpException", "0.0");
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         sapi.run([&success] {
             DummyStackFrame dummy;
@@ -353,7 +348,6 @@ TEST(PhpException, TestIssue23)
         MyModule module("PhpException", "0.0");
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         sapi.run([&success] {
             DummyStackFrame dummy;
@@ -381,7 +375,6 @@ TEST(PhpException, TestIssue23)
         MyModule module("PhpException", "0.0");
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         sapi.run([&success] {
             DummyStackFrame dummy;

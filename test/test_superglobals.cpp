@@ -59,7 +59,6 @@ TEST(SuperGlobals, testBasic)
         MyModule ext("SuperGlobals", nullptr);
         TestSAPI sapi(out, err);
         sapi.addModule(ext);
-        sapi.initialize();
 
         sapi.run([]() {
             zval r;
@@ -85,7 +84,6 @@ TEST(SuperGlobals, testBasic)
         MyModule ext("SuperGlobals", nullptr);
         TestSAPI sapi(out, err);
         sapi.addModule(ext);
-        sapi.initialize();
 
         sapi.run([]() {
             char sg_int[] = "SUPERGLOBAL_INT";
@@ -111,7 +109,6 @@ TEST(SuperGlobals, testBasic)
         MyModule ext("SuperGlobals", nullptr);
         TestSAPI sapi(out, err);
         sapi.addModule(ext);
-        sapi.initialize();
 
         sapi.run([]() {
             zval r;
@@ -173,7 +170,6 @@ TEST(SuperGlobals, testOperations)
         MyModule ext("SuperGlobals", nullptr);
         TestSAPI sapi(out, err);
         sapi.addModule(ext);
-        sapi.initialize();
 
         sapi.run([]() {
             phpcxx::ZendString za("a");

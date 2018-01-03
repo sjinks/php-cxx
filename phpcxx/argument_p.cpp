@@ -47,8 +47,43 @@ const char* phpcxx::ArgumentPrivate::className() const
 #else
     // See ZEND_TYPE_NAME, ZEND_TYPE_ALLOW_NULL macros
     zend_type type = this->m_arginfo.type;
+
     if (ZEND_TYPE_IS_CLASS(type)) {
+        /*
+         * This is quite fragile: my tests show that g++ 4.8
+         * can align the string to 2 bytes boundary.
+         */
         if ((type & 0x02) == 0x02) {
+            /*
+             * If `type` is `zend_string*`, by casting it to
+             * `const char*` we get a pointer to its third or
+             * fourth byte.
+             *
+             * `zend_string` begins with `zend_refcounted_h`,
+             * which is basically a pair of two `uint32_t`,
+             * the first one being `refcount`.
+             *
+             * On a little endian platform the third/fourth
+             * bytes are usually zero (it is unlikely that the
+             * class name will have more than 65535 references).
+             *
+             * On a big endian platforms this should not be an issue
+             * either, as the class name for arginfo is allocated this way:
+             *
+             * ```
+             * zend_new_interned_string(zend_string_init(class_name, strlen(class_name), 1));
+             * ```
+             *
+             * `zend_string_init()` will set refcount to 1, same is true
+             * for `zend_new_interned_string`. Therefore if the dereferenced
+             * character is a letter, underscore or backslash, this is
+             * likely to be a class name and not a `zend_string`.
+             */
+            const char* x = reinterpret_cast<const char*>(type);
+            if (x[0] == '?' || isalpha(x[0]) || x[0] == '\\' || x[0] == '_') {
+                return x;
+            }
+
             zend_string* s  = ZEND_TYPE_NAME(type);
             const char* res = ZSTR_VAL(s);
             return res[0] == '?' ? res+1 : res;

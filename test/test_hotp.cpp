@@ -114,7 +114,6 @@ TEST(HOTP, TestHOTP)
         MyModule ext("HOTP", nullptr);
         TestSAPI sapi(out, err);
         sapi.addModule(ext);
-        sapi.initialize();
 
         sapi.run([]() {
             runPhpCode("echo HOTP::generateByCounter(1, '12345678901234567890'), \"\n\";");

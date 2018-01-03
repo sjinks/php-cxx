@@ -51,7 +51,6 @@ TEST(FCall, TestExceptions)
     {
         TestSAPI sapi(out, err);
         sapi.addModule(module);
-        sapi.initialize();
 
         sapi.run([]() {
             zval undef;
@@ -105,7 +104,6 @@ TEST(FCall, TestBailout)
     std::string e;
     TestSAPI sapi(out, err);
     sapi.addModule(module);
-    sapi.initialize();
 
     {
         bool bailed_out = false;
@@ -171,7 +169,6 @@ TEST(FCall, TestNormalCall)
     std::string e;
     TestSAPI sapi(out, err);
     sapi.addModule(module);
-    sapi.initialize();
 
     {
         bool bailed_out = false;
